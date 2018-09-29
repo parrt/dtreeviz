@@ -5,12 +5,11 @@ from pathlib import Path
 from sklearn import tree
 from graphviz.backend import run
 import matplotlib.pyplot as plt
-from animl.trees import *
+from dtreeviz.shadow import *
 from numbers import Number
 import matplotlib.patches as patches
 import tempfile
 from os import getpid, makedirs, remove
-from IPython.core.display import SVG, display
 
 
 YELLOW = "#fefecd" # "#fbfbd0" # "#FBFEB0"

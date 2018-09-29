@@ -1,11 +1,17 @@
-# animl
+# dtreeviz -- Decision tree visualization
 
-This is the start of a python machine learning library to augment scikit-learn. At the moment, all we have is functionality for decision tree visualization and model interpretation.
+A python library for decision tree visualization and model interpretation.
+
+By [Terence Parr](http://parrt.cs.usfca.edu) and [Prince Grover](https://www.linkedin.com/in/groverpr)
+
+See [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made. 
+
+## Install
 
 (*So far, we've only tested this on OS X*.)  To install (Python >=3.6 only), do this:
 
 ```bash
-pip install animl
+pip install dtreeviz
 ```
 
 and you need the following tools for the decision tree visualizations to work:
@@ -18,17 +24,13 @@ brew install graphviz --with-librsvg --with-app --with-pango
 
 Please email us with notes on making it work on other platforms. thanks!
 
-## Decision tree visualization
-
-By [Terence Parr](http://parrt.cs.usfca.edu) and [Prince Grover](https://www.linkedin.com/in/groverpr)
-
-See [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made. 
+## Discussion
 
 Decision trees are the fundamental building block of [gradient boosting machines](http://explained.ai/gradient-boosting/index.html) and [Random Forests](https://en.wikipedia.org/wiki/Random_forest)(tm), probably the two most popular machine learning models for structured data.  Visualizing decision trees is a tremendous aid when learning how these models work and when interpreting models.  Unfortunately, current visualization packages are rudimentary and not immediately helpful to the novice. For example, we couldn't find a library that visualizes how decision nodes split up the feature space. It is also uncommon for libraries to support visualizing a specific feature vector as it weaves down through a tree's decision nodes; we could only find one image showing this.
 
 So, we've created a general package for [scikit-learn](https://github.com/scikit-learn/scikit-learn) decision tree visualization and model interpretation, which we'll be using heavily in an upcoming [machine learning book](https://mlbook.explained.ai/) (written with [Jeremy Howard](http://www.fast.ai/about/#jeremy)).
 
-The visualizations are inspired by an educational animiation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `animl`, you can visualize how the feature space is split up at decision nodes, how the training samples get ditributed in leaf nodes and how the tree makes predictions for a specific observation. These operations are critical to for  understanding how classfication or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml).
+The visualizations are inspired by an educational animiation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `dtreeviz`, you can visualize how the feature space is split up at decision nodes, how the training samples get ditributed in leaf nodes and how the tree makes predictions for a specific observation. These operations are critical to for  understanding how classfication or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml).
 
 
 
@@ -43,8 +45,7 @@ Basic libraries and imports that will (might) be needed to generate the sample v
 ```bash
 from sklearn.datasets import *
 from sklearn import tree
-from animl.viz.trees import dtreeviz
-from animl.trees import *
+from dtreeviz.trees import *
 import graphviz
 ```
 
@@ -151,6 +152,6 @@ Then use `setup.py` to make sure the library gets installed properly
 python setup.py install -f
 ```
 
-This will push the `animl` library to your local egg cache. E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/animl-0.1-py3.6.egg`.
+This will push the `dtreeviz` library to your local egg cache. E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.1-py3.6.egg`.
 
 

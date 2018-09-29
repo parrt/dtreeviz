@@ -1,5 +1,5 @@
 import graphviz
-from animl.trees import *
+from dtreeviz.shadow import *
 from gen_samples import *
 import tempfile
 from sklearn.tree import export_graphviz

@@ -10,20 +10,20 @@ import string
 import re
 import matplotlib.pyplot as plt
 import seaborn as sns
-from animl.trees import *
+from dtreeviz.shadow import *
 from numbers import Number
 import matplotlib.patches as patches
 from scipy import stats
 from sklearn.neighbors import KernelDensity
 import inspect, sys, tempfile
 
-from animl.viz.trees import *
+from dtreeviz.trees import *
 
 """
 Generate samples into testing/samples dir to compare against future
 images as a means of visually checking for errors.
 
-Run with working directory as main animl dir so this code can see animl package
+Run with working directory as main dtreeviz dir so this code can see dtreeviz package
 and data paths are set correctly. 
 """
 
