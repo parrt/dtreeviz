@@ -219,25 +219,6 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
     def node_label(node):
         return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="Helvetica" color="{GREY}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
 
-    def class_legend_html_old(label_fontsize: int = 12):
-        elements = []
-        for i,cl in enumerate(class_values):
-            html = f"""
-            <tr>
-                <td border="0" cellspacing="0" cellpadding="0"><img src="{tmp}/legend{i}_{getpid()}.svg"/></td>
-                <td align="left"><font face="Helvetica" color="{GREY}" point-size="{label_fontsize}">{class_names[cl]}</font></td>
-            </tr>
-            """
-            elements.append(html)
-        return f"""
-        <table border="0" cellspacing="0" cellpadding="0">
-        <tr>
-            <td border="0" colspan="2"><font face="Helvetica" color="{GREY}" point-size="{label_fontsize}"><b>{target_name}</b></font></td>
-        </tr>
-        {''.join(elements)}
-        </table>
-        """
-
     def class_legend_html():
         return f"""
         <table border="0" cellspacing="0" cellpadding="0">
@@ -734,18 +715,21 @@ def draw_legend(shadow_tree, target_name, filename):
     fig, ax = plt.subplots(1, 1, figsize=(1,1))
     leg = ax.legend(handles=boxes,
                     frameon=True,
+                    shadow=False,
+                    fancybox=True,
                     loc='center',
                     title=target_name,
                     handletextpad=.35,
                     borderpad=.8,
                     edgecolor=GREY)
 
+    leg.get_frame().set_linewidth(.5)
     leg.get_title().set_color(GREY)
-    leg.get_title().set_fontsize(12)
+    leg.get_title().set_fontsize(11)
     leg.get_title().set_fontweight('bold')
     for text in leg.get_texts():
         text.set_color(GREY)
-        text.set_fontsize(12)
+        text.set_fontsize(10)
 
     ax.set_xlim(0,20)
     ax.set_ylim(0,10)
@@ -753,39 +737,10 @@ def draw_legend(shadow_tree, target_name, filename):
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
 
-    # plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
 
-
-def draw_legend_boxes(shadow_tree, basefilename):
-    n_classes = shadow_tree.nclasses()
-    class_values = shadow_tree.unique_target_values
-    color_values = color_blind_friendly_colors[n_classes]
-    colors = {v:color_values[i] for i,v in enumerate(class_values)}
-
-    for i, c in enumerate(class_values):
-        draw_colored_box(colors[c], f"{basefilename}{i}_{getpid()}.svg")
-
-
-def draw_colored_box(color,filename):
-    fig, ax = plt.subplots(1, 1, figsize=(.65, .5))
-
-    box1 = patches.Rectangle((0, 0), 2, 1, linewidth=1.2, edgecolor='grey',
-                             facecolor=color)
-
-    ax.add_patch(box1)
-
-    ax.set_xlim(0, 2)
-    ax.set_ylim(0, 1)
-    ax.axis('off')
-    ax.xaxis.set_visible(False)
-    ax.yaxis.set_visible(False)
-
-    plt.tight_layout()
-    plt.savefig(filename, bbox_inches='tight', pad_inches=0)
-    plt.close()
 
 def draw_piechart(counts,size,colors,filename,label=None):
     n_nonzero = np.count_nonzero(counts)
