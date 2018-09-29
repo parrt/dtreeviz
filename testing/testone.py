@@ -132,7 +132,7 @@ def viz_digits(orientation="TD", max_depth=3, random_state=666, fancy=True, pick
 #viz = viz_boston(fancy=False, max_depth=100, orientation='TD')
 #st = viz_breast_cancer(fancy=True, orientation='TD')
 #st = viz_iris(fancy=True, orientation='TD')
-viz = viz_digits(fancy=True, max_depth=100, orientation='TD')
+viz = viz_digits(fancy=True, max_depth=3, orientation='TD')
 #viz = viz_knowledge(fancy=True, orientation='TD', max_depth=15)
 #g = graphviz.Source(st)
 

@@ -131,7 +131,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
     :param feature_names: A list of the feature names.
     :param target_name: The name of the target variable.
     :param class_names: [For classifiers] A dictionary or list of strings mapping class
-                        value with class name.
+                        value to class name.
     :param precision: When displaying floating-point numbers, how many digits to display
                       after the decimal point. Default is 2.
     :param orientation:  Is the tree top down, "TD", or left to right, "LR"?
@@ -219,7 +219,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
     def node_label(node):
         return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="Helvetica" color="{GREY}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
 
-    def class_legend_html(label_fontsize: int = 12):
+    def class_legend_html_old(label_fontsize: int = 12):
         elements = []
         for i,cl in enumerate(class_values):
             html = f"""
@@ -238,13 +238,22 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         </table>
         """
 
+    def class_legend_html():
+        return f"""
+        <table border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td border="0" cellspacing="0" cellpadding="0"><img src="{tmp}/legend_{getpid()}.svg"/></td>
+            </tr>        
+        </table>
+        """
+
     def class_legend_gr():
         if not shadow_tree.isclassifier():
             return ""
         return f"""
             subgraph cluster_legend {{
                 style=invis;
-                legend [penwidth="0.3" margin="0" shape=box margin="0.03" width=.1, height=.1 label=<
+                legend [penwidth="0" margin="0" shape=box margin="0.03" width=.1, height=.1 label=<
                 {class_legend_html()}
                 >]
             }}
@@ -343,7 +352,8 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
     y_range = (min(y_train)*1.03, max(y_train)*1.03) # same y axis for all
 
     if shadow_tree.isclassifier():
-        draw_legend_boxes(shadow_tree, f"{tmp}/legend")
+        # draw_legend_boxes(shadow_tree, f"{tmp}/legend")
+        draw_legend(shadow_tree, target_name, f"{tmp}/legend_{getpid()}.svg")
 
     if isinstance(X_train,pd.DataFrame):
         X_train = X_train.values
@@ -702,6 +712,48 @@ def regr_leaf_viz(node : ShadowDecTreeNode,
     ax.plot([0,len(node.samples())],[m,m],'--', color=GREY, linewidth=1)
 
     plt.tight_layout()
+    if filename is not None:
+        plt.savefig(filename, bbox_inches='tight', pad_inches=0)
+        plt.close()
+
+
+def draw_legend(shadow_tree, target_name, filename):
+    n_classes = shadow_tree.nclasses()
+    class_values = shadow_tree.unique_target_values
+    class_names = shadow_tree.class_names
+    color_values = color_blind_friendly_colors[n_classes]
+    colors = {v:color_values[i] for i,v in enumerate(class_values)}
+
+    boxes = []
+    for i, c in enumerate(class_values):
+        box = patches.Rectangle((0, 0), 20, 10, linewidth=.4, edgecolor=GREY,
+                                facecolor=colors[c], label=class_names[c])
+        boxes.append(box)
+
+
+    fig, ax = plt.subplots(1, 1, figsize=(1,1))
+    leg = ax.legend(handles=boxes,
+                    frameon=True,
+                    loc='center',
+                    title=target_name,
+                    handletextpad=.35,
+                    borderpad=.8,
+                    edgecolor=GREY)
+
+    leg.get_title().set_color(GREY)
+    leg.get_title().set_fontsize(12)
+    leg.get_title().set_fontweight('bold')
+    for text in leg.get_texts():
+        text.set_color(GREY)
+        text.set_fontsize(12)
+
+    ax.set_xlim(0,20)
+    ax.set_ylim(0,10)
+    ax.axis('off')
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+
+    # plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
