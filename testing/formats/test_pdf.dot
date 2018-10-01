@@ -1,0 +1,8 @@
+digraph G {
+  petal_width_cm4 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0">
+
+            <tr>
+                    <td port="img" fixedsize="true" width="207.68125" height="90.328437"><img src="/var/folders/93/9kzk2ccm8xj8k70059b28jk80000gp/T/node4_44147.svg"/></td>
+            </tr>
+            </table>>]
+}
