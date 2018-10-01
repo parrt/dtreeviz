@@ -1,10 +1,12 @@
 import xml.etree.cElementTree as ET
+from numbers import Number
+from typing import Tuple
 
 def inline_svg_images(svg) -> str:
     """
     Inline IMAGE tag refs in graphviz/dot -> SVG generated files.
 
-    Convert all image tag refs directly under g tags like:
+    Convert all .svg image tag refs directly under g tags like:
 
     <g id="node1" class="node">
         <image xlink:href="/tmp/node4.svg" width="45px" height="76px" preserveAspectRatio="xMinYMin meet" x="76" y="-80"/>
@@ -13,10 +15,11 @@ def inline_svg_images(svg) -> str:
     to
 
     <g id="node1" class="node">
-        <svg width="49.0px" height="80.8px" preserveAspectRatio="xMinYMin meet" x="76" y="-80">
+        <svg width="45px" height="76px" viewBox="0 0 49.008672 80.826687" preserveAspectRatio="xMinYMin meet" x="76" y="-80">
             XYZ
         </svg>
     </g>
+
 
     where XYZ is taken from ref'd svg image file:
 
@@ -29,8 +32,8 @@ def inline_svg_images(svg) -> str:
         XYZ
     </svg>
 
-    Note that width/height must be taken from ref'd svg image file. The <image/> tag
-    values seem a bit off.
+    Note that width/height must be taken image ref tag and put onto svg tag. We
+    also need the viewBox or it gets clipped a bit.
 
     :param svg: SVG string with <image/> tags.
     :return: svg with <image/> tags replaced with content of referenced svg image files.
@@ -44,12 +47,12 @@ def inline_svg_images(svg) -> str:
     image_tags = tree.findall(".//svg:g/svg:image", ns)
     for img in image_tags:
         # load ref'd image and get svg root
-        filename = img.attrib["{http://www.w3.org/1999/xlink}href"]
-        with open(filename) as f:
+        svgfilename = img.attrib["{http://www.w3.org/1999/xlink}href"]
+        with open(svgfilename) as f:
             imgsvg = f.read()
         imgroot = ET.fromstring(imgsvg)
         for k,v in img.attrib.items(): # copy IMAGE tag attributes to svg from image file
-            if k not in {"width", "height", "{http://www.w3.org/1999/xlink}href"}:
+            if k not in {"{http://www.w3.org/1999/xlink}href"}:
                 imgroot.attrib[k] = v
         del imgroot.attrib["viewBox"]
         # replace IMAGE with SVG tag
@@ -65,7 +68,7 @@ def inline_svg_images(svg) -> str:
     return xml_str
 
 
-def get_SVG_shape(filename):
+def get_SVG_shape(filename) -> Tuple[Number,Number]:
     """
     Sample line from SVG file from which we can get w,h:
     <svg height="122.511795pt" version="1.1" viewBox="0 0 451.265312 122.511795"
@@ -83,6 +86,10 @@ def get_SVG_shape(filename):
                     if len(a) == 2:
                         d[a[0]] = a[1].strip('"').strip('pt')
                 return float(d['width']), float(d['height'])
+
+
+def myround(v,ndigits=2):
+    return format(v, '.' + str(ndigits) + 'f')
 
 
 if __name__ == '__main__':
