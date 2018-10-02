@@ -11,6 +11,7 @@ import string
 import re
 from typing import Mapping, List, Tuple
 from numbers import Number
+from sklearn.utils import compute_class_weight
 
 
 class ShadowDecTree:
@@ -45,6 +46,7 @@ class ShadowDecTree:
         self.tree_model = tree_model
         self.feature_names = feature_names
         self.class_names = class_names
+        self.class_weight = tree_model.class_weight
 
         if getattr(tree_model, 'tree_') is None: # make sure model is fit
             tree_model.fit(X_train, y_train)
@@ -65,6 +67,7 @@ class ShadowDecTree:
         self.y_train = y_train
         self.unique_target_values = np.unique(y_train)
         self.node_to_samples = ShadowDecTree.node_samples(tree_model, X_train)
+        self.class_weights = compute_class_weight(tree_model.class_weight, self.unique_target_values, self.y_train)
 
         tree = tree_model.tree_
         children_left = tree.children_left
@@ -271,7 +274,10 @@ class ShadowDecTreeNode:
         associated with each class.
         """
         if self.isclassifier():
-            return np.array(self.shadow_tree.tree_model.tree_.value[self.id][0], dtype=int)
+            if self.shadow_tree.class_weight is None:
+                return np.array(self.shadow_tree.tree_model.tree_.value[self.id][0], dtype=int)
+            else:
+                return np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]/self.shadow_tree.class_weights).astype(int)
         return None
 
     def __str__(self):
