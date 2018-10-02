@@ -11,8 +11,8 @@ from dtreeviz.shadow import *
 from numbers import Number
 import matplotlib.patches as patches
 import tempfile
-from os import getpid, makedirs, remove
-
+from os import getpid, makedirs
+from sys import platform as PLATFORM
 
 YELLOW = "#fefecd" # "#fbfbd0" # "#FBFEB0"
 BLUE = "#D9E6F5"
@@ -66,30 +66,43 @@ class DTreeViz:
         self.save(svgfilename)
         view(svgfilename)
 
-    def save(self, svgfilename):
-        """Save the svg of this tree visualization into filename argument."""
-        if not svgfilename.endswith(".svg"):
-            raise(Exception(f"Can only save .svg files: {svgfilename}"))
-
-        path = Path(svgfilename)
+    def save(self, filename):
+        """
+        Save the svg of this tree visualization into filename argument.
+        Mac platform can save any file type (.pdf, .png, .svg).  Other platforms
+        would fail with errors. See https://github.com/parrt/dtreeviz/issues/4
+        """
+        path = Path(filename)
         if not path.parent.exists:
             makedirs(path.parent)
 
         g = graphviz.Source(self.dot, format='svg')
         dotfilename = g.save(directory=path.parent, filename=path.stem)
 
-        # Gen .svg file from .dot but output .svg has image refs to other files
-        orig_svgfilename = svgfilename.replace('.svg', '-orig.svg')
-        cmd = ["dot", "-Tsvg", "-o", orig_svgfilename, dotfilename]
-        # print(' '.join(cmd))
-        stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
+        if PLATFORM=='darwin':
+            # dot seems broken in terms of fonts if we use -Tsvg. Force users to
+            # brew install graphviz with librsvg (else metrics are off) and
+            # use -Tsvg:cairo which fixes bug and also automatically embeds images
+            format = path.suffix[1:]  # ".svg" -> "svg" etc...
+            cmd = ["dot", f"-T{format}:cairo", "-o", filename, dotfilename]
+            # print(' '.join(cmd))
+            stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
 
-        # now merge in referenced SVG images to make all-in-one file
-        with open(orig_svgfilename) as f:
-            svg = f.read()
-        svg = inline_svg_images(svg)
-        with open(svgfilename, "w") as f:
-            f.write(svg)
+        else:
+            if not filename.endswith(".svg"):
+                raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
+            # Gen .svg file from .dot but output .svg has image refs to other files
+            orig_svgfilename = filename.replace('.svg', '-orig.svg')
+            cmd = ["dot", "-Tsvg", "-o", orig_svgfilename, dotfilename]
+            # print(' '.join(cmd))
+            stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
+
+            # now merge in referenced SVG images to make all-in-one file
+            with open(orig_svgfilename) as f:
+                svg = f.read()
+            svg = inline_svg_images(svg)
+            with open(filename, "w") as f:
+                f.write(svg)
 
 
 def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
