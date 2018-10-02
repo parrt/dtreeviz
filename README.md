@@ -32,7 +32,31 @@ You need the graphviz installed with librsvg and pango. Make sure you reinstall 
 brew install graphviz --with-librsvg --with-app --with-pango
 ```
 
-(The `--with-librsvg` is absolutely required.)
+(The `--with-librsvg` is absolutely required.) 
+
+Then get the Python library, which we are using for platform specific stuff:
+
+```
+pip install graphviz
+```
+
+We need 0.9 or above.
+
+### Linux (Ubuntu) prerequisites
+
+To get the `dot` binary do:
+ 
+```bash
+sudo apt install graphviz
+```
+
+Then get the Python library, which we are using for platform specific stuff:
+
+```
+pip install graphviz
+```
+
+The `view()` method works to pop up a new window and images appear in line for jupyter  notebook but not jupyter lab (It gets an error parsing the SVG XML.)
 
 
 ## Usage
@@ -240,11 +264,19 @@ Wow. Don't use IE to view .svg. Use Edge for sure. IE makes a png.
 
 ### Linux (Ubuntu) prerequisites
 
+To get the `dot` binary do:
+ 
 ```bash
 sudo apt install graphviz
 ```
 
-The `view()` method works but inline jupyter doesn't yet.
+Then get the Python library, which we are using for platform specific stuff:
+
+```
+pip install graphviz
+```
+
+The `view()` method works to pop up a new window and images appear in line for jupyter  notebook but not jupyter lab (It gets an error parsing the SVG XML.)
 
 ### Install dtreeviz locally
 
