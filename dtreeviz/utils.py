@@ -54,7 +54,6 @@ def inline_svg_images(svg) -> str:
         for k,v in img.attrib.items(): # copy IMAGE tag attributes to svg from image file
             if k not in {"{http://www.w3.org/1999/xlink}href"}:
                 imgroot.attrib[k] = v
-        del imgroot.attrib["viewBox"]
         # replace IMAGE with SVG tag
         p = parent_map[img]
         # print("BEFORE " + ', '.join([str(c) for c in p]))

@@ -64,6 +64,10 @@ Seems to work with
 dot -Tsvg test_svg.dot > test_svg_win.svg
 ```
 
+I installed graphviz installer and added to PATH env variable.
+
+Apparently `conda install python-graphviz` from "anaconda prompt" installs that and python wrapper bits.
+
 But, couldn't view until I saw encoding error in browser.
 Take out
  
@@ -74,3 +78,5 @@ Take out
 and it shows up in browser!
 
 Oh, encoding problem explains why the >= symbol is hosed on windows. Can't see the correct unicode.
+
+Hmm..now that BOM issue with &ge; is working. Hmm...must be the conda version I installed vs raw download.
