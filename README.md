@@ -17,10 +17,10 @@ pip install dtreeviz
 and you need the following tools for the decision tree visualizations to work:
 
 ```bash
-brew install poppler
-brew install pdf2svg
 brew install graphviz --with-librsvg --with-app --with-pango
 ```
+
+(The `--with-librsvg` is absolutely required.)
 
 Please email us with notes on making it work on other platforms. thanks!
 
@@ -32,10 +32,7 @@ So, we've created a general package for [scikit-learn](https://github.com/scikit
 
 The visualizations are inspired by an educational animiation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `dtreeviz`, you can visualize how the feature space is split up at decision nodes, how the training samples get ditributed in leaf nodes and how the tree makes predictions for a specific observation. These operations are critical to for  understanding how classfication or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml).
 
-
-
-### Usage
-
+## Usage
 
 `dtree`: Main function to create decision tree visualization. Given a decision tree regressor or classifier, creates and returns a tree visualization using the graphviz (DOT) language.
 
@@ -46,7 +43,6 @@ Basic libraries and imports that will (might) be needed to generate the sample v
 from sklearn.datasets import *
 from sklearn import tree
 from dtreeviz.trees import *
-import graphviz
 ```
 
 * **Regression decision tree**:   
@@ -136,22 +132,34 @@ viz.view()
 
 For more examples and different implementations, please see the jupyter [notebook](notebooks/examples.ipynb) full of examples.
 
-### Implementation guidelines
+## Build guidelines
 
-At least on the mac, make sure to install using:
+### Mac prerequisites
+
+We need `dot` executable to convert graphviz files to images.  Make sure to install using:
 
 ```bash
-brew install poppler
-brew install pdf2svg
 brew install graphviz --with-librsvg --with-app --with-pango
 ```
 
-Then use `setup.py` to make sure the library gets installed properly
+### Windows 10 prerequisites
+
+We need `dot` executable to convert graphviz files to images.  From anaconda3 shell:
+
+```bash
+conda install python-graphviz
+```
+
+### Linux prerequisites
+
+### Install dtreeviz locally
+
+To push the `dtreeviz` library to your local egg cache (force updates).
  
 ```bash 
 python setup.py install -f
 ```
 
-This will push the `dtreeviz` library to your local egg cache. E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.1-py3.6.egg`.
+E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.2-py3.6.egg`.
 
 
