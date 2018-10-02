@@ -277,7 +277,7 @@ class ShadowDecTreeNode:
             if self.shadow_tree.class_weight is None:
                 return np.array(self.shadow_tree.tree_model.tree_.value[self.id][0], dtype=int)
             else:
-                return (np.round(self.shadow_tree.tree_model.tree_.value[self.id][0])/self.shadow_tree.class_weights).astype(int)
+                return np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]/self.shadow_tree.class_weights).astype(int)
         return None
 
     def __str__(self):
