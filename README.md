@@ -134,6 +134,8 @@ For more examples and different implementations, please see the jupyter [noteboo
 
 ## Build guidelines
 
+Install anaconda3 on your system.
+
 ### Mac prerequisites
 
 We need `dot` executable to convert graphviz files to images.  Make sure to install using:
@@ -146,11 +148,96 @@ brew install graphviz --with-librsvg --with-app --with-pango
 
 We need `dot` executable to convert graphviz files to images.  From "anaconda prompt":
 
+we need .9 graphviz lib and we get 0.8.4 with this:
+
 ```bash
-conda install python-graphviz
+conda install -c conda-forge python-graphviz 
 ```
 
-### Linux prerequisites
+so let's do `dot` executable first:
+
+```bash
+conda install -c anaconda graphviz
+```
+
+which updates:
+
+```bash
+    ca-certificates: 2018.03.07-0                     --> 2018.03.07-0         anaconda
+    certifi:         2018.4.16-py36_0     conda-forge --> 2018.4.16-py36_0     anaconda
+    conda:           4.5.11-py36_0        conda-forge --> 4.5.11-py36_0        anaconda
+    graphviz:        2.38-hfd603c8_2                  --> 2.38.0-4             anaconda
+    openssl:         1.0.2o-h8ea7d77_0                --> 1.0.2o-h8ea7d77_0    anaconda
+    qt:              5.9.5-vc14he4a7d60_0             --> 5.9.5-vc14he4a7d60_0 anaconda [vc14]
+```
+
+then let's try:
+
+```bash
+pip install -U graphviz
+```
+
+Yep, it got 0.9 graphviz lib.
+
+Must still add to path even though anaconda prompt sees it. graphviz does not: `C:\Users\parrt\Anaconda3\Library\bin` on my box.  Do we need a reboot after setting env variable `Path`?  Nope. ok, that one is dot.bat. I [downloaded](https://graphviz.gitlab.io/_pages/Download/Download_windows.html) and updated my Path env var but no luck. Another reboot? Actually try this:
+
+```python
+>>> import os
+>>> os.getenv('Path')
+'C:\\Users\\parrt\\Anaconda3;C:\\Users\\parrt\\Anaconda3\\Library\\mingw-w64\\bin;C:\\Users\\parrt\\Anaconda3\\Library\\usr\\bin;C:\\Users\\parrt\\Anaconda3\\Library\\bin;C:\\Users\\parrt\\Anaconda3\\Scripts;C:\\Users\\parrt\\Anaconda3\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\Program Files (x86)\\Windows Kits\\8.1\\Windows Performance Toolkit\\;C:\\Program Files\\Git\\cmd;C:\\Program Files\\dotnet\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Users\\parrt\\AppData\\Local\\Microsoft\\WindowsApps;\\Microsoft.NET\\Framework64\\v3.5;C:\\Program Files\\dotnet\\sdk\\2.0.0\\Sdks;C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319;C:\\Users\\parrt\\Anaconda3\\Library\\bin;C:\\Program Files (x86)\\Graphviz2.38\\bin;'
+>>> import subprocess
+>>> proc = subprocess.Popen(['dot','-V'])
+dot - graphviz version 2.38.0 (20140413.2041)
+```
+
+So why doesn't graphviz see this?
+
+```python
+import os
+import subprocess
+proc = subprocess.Popen(['dot','-V'])
+print( os.getenv('Path') )
+```
+
+or
+
+```python
+import graphviz.backend as be
+cmd = ["dot", "-V"]
+stdout, stderr = be.run(cmd, capture_output=True, check=True, quiet=False)
+print( stderr )
+```
+
+Wow. that worked. ok. try outside jupyter notebook.  This works!!!
+
+```
+from sklearn.datasets import *
+from sklearn import tree
+from dtreeviz.trees import *
+
+regr = tree.DecisionTreeRegressor(max_depth=2)
+boston = load_boston()
+regr.fit(boston.data, boston.target)
+
+viz = dtreeviz(regr,
+               boston.data,
+               boston.target,
+               target_name='price',
+               feature_names=boston.feature_names)
+              
+viz.view()
+```
+
+Except for it looks like .png and the >= is wrong chars.
+
+
+### Linux (Ubuntu) prerequisites
+
+```bash
+sudo apt install graphviz
+```
+
+The `view()` method works but inline jupyter doesn't yet.
 
 ### Install dtreeviz locally
 
