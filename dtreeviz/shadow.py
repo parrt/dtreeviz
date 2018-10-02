@@ -47,7 +47,6 @@ class ShadowDecTree:
         self.feature_names = feature_names
         self.class_names = class_names
         self.class_weight = tree_model.class_weight
-        self.class_weights = compute_class_weight(tree_model.class_weight, np.unique(y_train), y_train)
 
         if getattr(tree_model, 'tree_') is None: # make sure model is fit
             tree_model.fit(X_train, y_train)
@@ -68,6 +67,7 @@ class ShadowDecTree:
         self.y_train = y_train
         self.unique_target_values = np.unique(y_train)
         self.node_to_samples = ShadowDecTree.node_samples(tree_model, X_train)
+        self.class_weights = compute_class_weight(tree_model.class_weight, self.unique_target_values, self.y_train)
 
         tree = tree_model.tree_
         children_left = tree.children_left
