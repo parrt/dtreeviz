@@ -710,7 +710,7 @@ def draw_legend(shadow_tree, target_name, filename):
 
     leg.get_frame().set_linewidth(.5)
     leg.get_title().set_color(GREY)
-    leg.get_title().set_fontsize(11)
+    leg.get_title().set_fontsize(10)
     leg.get_title().set_fontweight('bold')
     for text in leg.get_texts():
         text.set_color(GREY)

@@ -16,33 +16,31 @@ The visualizations are inspired by an educational animiation by [R2D3](http://ww
 
 ## Install
 
-To install (Python >=3.6 only), do this:
+To install (Python >=3.6 only), do this (from Anaconda Prompt on Windows!):
 
 ```bash
 pip install dtreeviz
 ```
 
-Please email us with notes on making it work on other platforms. thanks!
+This should also pull in the `graphviz` Python library (>=0.9), which we are using for platform specific stuff.
+
+Please email [Terence](mailto:parrt@cs.usfca.edu) with any helpful notes on making dtreeviz work (better) on other platforms. Thanks! 
+
+For your specific platform, please see the following subsections.
 
 ### Mac
 
-You need the graphviz installed with librsvg and pango. Make sure you reinstall or install like this:
+You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you reinstall or install like this:
 
 ```bash
 brew install graphviz --with-librsvg --with-app --with-pango
 ```
 
-(The `--with-librsvg` is absolutely required.) 
+(The `--with-librsvg` is absolutely required because we generate output using `dot`'s `-Tsvg:cairo` option.)
 
-Then get the Python library, which we are using for platform specific stuff:
+Jupyter notebook as a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
 
-```
-pip install graphviz
-```
-
-We need 0.9 or above.
-
-### Linux (Ubuntu) prerequisites
+### Linux (Ubuntu 18.04)
 
 To get the `dot` binary do:
  
@@ -50,14 +48,44 @@ To get the `dot` binary do:
 sudo apt install graphviz
 ```
 
-Then get the Python library, which we are using for platform specific stuff:
+The `view()` method works to pop up a new window and images appear inline for jupyter notebook but not jupyter lab (It gets an error parsing the SVG XML.)  The notebook images also have a font subsitution from the Arial we use and so some text overlaps.
+
+### Windows 10
+
+[Download graphviz-2.38.msi](https://graphviz.gitlab.io/_pages/Download/Download_windows.html) and update your `Path` environment variable. It's windows so you might need a reboot after updating that environment variable.  You should see this from the Anaconda Prompt:
 
 ```
-pip install graphviz
+(base) C:\Users\Terence Parr>where dot
+C:\Program Files (x86)\Graphviz2.38\bin\dot.exe
 ```
 
-The `view()` method works to pop up a new window and images appear in line for jupyter  notebook but not jupyter lab (It gets an error parsing the SVG XML.)
+Verify from the Anaconda Prompt that this works:
 
+```
+dot -V
+```
+
+If it doesn't work, you have a `Path` problem. I found the following test programs useful. The first one sees if Python can find `dot`:
+
+```python
+import os
+import subprocess
+proc = subprocess.Popen(['dot','-V'])
+print( os.getenv('Path') )
+```
+
+The following version does the same thing except uses `graphviz` Python libraries backend support utilities, which is what we use in dtreeviz:
+
+```python
+import graphviz.backend as be
+cmd = ["dot", "-V"]
+stdout, stderr = be.run(cmd, capture_output=True, check=True, quiet=False)
+print( stderr )
+```
+
+Jupyter Lab and Jupyter notebook both show the inline .svg images well.
+
+Finally, don't use IE to view .svg files. Use Edge as they look much better. I suspect that IE is displaying them as a rasterized not vector images.
 
 ## Usage
 
@@ -281,6 +309,9 @@ The `view()` method works to pop up a new window and images appear in line for j
 ### Install dtreeviz locally
 
 To push the `dtreeviz` library to your local egg cache (force updates).
+
+Make sure `set.py` run from anaconda prompt.
+
  
 ```bash 
 python setup.py install -f
