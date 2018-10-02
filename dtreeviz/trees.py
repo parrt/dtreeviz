@@ -56,7 +56,7 @@ class DTreeViz:
         tmp = tempfile.gettempdir()
         svgfilename = f"{tmp}/DTreeViz_{getpid()}.svg"
         self.save(svgfilename)
-        with open(svgfilename) as f:
+        with open(svgfilename, encoding='UTF-8') as f:
             svg = f.read()
         return svg
 
@@ -92,16 +92,16 @@ class DTreeViz:
             if not filename.endswith(".svg"):
                 raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
             # Gen .svg file from .dot but output .svg has image refs to other files
-            orig_svgfilename = filename.replace('.svg', '-orig.svg')
-            cmd = ["dot", "-Tsvg", "-o", orig_svgfilename, dotfilename]
+            #orig_svgfilename = filename.replace('.svg', '-orig.svg')
+            cmd = ["dot", "-Tsvg", "-o", filename, dotfilename]
             # print(' '.join(cmd))
             stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
 
             # now merge in referenced SVG images to make all-in-one file
-            with open(orig_svgfilename) as f:
+            with open(filename, encoding='UTF-8') as f:
                 svg = f.read()
             svg = inline_svg_images(svg)
-            with open(filename, "w") as f:
+            with open(filename, "w", encoding='UTF-8') as f:
                 f.write(svg)
 
 

@@ -6,24 +6,6 @@ By [Terence Parr](http://parrt.cs.usfca.edu) and [Prince Grover](https://www.lin
 
 See [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made. 
 
-## Install
-
-(*So far, we've only tested this on OS X*.)  To install (Python >=3.6 only), do this:
-
-```bash
-pip install dtreeviz
-```
-
-and you need the following tools for the decision tree visualizations to work:
-
-```bash
-brew install graphviz --with-librsvg --with-app --with-pango
-```
-
-(The `--with-librsvg` is absolutely required.)
-
-Please email us with notes on making it work on other platforms. thanks!
-
 ## Discussion
 
 Decision trees are the fundamental building block of [gradient boosting machines](http://explained.ai/gradient-boosting/index.html) and [Random Forests](https://en.wikipedia.org/wiki/Random_forest)(tm), probably the two most popular machine learning models for structured data.  Visualizing decision trees is a tremendous aid when learning how these models work and when interpreting models.  Unfortunately, current visualization packages are rudimentary and not immediately helpful to the novice. For example, we couldn't find a library that visualizes how decision nodes split up the feature space. It is also uncommon for libraries to support visualizing a specific feature vector as it weaves down through a tree's decision nodes; we could only find one image showing this.
@@ -31,6 +13,27 @@ Decision trees are the fundamental building block of [gradient boosting machines
 So, we've created a general package for [scikit-learn](https://github.com/scikit-learn/scikit-learn) decision tree visualization and model interpretation, which we'll be using heavily in an upcoming [machine learning book](https://mlbook.explained.ai/) (written with [Jeremy Howard](http://www.fast.ai/about/#jeremy)).
 
 The visualizations are inspired by an educational animiation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `dtreeviz`, you can visualize how the feature space is split up at decision nodes, how the training samples get ditributed in leaf nodes and how the tree makes predictions for a specific observation. These operations are critical to for  understanding how classfication or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml).
+
+## Install
+
+To install (Python >=3.6 only), do this:
+
+```bash
+pip install dtreeviz
+```
+
+Please email us with notes on making it work on other platforms. thanks!
+
+### Mac
+
+You need the graphviz installed with librsvg and pango. Make sure you reinstall or install like this:
+
+```bash
+brew install graphviz --with-librsvg --with-app --with-pango
+```
+
+(The `--with-librsvg` is absolutely required.)
+
 
 ## Usage
 
@@ -229,6 +232,10 @@ viz.view()
 ```
 
 Except for it looks like .png and the >= is wrong chars.
+
+Make sure `set.py` run from anaconda prompt.
+
+Wow. Don't use IE to view .svg. Use Edge for sure. IE makes a png.
 
 
 ### Linux (Ubuntu) prerequisites
