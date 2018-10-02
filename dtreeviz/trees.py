@@ -199,7 +199,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         if node.id in highlight_path:
             return f'leaf{node.id} [margin="0" shape=box penwidth=".5" color="{HIGHLIGHT_COLOR}" style="dashed" label=<{html}>]'
         else:
-            return f'leaf{node.id} [margin="0" shape=plain label=<{html}>]'
+            return f'leaf{node.id} [margin="0" shape=box penwidth="0" label=<{html}>]'
 
 
     def class_leaf_node(node, label_fontsize: int = 12):
@@ -213,7 +213,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         if node.id in highlight_path:
             return f'leaf{node.id} [margin="0" shape=box penwidth=".5" color="{HIGHLIGHT_COLOR}" style="dashed" label=<{html}>]'
         else:
-            return f'leaf{node.id} [margin="0" shape=plain label=<{html}>]'
+            return f'leaf{node.id} [margin="0" shape=box penwidth="0" label=<{html}>]'
 
     def node_label(node):
         return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="Helvetica" color="{GREY}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
