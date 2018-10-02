@@ -144,7 +144,7 @@ brew install graphviz --with-librsvg --with-app --with-pango
 
 ### Windows 10 prerequisites
 
-We need `dot` executable to convert graphviz files to images.  From anaconda3 shell:
+We need `dot` executable to convert graphviz files to images.  From "anaconda prompt":
 
 ```bash
 conda install python-graphviz
