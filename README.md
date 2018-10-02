@@ -6,24 +6,6 @@ By [Terence Parr](http://parrt.cs.usfca.edu) and [Prince Grover](https://www.lin
 
 See [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made. 
 
-## Install
-
-(*So far, we've only tested this on OS X*.)  To install (Python >=3.6 only), do this:
-
-```bash
-pip install dtreeviz
-```
-
-and you need the following tools for the decision tree visualizations to work:
-
-```bash
-brew install poppler
-brew install pdf2svg
-brew install graphviz --with-librsvg --with-app --with-pango
-```
-
-Please email us with notes on making it work on other platforms. thanks!
-
 ## Discussion
 
 Decision trees are the fundamental building block of [gradient boosting machines](http://explained.ai/gradient-boosting/index.html) and [Random Forests](https://en.wikipedia.org/wiki/Random_forest)(tm), probably the two most popular machine learning models for structured data.  Visualizing decision trees is a tremendous aid when learning how these models work and when interpreting models.  Unfortunately, current visualization packages are rudimentary and not immediately helpful to the novice. For example, we couldn't find a library that visualizes how decision nodes split up the feature space. It is also uncommon for libraries to support visualizing a specific feature vector as it weaves down through a tree's decision nodes; we could only find one image showing this.
@@ -32,10 +14,86 @@ So, we've created a general package for [scikit-learn](https://github.com/scikit
 
 The visualizations are inspired by an educational animiation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `dtreeviz`, you can visualize how the feature space is split up at decision nodes, how the training samples get ditributed in leaf nodes and how the tree makes predictions for a specific observation. These operations are critical to for  understanding how classfication or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml).
 
+## Install
 
+Install anaconda3 on your system.
 
-### Usage
+To install (Python >=3.6 only), do this (from Anaconda Prompt on Windows!):
 
+```bash
+pip install dtreeviz
+```
+
+This should also pull in the `graphviz` Python library (>=0.9), which we are using for platform specific stuff.
+
+Please email [Terence](mailto:parrt@cs.usfca.edu) with any helpful notes on making dtreeviz work (better) on other platforms. Thanks! 
+
+For your specific platform, please see the following subsections.
+
+### Mac
+
+You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you reinstall or install like this:
+
+```bash
+brew install graphviz --with-librsvg --with-app --with-pango
+```
+
+(The `--with-librsvg` is absolutely required because we generate output using `dot`'s `-Tsvg:cairo` option.)
+
+The OS X version is able to generate/save images in any format dot is allowed to use with `-T{format}:cairo` option. So .svg, .pdf are totally safe bets.
+
+**Limitations.** Jupyter notebook as a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
+
+### Linux (Ubuntu 18.04)
+
+To get the `dot` binary do:
+ 
+```bash
+sudo apt install graphviz
+```
+
+**Limitations.** The `view()` method works to pop up a new window and images appear inline for jupyter notebook but not jupyter lab (It gets an error parsing the SVG XML.)  The notebook images also have a font subsitution from the Arial we use and so some text overlaps. Only .svg files can be generated on this platform.
+
+### Windows 10
+
+[Download graphviz-2.38.msi](https://graphviz.gitlab.io/_pages/Download/Download_windows.html) and update your `Path` environment variable. It's windows so you might need a reboot after updating that environment variable.  You should see this from the Anaconda Prompt:
+
+```
+(base) C:\Users\Terence Parr>where dot
+C:\Program Files (x86)\Graphviz2.38\bin\dot.exe
+```
+
+(Do not use `conda install -c conda-forge python-graphviz` as you get an old version of `graphviz` python library.)
+
+Verify from the Anaconda Prompt that this works:
+
+```
+dot -V
+```
+
+If it doesn't work, you have a `Path` problem. I found the following test programs useful. The first one sees if Python can find `dot`:
+
+```python
+import os
+import subprocess
+proc = subprocess.Popen(['dot','-V'])
+print( os.getenv('Path') )
+```
+
+The following version does the same thing except uses `graphviz` Python libraries backend support utilities, which is what we use in dtreeviz:
+
+```python
+import graphviz.backend as be
+cmd = ["dot", "-V"]
+stdout, stderr = be.run(cmd, capture_output=True, check=True, quiet=False)
+print( stderr )
+```
+
+Jupyter Lab and Jupyter notebook both show the inline .svg images well.
+
+**Limitations.** Finally, don't use IE to view .svg files. Use Edge as they look much better. I suspect that IE is displaying them as a rasterized not vector images. Only .svg files can be generated on this platform.
+
+## Usage
 
 `dtree`: Main function to create decision tree visualization. Given a decision tree regressor or classifier, creates and returns a tree visualization using the graphviz (DOT) language.
 
@@ -46,7 +104,6 @@ Basic libraries and imports that will (might) be needed to generate the sample v
 from sklearn.datasets import *
 from sklearn import tree
 from dtreeviz.trees import *
-import graphviz
 ```
 
 * **Regression decision tree**:   
@@ -133,25 +190,18 @@ viz.view()
 
 <img src=testing/samples/breast_cancer-TD-4-simple.svg width=80% height=60%>
 
-
 For more examples and different implementations, please see the jupyter [notebook](notebooks/examples.ipynb) full of examples.
 
-### Implementation guidelines
+## Install dtreeviz locally
 
-At least on the mac, make sure to install using:
+Make sure to follow the install guidelines above.
 
-```bash
-brew install poppler
-brew install pdf2svg
-brew install graphviz --with-librsvg --with-app --with-pango
-```
-
-Then use `setup.py` to make sure the library gets installed properly
+To push the `dtreeviz` library to your local egg cache (force updates) during development, do this (from anaconda prompt on Windows):
  
 ```bash 
 python setup.py install -f
 ```
 
-This will push the `dtreeviz` library to your local egg cache. E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.1-py3.6.egg`.
+E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.2-py3.6.egg`.
 
 

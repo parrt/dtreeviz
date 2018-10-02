@@ -1,16 +1,18 @@
+from dtreeviz.utils import *
+
 import numpy as np
 import pandas as pd
 import graphviz
 from pathlib import Path
 from sklearn import tree
-from graphviz.backend import run
+from graphviz.backend import run, view
 import matplotlib.pyplot as plt
 from dtreeviz.shadow import *
 from numbers import Number
 import matplotlib.patches as patches
 import tempfile
-from os import getpid, makedirs, remove
-
+from os import getpid, makedirs
+from sys import platform as PLATFORM
 
 YELLOW = "#fefecd" # "#fbfbd0" # "#FBFEB0"
 BLUE = "#D9E6F5"
@@ -49,58 +51,58 @@ class DTreeViz:
     def _repr_svg_(self):
         return self.svg()
 
-    # def _ipython_display_(self):
-    #     tmp = tempfile.gettempdir()
-    #     svgfilename = f"{tmp}/DTreeViz_{getpid()}.svg"
-    #     self.save(svgfilename)
-    #     # display(SVG(filename="/tmp/t.svg"))
-    #     # print(svgfilename)
-    #     display(SVG(filename=svgfilename))
-
-    def topng(self):
-        "Return tree image as png binary data"
-        tmp = tempfile.gettempdir()
-        pngfilename = f"{tmp}/DTreeViz_{getpid()}.png"
-        self.save(pngfilename)
-        with open(pngfilename, "rb") as f:
-            png = f.read()
-        return png
-
     def svg(self):
+        """Render tree as svg and return svg text."""
         tmp = tempfile.gettempdir()
         svgfilename = f"{tmp}/DTreeViz_{getpid()}.svg"
         self.save(svgfilename)
-        with open(svgfilename) as f:
+        with open(svgfilename, encoding='UTF-8') as f:
             svg = f.read()
         return svg
 
     def view(self):
-        g = graphviz.Source(self.dot)
-        g.view()
+        tmp = tempfile.gettempdir()
+        svgfilename = f"{tmp}/DTreeViz_{getpid()}.svg"
+        self.save(svgfilename)
+        view(svgfilename)
 
     def save(self, filename):
+        """
+        Save the svg of this tree visualization into filename argument.
+        Mac platform can save any file type (.pdf, .png, .svg).  Other platforms
+        would fail with errors. See https://github.com/parrt/dtreeviz/issues/4
+        """
         path = Path(filename)
         if not path.parent.exists:
             makedirs(path.parent)
 
-        format = path.suffix[1:] # ".svg" -> "svg" etc...
-        if format=='svg':
-            pdffilename = f"{path.parent}/{path.stem}.pdf"
-            g = graphviz.Source(self.dot, format='pdf')
-            g.render(directory=path.parent, filename=path.stem, view=False, cleanup=True)
-            # cmd = ["pdftocairo", "-svg", pdffilename, filename]
-            cmd = ["pdf2svg", pdffilename, filename]
+        g = graphviz.Source(self.dot, format='svg')
+        dotfilename = g.save(directory=path.parent, filename=path.stem)
+
+        if PLATFORM=='darwin':
+            # dot seems broken in terms of fonts if we use -Tsvg. Force users to
+            # brew install graphviz with librsvg (else metrics are off) and
+            # use -Tsvg:cairo which fixes bug and also automatically embeds images
+            format = path.suffix[1:]  # ".svg" -> "svg" etc...
+            cmd = ["dot", f"-T{format}:cairo", "-o", filename, dotfilename]
             # print(' '.join(cmd))
-            # print(f"pdftocairo -svg {pdffilename} {filename}")
             stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
-            remove(pdffilename)
+
         else:
-            g = graphviz.Source(self.dot, format=format)
-            fname = g.save(directory=path.parent, filename=path.stem)
-            cmd = ["dot", "-Tpng", "-o", filename, fname]
+            if not filename.endswith(".svg"):
+                raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
+            # Gen .svg file from .dot but output .svg has image refs to other files
+            #orig_svgfilename = filename.replace('.svg', '-orig.svg')
+            cmd = ["dot", "-Tsvg", "-o", filename, dotfilename]
             # print(' '.join(cmd))
             stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
-            # g.render(directory=path.parent, filename=path.stem, view=False, cleanup=True)
+
+            # now merge in referenced SVG images to make all-in-one file
+            with open(filename, encoding='UTF-8') as f:
+                svg = f.read()
+            svg = inline_svg_images(svg)
+            with open(filename, "w", encoding='UTF-8') as f:
+                f.write(svg)
 
 
 def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
@@ -160,9 +162,6 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
 
     :return: A string in graphviz DOT language that describes the decision tree.
     """
-    def round(v,ndigits=precision):
-        return format(v, '.' + str(ndigits) + 'f')
-
     def node_name(node : ShadowDecTreeNode) -> str:
         if node.feature_name() is None:
             return f"node{node.id}"
@@ -176,7 +175,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             html = f"""<table border="0">
             {labelgraph}
             <tr>
-                    <td port="img"><img src="{tmp}/node{node.id}_{getpid()}.svg"/></td>
+                    <td><img src="{tmp}/node{node.id}_{getpid()}.svg"/></td>
             </tr>
             </table>"""
         else:
@@ -194,13 +193,13 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         html = f"""<table border="0">
         {labelgraph}
         <tr>
-                <td port="img"><img src="{tmp}/leaf{node.id}_{getpid()}.svg"/></td>
+                <td><img src="{tmp}/leaf{node.id}_{getpid()}.svg"/></td>
         </tr>
         </table>"""
         if node.id in highlight_path:
             return f'leaf{node.id} [margin="0" shape=box penwidth=".5" color="{HIGHLIGHT_COLOR}" style="dashed" label=<{html}>]'
         else:
-            return f'leaf{node.id} [margin="0" shape=plain label=<{html}>]'
+            return f'leaf{node.id} [margin="0" shape=box penwidth="0" label=<{html}>]'
 
 
     def class_leaf_node(node, label_fontsize: int = 12):
@@ -208,13 +207,13 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         html = f"""<table border="0" CELLBORDER="0">
         {labelgraph}
         <tr>
-                <td port="img"><img src="{tmp}/leaf{node.id}_{getpid()}.svg"/></td>
+                <td><img src="{tmp}/leaf{node.id}_{getpid()}.svg"/></td>
         </tr>
         </table>"""
         if node.id in highlight_path:
             return f'leaf{node.id} [margin="0" shape=box penwidth=".5" color="{HIGHLIGHT_COLOR}" style="dashed" label=<{html}>]'
         else:
-            return f'leaf{node.id} [margin="0" shape=plain label=<{html}>]'
+            return f'leaf{node.id} [margin="0" shape=box penwidth="0" label=<{html}>]'
 
     def node_label(node):
         return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="Helvetica" color="{GREY}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
@@ -267,7 +266,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             if isinstance(v,int) or isinstance(v, str):
                 disp_v = v
             else:
-                disp_v = round(v, precision)
+                disp_v = myround(v, precision)
             values.append(f'<td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}">{disp_v}</font></td>')
 
         return f"""
@@ -289,7 +288,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         if shadow_tree.isclassifier():
             edge_label = f" Prediction<br/> {path[-1].prediction_name()}"
         else:
-            edge_label = f" Prediction<br/> {round(path[-1].prediction(), precision)}"
+            edge_label = f" Prediction<br/> {myround(path[-1].prediction(), precision)}"
         return f"""
             subgraph cluster_instance {{
                 style=invis;
@@ -368,7 +367,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                                highlight_node=node.id in highlight_path)
 
         nname = node_name(node)
-        gr_node = split_node(node.feature_name(), nname, split=round(node.split()))
+        gr_node = split_node(node.feature_name(), nname, split=myround(node.split(), precision))
         internal.append(gr_node)
 
     leaves = []
@@ -383,20 +382,6 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                           filename=f"{tmp}/leaf{node.id}_{getpid()}.svg",
                           y_range=y_range, precision=precision)
             leaves.append( regr_leaf_node(node) )
-
-    fromport = ""
-    toport = ""
-    if fancy and orientation=="TD":
-        fromport = ":img:s"
-        toport = ":img:n"
-    elif fancy:
-        fromport = ":img:e"
-        toport = ":img:w"
-
-    if shadow_tree.isclassifier():
-        fromport = toport = ""
-    # in the end, it looks better without the downward edges emanating from same point
-    fromport = toport = ""
 
     show_edge_labels = False
     all_llabel = '&lt;' if show_edge_labels else ''
@@ -429,8 +414,8 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         if node.right.id in highlight_path:
             rcolor = HIGHLIGHT_COLOR
             rpw = "1.2"
-        edges.append( f'{nname}{fromport} -> {left_node_name}{toport} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]' )
-        edges.append( f'{nname}{fromport} -> {right_node_name}{toport} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]' )
+        edges.append( f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]' )
+        edges.append( f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]' )
         edges.append(f"""
         {{
             rank=same;
@@ -532,7 +517,7 @@ def class_split_viz(node: ShadowDecTreeNode,
         t.set_clip_on(False)
         ax.add_patch(t)
         ax.text(node.split(), -2 * th,
-                f"{round(node.split(),precision)}",
+                f"{myround(node.split(),precision)}",
                 horizontalalignment='center',
                 fontsize=ticks_fontsize, color=GREY)
 
@@ -634,7 +619,7 @@ def regr_split_viz(node: ShadowDecTreeNode,
         ax.add_patch(t)
 
         # ax.text(node.split(), 0,
-        #         f"{round(node.split(),precision)}",
+        #         f"{myround(node.split(),precision)}",
         #         horizontalalignment='center',
         #         fontsize=ticks_fontsize, color=GREY)
 
@@ -676,7 +661,7 @@ def regr_leaf_viz(node : ShadowDecTreeNode,
     # ax.set_yticks(y_range)
 
     ticklabelpad = plt.rcParams['xtick.major.pad']
-    ax.annotate(f"{target_name}={round(m,precision)}\nn={len(y)}",
+    ax.annotate(f"{target_name}={myround(m,precision)}\nn={len(y)}",
                 xy=(.5, 0), xytext=(.5, -.5*ticklabelpad), ha='center', va='top',
                 xycoords='axes fraction', textcoords='offset points',
                 fontsize = label_fontsize, fontname = "Arial", color = GREY)
@@ -725,7 +710,7 @@ def draw_legend(shadow_tree, target_name, filename):
 
     leg.get_frame().set_linewidth(.5)
     leg.get_title().set_color(GREY)
-    leg.get_title().set_fontsize(11)
+    leg.get_title().set_fontsize(10)
     leg.get_title().set_fontweight('bold')
     for text in leg.get_texts():
         text.set_color(GREY)
