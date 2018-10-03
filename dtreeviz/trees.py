@@ -77,7 +77,7 @@ class DTreeViz:
             makedirs(path.parent)
 
         g = graphviz.Source(self.dot, format='svg')
-        dotfilename = g.save(directory=path.parent, filename=path.stem)
+        dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem)
 
         if PLATFORM=='darwin':
             # dot seems broken in terms of fonts if we use -Tsvg. Force users to
