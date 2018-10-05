@@ -1,5 +1,6 @@
-# dtreeviz -- Decision tree visualization
+# dtreeviz : Decision-Tree-Visualization
 
+## Description
 A python library for decision tree visualization and model interpretation.
 
 By [Terence Parr](http://parrt.cs.usfca.edu) and [Prince Grover](https://www.linkedin.com/in/groverpr)
@@ -203,5 +204,29 @@ python setup.py install -f
 ```
 
 E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.2-py3.6.egg`.
+
+
+## Useful Resources
+
+* [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html)
+* [How to explain gradient boosting](http://explained.ai/gradient-boosting/index.html)
+* [The Mechanics of Machine Learning](https://mlbook.explained.ai/)
+* [Animation by R2D3](http://www.r2d3.us/)
+* [A visual introductionn to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/)
+*[fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml)
+
+
+
+## Authors
+
+* **Terence Parr** - [Terence Parr](http://parrt.cs.usfca.edu/) 
+* **Prinnce Grover** - [LinkedIn](https://www.linkedin.com/in/groverpr/)
+
+See also the list of [contributors](https://github.com/parrt/dtreeviz/graphs/contributors) who participated in this project.
+
+## License
+
+This project is licensed under the terms of the MIT license, see LICENSE.
+
 
 
