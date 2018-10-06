@@ -218,8 +218,8 @@ E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packag
 
 ## Authors
 
-* **Terence Parr** - [Terence Parr](http://parrt.cs.usfca.edu/) 
-* **Prince Grover** - [LinkedIn](https://www.linkedin.com/in/groverpr/)
+* [**Terence Parr**](http://parrt.cs.usfca.edu/) 
+* [**Prince Grover**](https://www.linkedin.com/in/groverpr/)
 
 See also the list of [contributors](https://github.com/parrt/dtreeviz/graphs/contributors) who participated in this project.
 
