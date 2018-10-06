@@ -1,4 +1,4 @@
-# dtreeviz : Decision-Tree-Visualization
+# dtreeviz : Decision Tree Visualization
 
 ## Description
 A python library for decision tree visualization and model interpretation.
@@ -213,20 +213,19 @@ E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packag
 * [The Mechanics of Machine Learning](https://mlbook.explained.ai/)
 * [Animation by R2D3](http://www.r2d3.us/)
 * [A visual introductionn to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/)
-*[fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml)
-
-
+* [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml)
+* Some similar feature-space visualizations in [Towards an effective cooperation of the user and the computer for classification, SIGKDD 2000](https://github.com/EE2dev/publications/blob/master/cooperativeClassification.pdf)
 
 ## Authors
 
 * **Terence Parr** - [Terence Parr](http://parrt.cs.usfca.edu/) 
-* **Prinnce Grover** - [LinkedIn](https://www.linkedin.com/in/groverpr/)
+* **Prince Grover** - [LinkedIn](https://www.linkedin.com/in/groverpr/)
 
 See also the list of [contributors](https://github.com/parrt/dtreeviz/graphs/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the terms of the MIT license, see LICENSE.
+This project is licensed under the terms of the MIT license, see [LICENSE](LICENSE).
 
 
 
