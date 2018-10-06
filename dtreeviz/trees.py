@@ -163,11 +163,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
     :return: A string in graphviz DOT language that describes the decision tree.
     """
     def node_name(node : ShadowDecTreeNode) -> str:
-        if node.feature_name() is None:
-            return f"node{node.id}"
-        node_name = ''.join(c for c in node.feature_name() if c not in string.punctuation)+str(node.id)
-        node_name = re.sub("["+string.punctuation+string.whitespace+"]", '_', node_name)
-        return node_name
+        return f"node{node.id}"
 
     def split_node(name, node_name, split):
         if fancy:

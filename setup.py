@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='dtreeviz',
-    version='0.2.1',
+    version='0.2.2',
     url='https://github.com/parrt/dtreeviz',
     license='MIT',
     packages=find_packages(),
