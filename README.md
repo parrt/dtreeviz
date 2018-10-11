@@ -214,6 +214,8 @@ E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packag
 * [Animation by R2D3](http://www.r2d3.us/)
 * [A visual introductionn to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/)
 * [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml)
+* Stef van den Elzen's [Interactive Construction, Analysis and
+Visualization of Decision Trees](http://alexandria.tue.nl/extra1/afstversl/wsk-i/elzen2011.pdf)
 * Some similar feature-space visualizations in [Towards an effective cooperation of the user and the computer for classification, SIGKDD 2000](https://github.com/EE2dev/publications/blob/master/cooperativeClassification.pdf)
 
 ## Authors
