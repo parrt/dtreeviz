@@ -1,8 +1,3 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
-
 from dtreeviz.trees import *
 
 df_cars = pd.read_csv("data/cars.csv")

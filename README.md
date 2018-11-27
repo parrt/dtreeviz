@@ -249,6 +249,29 @@ t = rtreeviz_bivar_3D(ax,
 plt.show()
 ```
 
+### Regression bivariate feature-target space heatmap
+
+<img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="60%">
+
+```python
+from dtreeviz.trees import *
+
+df_cars = pd.read_csv("data/cars.csv")
+X = df_cars.drop('MPG', axis=1)
+y = df_cars['MPG']
+
+features=[2, 1]
+X = X.values[:, features]
+figsize = (6, 5)
+fig, ax = plt.subplots(1, 1, figsize=figsize)
+t = rtreeviz_bivar_heatmap(ax,
+                           X, y,
+                           max_depth=4,
+                           feature_names=['Vehicle Weight', 'Horse Power'],
+                           fontsize=14)
+plt.show()
+```
+
 ### Classification univariate feature-target space
 
 <img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="60%">
