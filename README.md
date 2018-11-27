@@ -98,7 +98,8 @@ Jupyter Lab and Jupyter notebook both show the inline .svg images well.
 
 `dtree`: Main function to create decision tree visualization. Given a decision tree regressor or classifier, creates and returns a tree visualization using the graphviz (DOT) language.
 
-* **Required libraries**:  
+### Required libraries
+
 Basic libraries and imports that will (might) be needed to generate the sample visualizations shown in examples below. 
  
 ```bash
@@ -107,7 +108,7 @@ from sklearn import tree
 from dtreeviz.trees import *
 ```
 
-* **Regression decision tree**:   
+### Regression decision tree
 The default orientation of tree is top down but you can change it to left to right using `orientation="LR"`. `view()` gives a pop up window with rendered graphviz object. 
 
 ```bash
@@ -127,7 +128,7 @@ viz.view()
 <img src=testing/samples/boston-TD-2.svg width=60% height=40%>
   
   
-* **Classification decision tree**:  
+### Classification decision tree
 An additional argument of `class_names` giving a mapping of class value with class name is required for classification trees. 
 
 ```bash
@@ -148,7 +149,7 @@ viz.view()
 
 <img src=testing/samples/iris-TD-2.svg width=50% height=30% align="center">
 
-* **Prediction path**:  
+### Prediction path
 Highlights the decision nodes in which the feature value of single observation passed in argument `X` falls. Gives feature values of the observation and highlights features which are used by tree to traverse path. 
   
 ```bash
@@ -169,7 +170,7 @@ viz.view()
 ```
 <img src=testing/samples/diabetes-LR-2-X.svg width=100% height=50%>
   
-* **Decision tree without scatterplot or histograms for decision nodes**:  
+### Decision tree without scatterplot or histograms for decision nodes
 Simple tree without histograms or scatterplots for decision nodes. 
 Use argument `fancy=False`  
   
@@ -192,6 +193,8 @@ viz.view()
 <img src=testing/samples/breast_cancer-TD-4-simple.svg width=80% height=60%>
 
 For more examples and different implementations, please see the jupyter [notebook](notebooks/examples.ipynb) full of examples.
+
+### Regression univariate feature-target space
 
 ## Install dtreeviz locally
 
