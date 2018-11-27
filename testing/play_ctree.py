@@ -1,7 +1,3 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-
 from dtreeviz.trees import *
 
 know = pd.read_csv("data/knowledge.csv")
