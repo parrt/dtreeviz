@@ -31,6 +31,7 @@ def viz_iris(orientation="TD", max_depth=5, random_state=666, fancy=True):
     st = dtreeviz(clf, iris.data, iris.target, target_name='variety',
                   feature_names=data.columns, orientation=orientation,
                   class_names=["setosa", "versicolor", "virginica"],  # 0,1,2 targets
+                  histtype='strip',
                   fancy=fancy,
                   X=x)
 
@@ -63,15 +64,16 @@ def viz_knowledge(orientation="TD", max_depth=3, random_state=666, fancy=True):
     know['UNS'] = know['UNS'].map({n: i for i, n in enumerate(target_names)})
 
     X_train, y_train = know.drop('UNS', axis=1), know['UNS']
-    clf = clf.fit(X_train, y_train)
+    clf = clf.fit(X_train[['PEG','LPR']], y_train)
 
     X = X_train.iloc[np.random.randint(0, len(know))]
 
-    viz = dtreeviz(clf, X_train, y_train, target_name='UNS',
-                  feature_names=X_train.columns.values, orientation=orientation,
+    viz = dtreeviz(clf, X_train[['PEG','LPR']], y_train, target_name='UNS',
+                  feature_names=['PEG','LPR'], orientation=orientation,
                   class_names=target_names,
-                  fancy=fancy,
-                  X=X)
+#                   show_node_labels=True,
+                   histtype='strip',
+                   fancy=fancy)
     return viz
 
 def viz_diabetes(orientation="TD", max_depth=3, random_state=666, fancy=True, pickX=False):
@@ -129,11 +131,10 @@ def viz_digits(orientation="TD", max_depth=3, random_state=666, fancy=True, pick
     return viz
 
 
-viz = viz_boston(fancy=False, max_depth=100, orientation='TD')
-#st = viz_breast_cancer(fancy=True, orientation='TD')
-#viz = viz_iris(fancy=True, orientation='TD')
+viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
+# viz = viz_iris(fancy=True, orientation='TD')
 #viz = viz_digits(fancy=True, max_depth=3, orientation='TD')
-#viz = viz_knowledge(fancy=True, orientation='TD', max_depth=4)
+#viz = viz_knowledge(fancy=True, orientation='TD', max_depth=2)
 #g = graphviz.Source(st)
 
 # tmp = tempfile.gettempdir()
