@@ -6,7 +6,7 @@ y = df_cars['MPG']
 X_train, y_train = X, y
 
 
-max_depth = 2
+max_depth = 3
 fig = plt.figure()
 ax = fig.gca()
 t = rtreeviz_univar(ax,
@@ -14,6 +14,7 @@ t = rtreeviz_univar(ax,
                     max_depth=max_depth,
                     feature_name='Vehicle Weight',
                     target_name='MPG',
-                    fontsize=14)
-plt.savefig(f"/tmp/dectree-depth-{max_depth}.svg", bbox_inches=0, pad_inches=0)
+                    fontsize=14,
+                    show={'splits'})
+plt.savefig(f"/tmp/cars-univar-{max_depth}.svg", bbox_inches=0, pad_inches=0)
 plt.show()

@@ -15,5 +15,5 @@ ct = ctreeviz_univar(ax, x_train, y_train, max_depth=max_depth,
                      nbins=40, gtype='strip',
                      show={'splits','title'})
 plt.tight_layout()
-plt.savefig(f"/tmp/knowlege-classtree-depth-{max_depth}.svg", bbox_inches=0, pad_inches=0)
+plt.savefig(f"/tmp/knowledge-classtree-depth-{max_depth}.svg", bbox_inches=0, pad_inches=0)
 plt.show()

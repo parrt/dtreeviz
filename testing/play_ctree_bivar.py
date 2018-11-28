@@ -16,5 +16,5 @@ ctreeviz_bivar(ax, X_train, y_train, max_depth=max_depth,
                class_names=class_names,
                target_name='Knowledge')
 plt.tight_layout()
-plt.savefig(f"/tmp/knowlege-bivar-classtree-depth-{max_depth}.svg", bbox_inches=0, pad_inches=0)
+plt.savefig(f"/tmp/knowledge-bivar-classtree-depth-{max_depth}.svg", bbox_inches=0, pad_inches=0)
 plt.show()
