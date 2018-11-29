@@ -98,7 +98,8 @@ Jupyter Lab and Jupyter notebook both show the inline .svg images well.
 
 `dtree`: Main function to create decision tree visualization. Given a decision tree regressor or classifier, creates and returns a tree visualization using the graphviz (DOT) language.
 
-* **Required libraries**:  
+### Required libraries
+
 Basic libraries and imports that will (might) be needed to generate the sample visualizations shown in examples below. 
  
 ```bash
@@ -107,7 +108,7 @@ from sklearn import tree
 from dtreeviz.trees import *
 ```
 
-* **Regression decision tree**:   
+### Regression decision tree
 The default orientation of tree is top down but you can change it to left to right using `orientation="LR"`. `view()` gives a pop up window with rendered graphviz object. 
 
 ```bash
@@ -127,7 +128,7 @@ viz.view()
 <img src=testing/samples/boston-TD-2.svg width=60% height=40%>
   
   
-* **Classification decision tree**:  
+### Classification decision tree
 An additional argument of `class_names` giving a mapping of class value with class name is required for classification trees. 
 
 ```bash
@@ -148,7 +149,7 @@ viz.view()
 
 <img src=testing/samples/iris-TD-2.svg width=50% height=30% align="center">
 
-* **Prediction path**:  
+### Prediction path
 Highlights the decision nodes in which the feature value of single observation passed in argument `X` falls. Gives feature values of the observation and highlights features which are used by tree to traverse path. 
   
 ```bash
@@ -169,7 +170,7 @@ viz.view()
 ```
 <img src=testing/samples/diabetes-LR-2-X.svg width=100% height=50%>
   
-* **Decision tree without scatterplot or histograms for decision nodes**:  
+### Decision tree without scatterplot or histograms for decision nodes
 Simple tree without histograms or scatterplots for decision nodes. 
 Use argument `fancy=False`  
   
@@ -193,6 +194,133 @@ viz.view()
 
 For more examples and different implementations, please see the jupyter [notebook](notebooks/examples.ipynb) full of examples.
 
+### Regression univariate feature-target space
+
+<img src="https://user-images.githubusercontent.com/178777/49105092-9b264d80-f234-11e8-9d67-cc58c47016ca.png" width="60%">
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+from dtreeviz.trees import *
+
+df_cars = pd.read_csv("data/cars.csv")
+X_train, y_train = df_cars.drop('MPG', axis=1), df_cars['MPG']
+
+fig = plt.figure()
+ax = fig.gca()
+t = rtreeviz_univar(ax,
+                    X_train.WGT, y_train,
+                    max_depth=2,
+                    feature_name='Vehicle Weight',
+                    target_name='MPG',
+                    fontsize=14)
+plt.show()
+```
+
+### Regression bivariate feature-target space
+
+<img src="https://user-images.githubusercontent.com/178777/49104999-4edb0d80-f234-11e8-9010-73b7c0ba5fb9.png" width="60%">
+
+```python
+from mpl_toolkits.mplot3d import Axes3D
+from dtreeviz.trees import *
+
+df_cars = pd.read_csv("data/cars.csv")
+X = df_cars.drop('MPG', axis=1)
+y = df_cars['MPG']
+
+features = [2, 1]
+X = X.values[:,features]
+figsize = (6,5)
+fig = plt.figure(figsize=figsize)
+ax = fig.add_subplot(111, projection='3d')
+
+t = rtreeviz_bivar_3D(ax,
+                      X, y,
+                      max_depth=4,
+                      feature_names=['Vehicle Weight', 'Horse Power'],
+                      target_name='MPG',
+                      fontsize=14,
+                      elev=20,
+                      azim=25,
+                      dist=8.2,
+                      show={'splits','title'})
+plt.show()
+```
+
+### Regression bivariate feature-target space heatmap
+
+<img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="60%">
+
+```python
+from dtreeviz.trees import *
+
+df_cars = pd.read_csv("data/cars.csv")
+X = df_cars.drop('MPG', axis=1)
+y = df_cars['MPG']
+
+features=[2, 1]
+X = X.values[:, features]
+figsize = (6, 5)
+fig, ax = plt.subplots(1, 1, figsize=figsize)
+t = rtreeviz_bivar_heatmap(ax,
+                           X, y,
+                           max_depth=4,
+                           feature_names=['Vehicle Weight', 'Horse Power'],
+                           fontsize=14)
+plt.show()
+```
+
+### Classification univariate feature-target space
+
+<img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="60%">
+
+```python
+from dtreeviz.trees import *
+
+know = pd.read_csv("data/knowledge.csv")
+class_names = ['very_low', 'Low', 'Middle', 'High']
+know['UNS'] = know['UNS'].map({n: i for i, n in enumerate(class_names)})
+
+x_train = know.PEG
+y_train = know['UNS']
+figsize = (6,2)
+fig, ax = plt.subplots(1, 1, figsize=figsize)
+ct = ctreeviz_univar(ax, x_train, y_train, max_depth=3,
+                     feature_name = 'PEG', class_names=class_names,
+                     target_name='Knowledge',
+                     nbins=40, gtype='strip',
+                     show={'splits','title'})
+plt.tight_layout()
+plt.show()
+```
+
+### Classification bivariate feature-target space
+
+<img src="https://user-images.githubusercontent.com/178777/49105085-9792c680-f234-11e8-8af5-bc2fde950ab1.png" width="60%">
+
+```python
+from dtreeviz.trees import *
+
+know = pd.read_csv("data/knowledge.csv")
+class_names = ['very_low', 'Low', 'Middle', 'High']
+know['UNS'] = know['UNS'].map({n: i for i, n in enumerate(class_names)})
+
+features=[4,3]
+X_train = know.drop('UNS', axis=1)
+y_train = know['UNS']
+X_train = X_train.values[:, features]
+figsize = (6,5)
+fig, ax = plt.subplots(1, 1, figsize=figsize)
+ctreeviz_bivar(ax, X_train, y_train, max_depth=3,
+               feature_names = ['PEG','LPR'],
+               class_names=class_names,
+               target_name='Knowledge')
+plt.tight_layout()
+plt.show()
+```
+
 ## Install dtreeviz locally
 
 Make sure to follow the install guidelines above.
@@ -203,7 +331,7 @@ To push the `dtreeviz` library to your local egg cache (force updates) during de
 python setup.py install -f
 ```
 
-E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.2-py3.6.egg`.
+E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.3-py3.6.egg`.
 
 
 ## Useful Resources
