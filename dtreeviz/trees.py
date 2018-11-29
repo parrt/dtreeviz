@@ -470,8 +470,7 @@ def class_split_viz(node: ShadowDecTreeNode,
     nbins = get_num_bins(histtype, n_classes)
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
-    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname="Arial",
-                  color=GREY)
+    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, color=GREY)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_linewidth(.3)
@@ -563,13 +562,13 @@ def regr_split_viz(node: ShadowDecTreeNode,
     # ax.annotate(f"{feature_name}",
     #             xy=(.5, 0), xytext=(.5, -3*ticklabelpad), ha='center', va='top',
     #             xycoords='axes fraction', textcoords='offset points',
-    #             fontsize = label_fontsize, fontname = "Arial", color = GREY)
+    #             fontsize = label_fontsize, color = GREY)
 
-    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname="Arial", color=GREY)
+    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, color=GREY)
 
     ax.set_ylim(y_range)
     if node==node.shadow_tree.root:
-        ax.set_ylabel(target_name, fontsize=label_fontsize, fontname="Arial", color=GREY)
+        ax.set_ylabel(target_name, fontsize=label_fontsize, color=GREY)
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -660,7 +659,7 @@ def regr_leaf_viz(node : ShadowDecTreeNode,
     ax.annotate(f"{target_name}={myround(m,precision)}\nn={len(y)}",
                 xy=(.5, 0), xytext=(.5, -.5*ticklabelpad), ha='center', va='top',
                 xycoords='axes fraction', textcoords='offset points',
-                fontsize = label_fontsize, fontname = "Arial", color = GREY)
+                fontsize = label_fontsize, color = GREY)
 
     ax.tick_params(axis='y', which='major', width=.3, labelcolor=GREY, labelsize=ticks_fontsize)
 
@@ -751,7 +750,7 @@ def draw_piechart(counts,size,colors,filename,label=None):
         ax.text(size/2-6*tweak, -10*tweak, label,
                 horizontalalignment='center',
                 verticalalignment='top',
-                fontsize=9, color=GREY, fontname="Arial")
+                fontsize=9, color=GREY)
 
     # plt.tight_layout()
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
