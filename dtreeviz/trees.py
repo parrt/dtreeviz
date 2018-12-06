@@ -166,7 +166,7 @@ def rtreeviz_univar(ax,
 
 
 def rtreeviz_bivar_heatmap(ax, X_train, y_train, max_depth, feature_names,
-                           fontsize=14, ticks_fontsize=12,
+                           fontsize=14, ticks_fontsize=12, fontname="Arial",
                            show={'title'}
                            ) -> tree.DecisionTreeClassifier:
     """
@@ -205,8 +205,8 @@ def rtreeviz_bivar_heatmap(ax, X_train, y_train, max_depth, feature_names,
     x, y, z = X_train[:,0], X_train[:,1], y_train
     ax.scatter(x, y, marker='o', alpha=.95, c=colors, edgecolor=GREY, lw=.3)
 
-    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname="Arial", color=GREY)
-    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname="Arial", color=GREY)
+    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=GREY)
+    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=GREY)
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=GREY, labelsize=ticks_fontsize)
 
@@ -219,7 +219,7 @@ def rtreeviz_bivar_heatmap(ax, X_train, y_train, max_depth, feature_names,
 
 
 def rtreeviz_bivar_3D(ax, X_train, y_train, max_depth, feature_names, target_name,
-                      fontsize=14, ticks_fontsize=10,
+                      fontsize=14, ticks_fontsize=10, fontname="Arial",
                       azim=0, elev=0, dist=7,
                       show={'title'}
                       ) -> tree.DecisionTreeClassifier:
@@ -265,9 +265,9 @@ def rtreeviz_bivar_3D(ax, X_train, y_train, max_depth, feature_names, target_nam
     x, y, z = X_train[:, 0], X_train[:, 1], y_train
     ax.scatter(x, y, z, marker='o', alpha=.7, edgecolor=GREY, lw=.3, c=colors)
 
-    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname="Arial", color=GREY)
-    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname="Arial", color=GREY)
-    ax.set_zlabel(f"{target_name}", fontsize=fontsize, fontname="Arial", color=GREY)
+    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=GREY)
+    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=GREY)
+    ax.set_zlabel(f"{target_name}", fontsize=fontsize, fontname=fontname, color=GREY)
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=GREY, labelsize=ticks_fontsize)
 
@@ -281,7 +281,7 @@ def rtreeviz_bivar_3D(ax, X_train, y_train, max_depth, feature_names, target_nam
 
 def ctreeviz_univar(ax, x_train, y_train, max_depth, feature_name, class_names,
                     target_name,
-                    fontsize=14, nbins=25, gtype='strip',
+                    fontsize=14, fontname="Arial", nbins=25, gtype='strip',
                     show={'title','legend','splits'}):
     if isinstance(x_train, pd.Series):
         x_train = x_train.values
@@ -303,7 +303,7 @@ def ctreeviz_univar(ax, x_train, y_train, max_depth, feature_name, class_names,
     colors = {v: color_values[i] for i, v in enumerate(class_values)}
     X_colors = [colors[cl] for cl in class_values]
 
-    ax.set_xlabel(f"{feature_name}", fontsize=fontsize, fontname="Arial",
+    ax.set_xlabel(f"{feature_name}", fontsize=fontsize, fontname=fontname,
                   color=GREY)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -384,6 +384,7 @@ def ctreeviz_univar(ax, x_train, y_train, max_depth, feature_name, class_names,
 def ctreeviz_bivar(ax, X_train, y_train, max_depth, feature_names, class_names,
                    target_name,
                    fontsize=14,
+                   fontname="Arial",
                    show={'title','legend','splits'}):
     """
     Show tesselated 2D feature space for bivariate classification tree. X_train can
@@ -424,8 +425,8 @@ def ctreeviz_bivar(ax, X_train, y_train, max_depth, feature_names, class_names,
         ax.scatter(h[:,0], h[:,1], alpha=1, marker='o', s=dot_w, c=colors[i],
                    edgecolors=GREY, lw=.3)
 
-    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname="Arial", color=GREY)
-    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname="Arial", color=GREY)
+    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=GREY)
+    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=GREY)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_linewidth(.3)
@@ -481,7 +482,11 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
              highlight_path: List[int] = [],
              X: np.ndarray = None,
              max_X_features_LR: int = 10,
-             max_X_features_TD: int = 20) \
+             max_X_features_TD: int = 20,
+             label_fontsize: int=12,
+             ticks_fontsize: int=8,
+             fontname: str="Arial"
+             ) \
     -> DTreeViz:
     """
     Given a decision tree regressor or classifier, create and return a tree visualization
@@ -580,7 +585,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         <table border="0" cellspacing="0" cellpadding="0">
             <tr>
                 <td border="0" cellspacing="0" cellpadding="0"><img src="{tmp}/legend_{getpid()}.svg"/></td>
-            </tr>        
+            </tr>
         </table>
         """
 
@@ -713,6 +718,9 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                                 histtype=histtype,
                                 node_heights=node_heights,
                                 X = X,
+                                ticks_fontsize=ticks_fontsize,
+                                label_fontsize=label_fontsize,
+                                fontname=fontname,
                                 highlight_node=node.id in highlight_path)
             else:
                 regr_split_viz(node, X_train, y_train,
@@ -721,6 +729,9 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                                y_range=y_range,
                                precision=precision,
                                X=X,
+                               ticks_fontsize=ticks_fontsize,
+                               label_fontsize=label_fontsize,
+                               fontname=fontname,
                                highlight_node=node.id in highlight_path)
 
         nname = node_name(node)
@@ -735,9 +746,15 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             leaves.append( class_leaf_node(node) )
         else:
             # for now, always gen leaf
-            regr_leaf_viz(node, y_train, target_name=target_name,
+            regr_leaf_viz(node,
+                          y_train,
+                          target_name=target_name,
                           filename=f"{tmp}/leaf{node.id}_{getpid()}.svg",
-                          y_range=y_range, precision=precision)
+                          y_range=y_range,
+                          precision=precision,
+                          ticks_fontsize=ticks_fontsize,
+                          label_fontsize=label_fontsize,
+                          fontname=fontname)
             leaves.append( regr_leaf_node(node) )
 
     show_edge_labels = False
@@ -811,6 +828,7 @@ def class_split_viz(node: ShadowDecTreeNode,
                     filename: str = None,
                     ticks_fontsize: int = 8,
                     label_fontsize: int = 9,
+                    fontname: str = "Arial",
                     precision=1,
                     histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
                     X : np.array = None,
@@ -834,7 +852,7 @@ def class_split_viz(node: ShadowDecTreeNode,
     overall_feature_range_wide = (overall_feature_range[0]-overall_feature_range[0]*.08,
                                   overall_feature_range[1]+overall_feature_range[1]*.05)
 
-    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, color=GREY)
+    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname=fontname, color=GREY)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_linewidth(.3)
@@ -898,7 +916,9 @@ def class_split_viz(node: ShadowDecTreeNode,
         ax.text(node.split(), -2 * th,
                 f"{myround(node.split(),precision)}",
                 horizontalalignment='center',
-                fontsize=ticks_fontsize, color=GREY)
+                fontsize=ticks_fontsize,
+                fontname=fontname,
+                color=GREY)
 
     wedge(ax, node.split(), color=WEDGE_COLOR)
     if highlight_node:
@@ -927,6 +947,7 @@ def regr_split_viz(node: ShadowDecTreeNode,
                    y_range=None,
                    ticks_fontsize: int = 8,
                    label_fontsize: int = 9,
+                   fontname: str = "Arial",
                    precision=1,
                    X : np.array = None,
                    highlight_node : bool = False):
@@ -936,11 +957,11 @@ def regr_split_viz(node: ShadowDecTreeNode,
 
     feature_name = node.feature_name()
 
-    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, color=GREY)
+    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname=fontname, color=GREY)
 
     ax.set_ylim(y_range)
     if node==node.shadow_tree.root:
-        ax.set_ylabel(target_name, fontsize=label_fontsize, color=GREY)
+        ax.set_ylabel(target_name, fontsize=label_fontsize, fontname=fontname, color=GREY)
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -1003,7 +1024,8 @@ def regr_leaf_viz(node : ShadowDecTreeNode,
                   y_range=None,
                   precision=1,
                   label_fontsize: int = 9,
-                  ticks_fontsize: int = 8):
+                  ticks_fontsize: int = 8,
+                  fontname:str="Arial"):
     samples = node.samples()
     y = y[samples]
 
@@ -1026,7 +1048,7 @@ def regr_leaf_viz(node : ShadowDecTreeNode,
     ax.annotate(f"{target_name}={myround(m,precision)}\nn={len(y)}",
                 xy=(.5, 0), xytext=(.5, -.5*ticklabelpad), ha='center', va='top',
                 xycoords='axes fraction', textcoords='offset points',
-                fontsize = label_fontsize, color = GREY)
+                fontsize = label_fontsize, fontname = fontname, color = GREY)
 
     ax.tick_params(axis='y', which='major', width=.3, labelcolor=GREY, labelsize=ticks_fontsize)
 
@@ -1089,7 +1111,7 @@ def draw_legend(shadow_tree, target_name, filename):
         plt.close()
 
 
-def draw_piechart(counts,size,colors,filename,label=None):
+def draw_piechart(counts, size, colors, filename, label=None, fontname="Arial"):
     n_nonzero = np.count_nonzero(counts)
     i = np.nonzero(counts)[0][0]
     if n_nonzero==1:
@@ -1117,7 +1139,7 @@ def draw_piechart(counts,size,colors,filename,label=None):
         ax.text(size/2-6*tweak, -10*tweak, label,
                 horizontalalignment='center',
                 verticalalignment='top',
-                fontsize=9, color=GREY)
+                fontsize=9, color=GREY, fontname=fontname)
 
     # plt.tight_layout()
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)

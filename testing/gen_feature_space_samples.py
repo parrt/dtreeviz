@@ -62,7 +62,7 @@ def viz_wine(features, feature_names, max_depth):
         figsize = (6, 5)
         fig, ax = plt.subplots(1, 1, figsize=figsize)
         ctreeviz_bivar(ax, X_train, y_train, max_depth=max_depth,
-                       feature_names=feature_names, class_names=list(wine.target_names), target_name='wine')
+                       feature_names=feature_names, class_names=list(wine.target_names), target_name='wine',show={'splits'})
         filename = f"/tmp/wine-{','.join(feature_names)}-featspace-depth-{max_depth}.svg"
 
     print(f"Create {filename}")
@@ -169,6 +169,7 @@ viz_knowledge(features=[4,3],feature_names=['PEG','LPR'], max_depth=3)
 
 viz_wine(features=[12],feature_names=['proline'], max_depth=2)
 viz_wine(features=[12],feature_names=['proline'], max_depth=3)
+viz_wine(features=[12,6],feature_names=['proline','flavanoids'], max_depth=1)
 viz_wine(features=[12,6],feature_names=['proline','flavanoids'], max_depth=2)
 viz_wine(features=[12,6],feature_names=['proline','flavanoids'], max_depth=3)
 viz_digits(features=[2*8+5], feature_names=['pixel[2,5]'], max_depth=20)
