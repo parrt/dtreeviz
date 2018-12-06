@@ -33,13 +33,13 @@ For your specific platform, please see the following subsections.
 
 ### Mac
 
-You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you reinstall or install like this:
+You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you uninstall graphviz then reinstall or install like this:
 
 ```bash
-brew install graphviz --with-librsvg --with-app --with-pango
+brew install graphviz --with-librsvg --with-pango
 ```
 
-(The `--with-librsvg` is absolutely required because we generate output using `dot`'s `-Tsvg:cairo` option.)
+(The `--with-librsvg` is absolutely required because we generate output using `dot`'s `-Tsvg:cairo` option.  I have used `--with-app` successfully also but others have trouble installing with that.)
 
 The OS X version is able to generate/save images in any format dot is allowed to use with `-T{format}:cairo` option. So .svg, .pdf are totally safe bets.
 
