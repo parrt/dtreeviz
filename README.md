@@ -33,6 +33,8 @@ For your specific platform, please see the following subsections.
 
 ### Mac
 
+Make sure to have the latest XCode installed and command-line tools installed. You can run `xcode-select --install` from the command-line to install those if XCode is already installed. You also have to sign the XCode license agreement, which you can do with `sudo xcodebuild -license` from command-line. The brew install shown next needs to build graphviz, so you need XCode set up properly.
+
 You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you uninstall graphviz then reinstall or install like this:
 
 ```bash
