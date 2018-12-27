@@ -94,7 +94,19 @@ print( stderr )
 
 Jupyter Lab and Jupyter notebook both show the inline .svg images well.
 
-**Limitations.** Finally, don't use IE to view .svg files. Use Edge as they look much better. I suspect that IE is displaying them as a rasterized not vector images. Only .svg files can be generated on this platform.
+### Verify graphviz installation
+
+Try making file `t.dot` with content `digraph T { A -> B }` and then running this from the command line:
+
+```
+dot -Tsvg:cairo -o t.svg t.dot
+```
+
+That should give a simple `t.svg` file that opens properly.  If you get errors from `dot`, it will not work from the dtreeviz python code.  If it can't find `dot` then you didn't update your `PATH` environment variable or there is some other install issue with `graphviz`.
+
+### Limitations
+
+Finally, don't use IE to view .svg files. Use Edge as they look much better. I suspect that IE is displaying them as a rasterized not vector images. Only .svg files can be generated on this platform.
 
 ## Usage
 
