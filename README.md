@@ -45,6 +45,13 @@ brew install graphviz --with-librsvg --with-pango
 
 The OS X version is able to generate/save images in any format dot is allowed to use with `-T{format}:cairo` option. So .svg, .pdf are totally safe bets.
 
+**From** [@motoki0214 at github](https://github.com/parrt/dtreeviz/issues/23). Following sequence worked for them (Xcode was already installed) from command-line:
+
+1. `xcode-select --install`
+2. `sudo xcodebuild -license`
+3. `brew uninstall graphviz`
+4. `brew install graphviz --with-librsvg --with-pango`
+
 **Limitations.** Jupyter notebook as a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
 
 ### Linux (Ubuntu 18.04)
