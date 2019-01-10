@@ -33,15 +33,24 @@ For your specific platform, please see the following subsections.
 
 ### Mac
 
-You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you reinstall or install like this:
+Make sure to have the latest XCode installed and command-line tools installed. You can run `xcode-select --install` from the command-line to install those if XCode is already installed. You also have to sign the XCode license agreement, which you can do with `sudo xcodebuild -license` from command-line. The brew install shown next needs to build graphviz, so you need XCode set up properly.
+
+You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you uninstall graphviz then reinstall or install like this:
 
 ```bash
-brew install graphviz --with-librsvg --with-app --with-pango
+brew install graphviz --with-librsvg --with-pango
 ```
 
-(The `--with-librsvg` is absolutely required because we generate output using `dot`'s `-Tsvg:cairo` option.)
+(The `--with-librsvg` is absolutely required because we generate output using `dot`'s `-Tsvg:cairo` option.  I have used `--with-app` successfully also but others have trouble installing with that.)
 
 The OS X version is able to generate/save images in any format dot is allowed to use with `-T{format}:cairo` option. So .svg, .pdf are totally safe bets.
+
+**From** [@motoki0214 at github](https://github.com/parrt/dtreeviz/issues/23). Following sequence worked for them (Xcode was already installed) from command-line:
+
+1. `xcode-select --install`
+2. `sudo xcodebuild -license`
+3. `brew uninstall graphviz`
+4. `brew install graphviz --with-librsvg --with-pango`
 
 **Limitations.** Jupyter notebook as a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
 
@@ -92,7 +101,19 @@ print( stderr )
 
 Jupyter Lab and Jupyter notebook both show the inline .svg images well.
 
-**Limitations.** Finally, don't use IE to view .svg files. Use Edge as they look much better. I suspect that IE is displaying them as a rasterized not vector images. Only .svg files can be generated on this platform.
+### Verify graphviz installation
+
+Try making file `t.dot` with content `digraph T { A -> B }` and then running this from the command line:
+
+```
+dot -Tsvg:cairo -o t.svg t.dot
+```
+
+That should give a simple `t.svg` file that opens properly.  If you get errors from `dot`, it will not work from the dtreeviz python code.  If it can't find `dot` then you didn't update your `PATH` environment variable or there is some other install issue with `graphviz`.
+
+### Limitations
+
+Finally, don't use IE to view .svg files. Use Edge as they look much better. I suspect that IE is displaying them as a rasterized not vector images. Only .svg files can be generated on this platform.
 
 ## Usage
 
