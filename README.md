@@ -60,32 +60,16 @@ Just to be sure, remove `dot` from any anaconda installation, for example:
 rm ~/anaconda3/bin/dot
 ```
 
-From command line, this command
+From command line:
 
 ```bash
 dot -Tsvg:cairo
 ```
 
-should work, in the sense that it just stares at you without giving an error. You can hit control-C to escape back to the shell. If you still get an error message that says something about trying `-Tsvg:svg:core` option, then we still have a problem. Make sure that you are using the right `dot`:
+should work.
 
-```bash
-$ which dot
-/usr/local/bin/dot
-$ ls -l $(which dot)
--rwxr-xr-x  1 parrt  wheel  22920 Feb  5 09:02 /usr/local/bin/dot*
-$
-```
 
-If instead, it says something like
-
-```
-$ ls -l $(which dot)
-lrwxr-xr-x  1 parrt  wheel  33 Feb  4 19:54 /usr/local/bin/dot@ -> ../Cellar/graphviz/2.40.1/bin/dot
-```
-
-then you're still using the brew version. Do a `brew uninstall graphviz` and then do `make install` again from the `/tmp/graphviz-2.40.1` dir.
- 
-The OS X version is able to generate/save images in any format `dot` is allowed to use with the `-T{format}:cairo` option. So .svg, .pdf are totally safe bets.
+The OS X version is able to generate/save images in any format dot is allowed to use with the `-T{format}:cairo` option. So .svg, .pdf are totally safe bets.
 
 **Limitations.** Jupyter notebook has a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
 
