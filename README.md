@@ -37,11 +37,11 @@ For your specific platform, please see the following subsections.
 
 Make sure to have the latest XCode installed and command-line tools installed. You can run `xcode-select --install` from the command-line to install those if XCode is already installed. You also have to sign the XCode license agreement, which you can do with `sudo xcodebuild -license` from command-line. The brew install shown next needs to build graphviz, so you need XCode set up properly.
 
-You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you follow this procedure (verified on two macs with 10.13) to build graphviz 2.40.1 from source and install:
+You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you follow this procedure (verified on three recent macs with 10.13) to build graphviz 2.40.1 from source and install:
 
 ```bash
 brew uninstall graphviz
-brew upgrade pango librsvg
+brew reinstall pango librsvg  # even if already there, please reinstall
 
 cd /tmp
 wget https://graphviz.gitlab.io/pub/graphviz/stable/SOURCES/graphviz.tar.gz
@@ -49,6 +49,7 @@ tar xvfz graphviz.tar.gz
 cd graphviz-2.40.1/
 
 rm -rf /usr/local/lib/graphviz # in case old stuff is there
+# make sure to run ./configure after reinstalling pango, librsvg
 ./configure --includedir=/usr/local/include/graphviz
 make -j 8 # 8 threads
 make install
