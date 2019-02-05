@@ -33,6 +33,8 @@ For your specific platform, please see the following subsections.
 
 ### Mac
 
+**We have a problem**...*the brew spec for graphviz recently removed the options we use below, --with-librsvg --with-pango.  I will look for a way around this, but for the moment I can't even install dtreeviz myself!*
+
 Make sure to have the latest XCode installed and command-line tools installed. You can run `xcode-select --install` from the command-line to install those if XCode is already installed. You also have to sign the XCode license agreement, which you can do with `sudo xcodebuild -license` from command-line. The brew install shown next needs to build graphviz, so you need XCode set up properly.
 
 You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you uninstall graphviz then reinstall or install like this:
