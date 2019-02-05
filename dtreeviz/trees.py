@@ -1143,3 +1143,24 @@ def get_num_bins(histtype, n_classes):
     if histtype == 'barstacked':
         bins *= 2
     return bins
+
+
+    global dot_already_tested
+    if dot_already_tested: return
+    dot_already_tested = True
+
+    tmp = tempfile.gettempdir()
+    dotfilename = f"{tmp}/testing_svg_{getpid()}.dot"
+    with open(dotfilename, "w") as f:
+        f.write("digraph G { A -> B }\n")
+    svgfilename = f"{tmp}/testing_svg_{getpid()}.svg"
+    cmd = ["dot", "-Tsvg:cairo", "-o", svgfilename, dotfilename]
+    print(' '.join(cmd))
+    ok = True
+    try:
+        os.execlp("dot", "dot", "-Tsvg:cairo", "-o", svgfilename, dotfilename)
+        # run(cmd, capture_output=False, check=False, quiet=True)
+    except:
+        ok = False
+
+    return ok
