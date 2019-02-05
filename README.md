@@ -54,6 +54,21 @@ make -j 8 # 8 threads
 make install
 ```
 
+Just to be sure, remove `dot` from any anaconda installation, for example:
+
+```bash
+rm ~/anaconda3/bin/dot
+```
+
+From command line:
+
+```bash
+dot -Tsvg:cairo
+```
+
+should work.
+
+
 The OS X version is able to generate/save images in any format dot is allowed to use with the `-T{format}:cairo` option. So .svg, .pdf are totally safe bets.
 
 **Limitations.** Jupyter notebook has a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
