@@ -917,7 +917,8 @@ def class_leaf_viz(node : ShadowDecTreeNode,
                      output_range=(1.01, 1.5))
     # we visually need n=1 and n=9 to appear different but diff between 300 and 400 is no big deal
     size = np.sqrt(np.log(size))
-    draw_piechart(node.class_counts(), size=size, colors=colors, filename=filename, label=f"n={node.nsamples()}")
+    counts = node.class_counts()
+    draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={node.nsamples()}")
 
 
 def regr_split_viz(node: ShadowDecTreeNode,
