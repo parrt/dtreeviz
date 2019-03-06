@@ -17,7 +17,14 @@ The visualizations are inspired by an educational animation by [R2D3](http://www
 
 ## Install
 
-Install anaconda3 on your system.
+Install anaconda3 on your system, if not already done.
+
+You might verify that you do not have conda-installed graphviz-related packages installed because dtreeviz needs the pip versions; you can remove them from conda space by doing:
+
+```bash
+conda uninstall python-graphviz
+conda uninstall graphviz
+```
 
 To install (Python >=3.6 only), do this (from Anaconda Prompt on Windows!):
 
@@ -111,7 +118,7 @@ C:\Program Files (x86)\Graphviz2.38\bin\dot.exe
 
 (Do not use `conda install -c conda-forge python-graphviz` as you get an old version of `graphviz` python library.)
 
-Verify from the Anaconda Prompt that this works:
+Verify from the Anaconda Prompt that this works (capital `-V` not lowercase `-v`):
 
 ```
 dot -V
@@ -139,7 +146,7 @@ Jupyter Lab and Jupyter notebook both show the inline .svg images well.
 
 ### Verify graphviz installation
 
-Try making file `t.dot` with content `digraph T { A -> B }` and then running this from the command line:
+Try making text file `t.dot` with content `digraph T { A -> B }` (paste that into a text editor, for example) and then running this from the command line:
 
 ```
 dot -Tsvg:cairo -o t.svg t.dot
