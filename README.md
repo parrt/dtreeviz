@@ -50,7 +50,7 @@ cd graphviz-2.40.1/
 
 rm -rf /usr/local/lib/graphviz # in case old stuff is there
 # make sure to run ./configure after reinstalling pango, librsvg
-./configure --includedir=/usr/local/include/graphviz
+./configure --includedir=/usr/local/include/graphviz --with-pangocairo=yes
 make -j 8 # 8 threads
 make install
 ```
