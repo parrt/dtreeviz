@@ -44,22 +44,13 @@ For your specific platform, please see the following subsections.
 
 Make sure to have the latest XCode installed and command-line tools installed. You can run `xcode-select --install` from the command-line to install those if XCode is already installed. You also have to sign the XCode license agreement, which you can do with `sudo xcodebuild -license` from command-line. The brew install shown next needs to build graphviz, so you need XCode set up properly.
 
-You need the graphviz binary for `dot` installed with librsvg and pango. Make sure you follow this procedure (verified on three recent macs with 10.13) to build graphviz 2.40.1 from source and install:
+You need the graphviz binary for `dot` installed with librsvg, pango and cairo. Make sure you follow this procedure (verified on 10.14) to build graphviz latest from source and install:
 
 ```bash
 brew uninstall graphviz
-brew reinstall pango librsvg  # even if already there, please reinstall
-
-cd /tmp
-wget https://graphviz.gitlab.io/pub/graphviz/stable/SOURCES/graphviz.tar.gz
-tar xvfz graphviz.tar.gz
-cd graphviz-2.40.1/
-
-rm -rf /usr/local/lib/graphviz # in case old stuff is there
-# make sure to run ./configure after reinstalling pango, librsvg
-./configure --includedir=/usr/local/include/graphviz --with-pangocairo=yes
-make -j 8 # 8 threads
-make install
+brew reinstall pango librsvg --build-from-source # even if already there, please reinstall
+brew reinstall cairo --build-from-source
+brew install graphviz --build-from-source
 ```
 
 Just to be sure, remove `dot` from any anaconda installation, for example:
@@ -71,7 +62,7 @@ rm ~/anaconda3/bin/dot
 From command line, this command
 
 ```bash
-dot -Tsvg:cairo
+dot -Tsvg
 ```
 
 should work, in the sense that it just stares at you without giving an error. You can hit control-C to escape back to the shell. If you still get an error message that says something about trying `-Tsvg:svg:core` option, then we still have a problem. Make sure that you are using the right `dot`:
@@ -91,7 +82,7 @@ $ ls -l $(which dot)
 lrwxr-xr-x  1 parrt  wheel  33 Feb  4 19:54 /usr/local/bin/dot@ -> ../Cellar/graphviz/2.40.1/bin/dot
 ```
 
-then you're still using the brew version. Do a `brew uninstall graphviz` and then do `make install` again from the `/tmp/graphviz-2.40.1` dir.
+then you're still using the brew version. Do a `brew uninstall graphviz` and build from source again with brew. 
  
 The OS X version is able to generate/save images in any format `dot` is allowed to use with the `-T{format}:cairo` option. So .svg, .pdf are totally safe bets.
 
@@ -142,6 +133,12 @@ stdout, stderr = be.run(cmd, capture_output=True, check=True, quiet=False)
 print( stderr )
 ```
 
+If you are having issues with run command you can try copying the following files from: https://github.com/xflr6/graphviz/tree/master/graphviz.
+
+Place them in the AppData\Local\Continuum\anaconda3\Lib\site-packages\graphviz\site-packages\graphviz folder.
+
+Clean out the __pycache__ directory too.
+
 Jupyter Lab and Jupyter notebook both show the inline .svg images well.
 
 ### Verify graphviz installation
@@ -149,7 +146,7 @@ Jupyter Lab and Jupyter notebook both show the inline .svg images well.
 Try making text file `t.dot` with content `digraph T { A -> B }` (paste that into a text editor, for example) and then running this from the command line:
 
 ```
-dot -Tsvg:cairo -o t.svg t.dot
+dot -Tsvg -o t.svg t.dot
 ```
 
 That should give a simple `t.svg` file that opens properly.  If you get errors from `dot`, it will not work from the dtreeviz python code.  If it can't find `dot` then you didn't update your `PATH` environment variable or there is some other install issue with `graphviz`.

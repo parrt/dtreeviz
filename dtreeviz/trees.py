@@ -80,32 +80,23 @@ class DTreeViz:
 
         g = graphviz.Source(self.dot, format='svg')
         dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem)
+        format = path.suffix[1:]  # ".svg" -> "svg" etc...
 
-        if PLATFORM=='darwin':
-            # dot seems broken in terms of fonts if we use -Tsvg. Force users to
-            # brew install graphviz with librsvg (else metrics are off) and
-            # use -Tsvg:cairo which fixes bug and also automatically embeds images
-            format = path.suffix[1:]  # ".svg" -> "svg" etc...
-            cmd = ["dot", f"-T{format}:cairo", "-o", filename, dotfilename]
-            # print(' '.join(cmd))
-            stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
+        if not filename.endswith(".svg") and PLATFORM!='darwin':
+            raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
+        # Gen .svg file from .dot but output .svg has image refs to other files
+        #orig_svgfilename = filename.replace('.svg', '-orig.svg')
+        cmd = ["dot", f"-T{format}", "-o", filename, dotfilename]
+        # print(' '.join(cmd))
+        stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
 
-        else:
-            if not filename.endswith(".svg"):
-                raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
-            # Gen .svg file from .dot but output .svg has image refs to other files
-            #orig_svgfilename = filename.replace('.svg', '-orig.svg')
-            cmd = ["dot", "-Tsvg", "-o", filename, dotfilename]
-            # print(' '.join(cmd))
-            stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
-
+        if filename.endswith(".svg"):
             # now merge in referenced SVG images to make all-in-one file
             with open(filename, encoding='UTF-8') as f:
                 svg = f.read()
             svg = inline_svg_images(svg)
             with open(filename, "w", encoding='UTF-8') as f:
                 f.write(svg)
-
 
 def rtreeviz_univar(ax,
                     x_train: (pd.Series, np.ndarray),  # 1 vector of X data
