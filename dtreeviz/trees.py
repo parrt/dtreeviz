@@ -448,6 +448,7 @@ def add_classifier_legend(ax, class_names, class_values, colors, target_name):
                     borderpad=.8,
                     bbox_to_anchor=(1.0, 1.0),
                     edgecolor=GREY)
+
     leg.get_frame().set_linewidth(.5)
     leg.get_title().set_color(GREY)
     leg.get_title().set_fontsize(10)
@@ -571,7 +572,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         <table border="0" cellspacing="0" cellpadding="0">
             <tr>
                 <td border="0" cellspacing="0" cellpadding="0"><img src="{tmp}/legend_{getpid()}.svg"/></td>
-            </tr>        
+            </tr>
         </table>
         """
 
@@ -587,7 +588,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             }}
             """
 
-    def instance_html(path, label_fontsize: int = 11):
+    def instance_html(path, label_fontsize: int = 8):
         headers = []
         features_used = [node.feature() for node in path[:-1]] # don't include leaf
         display_X = X
@@ -604,7 +605,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             color = GREY
             if i in highlight_feature_indexes:
                 color = HIGHLIGHT_COLOR
-            headers.append(f'<td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}"><b>{name}</b></font></td>')
+            headers.append(f'<td cellpadding="1" align="left" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}"><b>{name}</b></font></td>')
 
         values = []
         for i,v in enumerate(display_X):
@@ -615,7 +616,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                 disp_v = v
             else:
                 disp_v = myround(v, precision)
-            values.append(f'<td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}">{disp_v}</font></td>')
+            values.append(f'<td cellpadding="1" align="left" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}">{disp_v}</font></td>')
 
         return f"""
         <table border="0" cellspacing="0" cellpadding="0">
@@ -781,11 +782,11 @@ digraph G {{
     margin=0.0;
     node [margin="0.03" penwidth="0.5" width=.1, height=.1];
     edge [arrowsize=.4 penwidth="0.3"]
-    
+
     {newline.join(internal)}
     {newline.join(edges)}
     {newline.join(leaves)}
-    
+
     {class_legend_gr()}
     {instance_gr()}
 }}
@@ -983,7 +984,7 @@ def regr_split_viz(node: ShadowDecTreeNode,
     if highlight_node:
         wedge(ax, X[node.feature()], color=HIGHLIGHT_COLOR)
 
-    plt.tight_layout()
+    #plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
@@ -1032,7 +1033,7 @@ def regr_leaf_viz(node : ShadowDecTreeNode,
     ax.scatter(X, y, s=5, c='#225ea8', alpha=alpha, lw=.3)
     ax.plot([0,len(node.samples())],[m,m],'--', color=GREY, linewidth=1)
 
-    plt.tight_layout()
+    #plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
@@ -1146,11 +1147,11 @@ def get_num_bins(histtype, n_classes):
     with open(dotfilename, "w") as f:
         f.write("digraph G { A -> B }\n")
     svgfilename = f"{tmp}/testing_svg_{getpid()}.svg"
-    cmd = ["dot", "-Tsvg:cairo", "-o", svgfilename, dotfilename]
+    cmd = ["dot", "-Tsvg", "-o", svgfilename, dotfilename]
     print(' '.join(cmd))
     ok = True
     try:
-        os.execlp("dot", "dot", "-Tsvg:cairo", "-o", svgfilename, dotfilename)
+        os.execlp("dot", "dot", "-Tsvg", "-o", svgfilename, dotfilename)
         # run(cmd, capture_output=False, check=False, quiet=True)
     except:
         ok = False
