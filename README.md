@@ -84,7 +84,7 @@ lrwxr-xr-x  1 parrt  wheel  33 Feb  4 19:54 /usr/local/bin/dot@ -> ../Cellar/gra
 
 then you're still using the brew version. Do a `brew uninstall graphviz` and build from source again with brew. 
  
-The OS X version is able to generate/save images in any format `dot` is allowed to use with the `-T{format}:cairo` option. So .svg, .pdf are totally safe bets.
+The OS X version is able to generate/save images in any format `dot` is allowed to use with the `-T{format}` option. So .svg, .pdf are totally safe bets.
 
 **Limitations.** Jupyter notebook has a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
 
