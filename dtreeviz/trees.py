@@ -110,9 +110,10 @@ class DTreeViz:
 def rtreeviz_univar(ax,
                     x_train: (pd.Series, np.ndarray),  # 1 vector of X data
                     y_train: (pd.Series, np.ndarray),
-                    max_depth,
-                    feature_name: str,
-                    target_name: str,
+                    max_depth = 10,
+                    feature_name: str = None,
+                    target_name: str = None,
+                    min_samples_leaf = 1,
                     fontsize: int = 14,
                     show={'title','splits'}):
     if isinstance(x_train, pd.Series):
@@ -123,7 +124,7 @@ def rtreeviz_univar(ax,
     y_range = (min(y_train), max(y_train))  # same y axis for all
     overall_feature_range = (np.min(x_train), np.max(x_train))
 
-    t = tree.DecisionTreeRegressor(max_depth=max_depth)
+    t = tree.DecisionTreeRegressor(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
     t.fit(x_train.reshape(-1,1), y_train)
 
     shadow_tree = ShadowDecTree(t, x_train.reshape(-1,1), y_train, feature_names=[feature_name])
@@ -158,7 +159,7 @@ def rtreeviz_univar(ax,
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=GREY, labelsize=fontsize)
 
     if 'title' in show:
-        title = f"Regression tree depth {max_depth}, training $R^2$={t.score(x_train.reshape(-1,1),y_train):.3f}"
+        title = f"Regression tree depth {max_depth}, samples per leaf {min_samples_leaf},\nTraining $R^2$={t.score(x_train.reshape(-1,1),y_train):.3f}"
         plt.title(title, fontsize=fontsize, color=GREY)
 
     plt.xlabel(feature_name, fontsize=fontsize)
