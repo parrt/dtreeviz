@@ -635,9 +635,9 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         pred, path = shadow_tree.predict(X)
         leaf = f"leaf{path[-1].id}"
         if shadow_tree.isclassifier():
-            edge_label = f" Prediction<br/> {path[-1].prediction_name()}"
+            edge_label = f" &#160;Prediction<br/> {path[-1].prediction_name()}"
         else:
-            edge_label = f" Prediction<br/> {myround(path[-1].prediction(), precision)}"
+            edge_label = f" &#160;Prediction<br/> {myround(path[-1].prediction(), precision)}"
         return f"""
             subgraph cluster_instance {{
                 style=invis;
