@@ -588,7 +588,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             }}
             """
 
-    def instance_html(path, label_fontsize: int = 8):
+    def instance_html(path, label_fontsize: int = 11):
         headers = []
         features_used = [node.feature() for node in path[:-1]] # don't include leaf
         display_X = X
@@ -605,8 +605,8 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             color = GREY
             if i in highlight_feature_indexes:
                 color = HIGHLIGHT_COLOR
-            headers.append(f'<td cellpadding="1" align="text" width="{len(name)*5}px" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}"><b>{name}</b></font></td>')
-            
+            headers.append(f'<td cellpadding="1" align="text" width="{len(name)*label_fontsize*(2/3)}px" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}"><b>{name}</b></font></td>')
+
         values = []
         for i,v in enumerate(display_X):
             color = GREY
