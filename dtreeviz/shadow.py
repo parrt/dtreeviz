@@ -65,9 +65,10 @@ class ShadowDecTree:
         if isinstance(y_train, pd.Series):
             y_train = y_train.values
         self.y_train = y_train
-        self.unique_target_values = np.unique(y_train)
         self.node_to_samples = ShadowDecTree.node_samples(tree_model, X_train)
-        self.class_weights = compute_class_weight(tree_model.class_weight, self.unique_target_values, self.y_train)
+        if self.isclassifier():
+            self.unique_target_values = np.unique(y_train)
+            self.class_weights = compute_class_weight(tree_model.class_weight, self.unique_target_values, self.y_train)
 
         tree = tree_model.tree_
         children_left = tree.children_left

@@ -28,8 +28,10 @@ def viz_iris(orientation="TD", max_depth=5, random_state=666, fancy=True):
         if pred[0]!=pred2[0]:
             print("MISMATCH!")
 
+    features = list(data.columns)
+    features = np.array(['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)'])
     st = dtreeviz(clf, iris.data, iris.target, target_name='variety',
-                  feature_names=data.columns, orientation=orientation,
+                  feature_names=features, orientation=orientation,
                   class_names=["setosa", "versicolor", "virginica"],  # 0,1,2 targets
                   #histtype='strip',
                   fancy=fancy,
@@ -45,8 +47,10 @@ def viz_boston(orientation="TD", max_depth=3, random_state=666, fancy=True):
 
     X = boston.data[np.random.randint(0, len(boston.data)),:]
 
+    print(boston.feature_names)
+    features = np.array(['CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT'])
     viz = dtreeviz(regr, boston.data, boston.target, target_name='price',
-                   feature_names=boston.feature_names, orientation=orientation,
+                   feature_names=features, orientation=orientation,
                    fancy=fancy,
                    X=X)
 
@@ -154,8 +158,8 @@ def viz_wine(orientation="TD", max_depth=3, random_state=666, fancy=True, pickX=
 
 # viz = viz_wine(pickX=True)
 # viz = viz_diabetes(pickX=True)
-# viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
-viz = viz_iris(fancy=True, orientation='TD', max_depth=3)
+viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
+# viz = viz_iris(fancy=True, orientation='TD', max_depth=3)
 # viz = viz_digits(fancy=True, max_depth=3, orientation='TD')
 # viz = viz_knowledge(fancy=True, orientation='TD', max_depth=2)
 #g = graphviz.Source(st)
