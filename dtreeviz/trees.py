@@ -83,6 +83,8 @@ class DTreeViz:
         format = path.suffix[1:]  # ".svg" -> "svg" etc...
 
         if not filename.endswith(".svg"):
+            # Mac I think could do any format if we required:
+            #   brew reinstall pango librsvg cairo
             raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
 
         # Gen .svg file from .dot but output .svg has image refs to other files
@@ -931,12 +933,20 @@ def class_split_viz(node: ShadowDecTreeNode,
 def class_leaf_viz(node : ShadowDecTreeNode,
                    colors : List[str],
                    filename: str):
-    size = prop_size(node.nsamples(), counts=node.shadow_tree.leaf_sample_counts(),
-                     output_range=(1.01, 1.5))
+    # size = prop_size(node.nsamples(), counts=node.shadow_tree.leaf_sample_counts(),
+    #                  output_range=(.2, 1.5))
+
+    minsize = .15
+    maxsize = 1.3
+    slope = 0.02
+    nsamples = node.nsamples()
+    size = nsamples * slope + minsize
+    size = maxsize if size > maxsize else size
+
     # we visually need n=1 and n=9 to appear different but diff between 300 and 400 is no big deal
-    size = np.sqrt(np.log(size))
+    # size = np.sqrt(np.log(size))
     counts = node.class_counts()
-    draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={node.nsamples()}")
+    draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}")
 
 
 def regr_split_viz(node: ShadowDecTreeNode,
@@ -1150,7 +1160,6 @@ def prop_size(n, counts, output_range = (0.00, 0.3)):
     min_samples = min(counts)
     max_samples = max(counts)
     sample_count_range = max_samples - min_samples
-
 
     if sample_count_range>0:
         zero_to_one = (n - min_samples) / sample_count_range

@@ -31,7 +31,7 @@ def viz_iris(orientation="TD", max_depth=5, random_state=666, fancy=True):
     st = dtreeviz(clf, iris.data, iris.target, target_name='variety',
                   feature_names=data.columns, orientation=orientation,
                   class_names=["setosa", "versicolor", "virginica"],  # 0,1,2 targets
-                  histtype='strip',
+                  #histtype='strip',
                   fancy=fancy,
                   X=x)
 
@@ -152,12 +152,12 @@ def viz_wine(orientation="TD", max_depth=3, random_state=666, fancy=True, pickX=
     return viz
 
 
-viz = viz_wine(pickX=True)
+# viz = viz_wine(pickX=True)
 # viz = viz_diabetes(pickX=True)
 # viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
-# viz = viz_iris(fancy=True, orientation='TD')
-#viz = viz_digits(fancy=True, max_depth=3, orientation='TD')
-#viz = viz_knowledge(fancy=True, orientation='TD', max_depth=2)
+viz = viz_iris(fancy=True, orientation='TD', max_depth=3)
+# viz = viz_digits(fancy=True, max_depth=3, orientation='TD')
+# viz = viz_knowledge(fancy=True, orientation='TD', max_depth=2)
 #g = graphviz.Source(st)
 
 # tmp = tempfile.gettempdir()
@@ -169,4 +169,4 @@ viz = viz_wine(pickX=True)
 # viz.save("/tmp/t.pdf")
 # viz.save("/tmp/t.png")
 viz.save("/tmp/t.svg")
-#viz.view()
+viz.view()
