@@ -589,7 +589,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             }}
             """
 
-    def instance_html(path, label_fontsize: int = 11, label_fontscale: float = 0.66):
+    def instance_html(path, instance_fontsize: int = 11):
         headers = []
         features_used = [node.feature() for node in path[:-1]] # don't include leaf
         display_X = X
@@ -607,7 +607,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             if i in highlight_feature_indexes:
                 color = HIGHLIGHT_COLOR
             headers.append(f'<td cellpadding="1" align="right" bgcolor="white">'
-                           f'<font face="Helvetica" color="{color}" point-size="{label_fontsize}">'
+                           f'<font face="Helvetica" color="{color}" point-size="{instance_fontsize}">'
                            f'{name}'
                            '</font>'
                            '</td>')
@@ -622,7 +622,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             else:
                 disp_v = myround(v, precision)
             values.append(f'<td cellpadding="1" align="right" bgcolor="white">'
-                          f'<font face="Helvetica" color="{color}" point-size="{label_fontsize}">{disp_v}</font>'
+                          f'<font face="Helvetica" color="{color}" point-size="{instance_fontsize}">{disp_v}</font>'
                           '</td>')
 
         return f"""
