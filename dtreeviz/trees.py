@@ -84,8 +84,8 @@ class DTreeViz:
 
         if not filename.endswith(".svg"):
             raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
+
         # Gen .svg file from .dot but output .svg has image refs to other files
-        #orig_svgfilename = filename.replace('.svg', '-orig.svg')
         cmd = ["dot", f"-T{format}", "-o", filename, dotfilename]
         # print(' '.join(cmd))
         stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
