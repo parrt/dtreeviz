@@ -48,7 +48,7 @@ def inline_svg_images(svg) -> str:
     for img in image_tags:
         # load ref'd image and get svg root
         svgfilename = img.attrib["{http://www.w3.org/1999/xlink}href"]
-        with open(svgfilename) as f:
+        with open(svgfilename, encoding='UTF-8') as f:
             imgsvg = f.read()
         imgroot = ET.fromstring(imgsvg)
         for k,v in img.attrib.items(): # copy IMAGE tag attributes to svg from image file
@@ -75,7 +75,7 @@ def get_SVG_shape(filename) -> Tuple[Number,Number]:
 
     Hmm...Seems we don't need this anymore but I will leave it just in case
     """
-    with open(filename, "r") as f:
+    with open(filename, mode="r", encoding='UTF-8') as f:
         for line in f.readlines():
             if line.startswith("<svg "):
                 args = line[len("<svg "):].split()
