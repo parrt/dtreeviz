@@ -82,7 +82,7 @@ class DTreeViz:
         dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem)
         format = path.suffix[1:]  # ".svg" -> "svg" etc...
 
-        if not filename.endswith(".svg") and PLATFORM!='darwin':
+        if not filename.endswith(".svg"):
             raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
         # Gen .svg file from .dot but output .svg has image refs to other files
         #orig_svgfilename = filename.replace('.svg', '-orig.svg')

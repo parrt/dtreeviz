@@ -130,8 +130,31 @@ def viz_digits(orientation="TD", max_depth=3, random_state=666, fancy=True, pick
                   X=X)
     return viz
 
+def viz_wine(orientation="TD", max_depth=3, random_state=666, fancy=True, pickX=False):
+    clf = tree.DecisionTreeClassifier(max_depth=2)
+    wine = load_wine()
 
-viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
+    X_train = wine.data
+    y_train = wine.target
+    clf.fit(X_train, y_train)
+
+    X = None
+    if pickX:
+        X = X_train[np.random.randint(0, len(X_train.data)),:]
+
+    viz = dtreeviz(clf,
+                   wine.data,
+                   wine.target,
+                   target_name='wine',
+                   feature_names=wine.feature_names,
+                   class_names=list(wine.target_names),
+                   X=X)  # pass the test observation
+    return viz
+
+
+viz = viz_wine(pickX=True)
+# viz = viz_diabetes(pickX=True)
+# viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
 # viz = viz_iris(fancy=True, orientation='TD')
 #viz = viz_digits(fancy=True, max_depth=3, orientation='TD')
 #viz = viz_knowledge(fancy=True, orientation='TD', max_depth=2)
@@ -143,5 +166,7 @@ viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
 #     f.write(st+"\n")
 #
 #print(viz.dot)
-#viz.save("/tmp/t.svg")
-viz.view()
+# viz.save("/tmp/t.pdf")
+# viz.save("/tmp/t.png")
+viz.save("/tmp/t.svg")
+#viz.view()

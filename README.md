@@ -40,17 +40,12 @@ For your specific platform, please see the following subsections.
 
 ### Mac
 
-*The brew spec for graphviz recently removed the options we use to use, --with-librsvg --with-pango. Now you have to build graphviz from source to get this working. (Feb 4, 2018)*
-
 Make sure to have the latest XCode installed and command-line tools installed. You can run `xcode-select --install` from the command-line to install those if XCode is already installed. You also have to sign the XCode license agreement, which you can do with `sudo xcodebuild -license` from command-line. The brew install shown next needs to build graphviz, so you need XCode set up properly.
 
-You need the graphviz binary for `dot` installed with librsvg, pango and cairo. Make sure you follow this procedure (verified on 10.14) to build graphviz latest from source and install:
+You need the graphviz binary for `dot`. Make sure you follow this procedure (verified on 10.13, 10.14):
 
 ```bash
-brew uninstall graphviz
-brew reinstall pango librsvg --build-from-source # even if already there, please reinstall
-brew reinstall cairo --build-from-source
-brew install graphviz --build-from-source
+brew reinstall graphviz
 ```
 
 Just to be sure, remove `dot` from any anaconda installation, for example:
@@ -65,24 +60,15 @@ From command line, this command
 dot -Tsvg
 ```
 
-should work, in the sense that it just stares at you without giving an error. You can hit control-C to escape back to the shell. If you still get an error message that says something about trying `-Tsvg:svg:core` option, then we still have a problem. Make sure that you are using the right `dot`:
+should work, in the sense that it just stares at you without giving an error. You can hit control-C to escape back to the shell. If you still get an error message that says something about trying `-Tsvg:svg:core` option, then we still have a problem. Make sure that you are using the right `dot` as installed by brew:
 
 ```bash
 $ which dot
 /usr/local/bin/dot
 $ ls -l $(which dot)
--rwxr-xr-x  1 parrt  wheel  22920 Feb  5 09:02 /usr/local/bin/dot*
+lrwxr-xr-x  1 parrt  wheel  33 May 26 11:04 /usr/local/bin/dot@ -> ../Cellar/graphviz/2.40.1/bin/dot
 $
 ```
-
-If instead, it says something like
-
-```
-$ ls -l $(which dot)
-lrwxr-xr-x  1 parrt  wheel  33 Feb  4 19:54 /usr/local/bin/dot@ -> ../Cellar/graphviz/2.40.1/bin/dot
-```
-
-then you're still using the brew version. Do a `brew uninstall graphviz` and build from source again with brew. 
  
 The OS X version is able to generate/save images in any format `dot` is allowed to use with the `-T{format}` option. So .svg, .pdf are totally safe bets.
 
