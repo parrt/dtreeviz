@@ -135,7 +135,7 @@ def viz_digits(orientation="TD", max_depth=3, random_state=666, fancy=True, pick
     return viz
 
 def viz_wine(orientation="TD", max_depth=3, random_state=666, fancy=True, pickX=False):
-    clf = tree.DecisionTreeClassifier(max_depth=2)
+    clf = tree.DecisionTreeClassifier(max_depth=max_depth)
     wine = load_wine()
 
     X_train = wine.data
@@ -156,9 +156,30 @@ def viz_wine(orientation="TD", max_depth=3, random_state=666, fancy=True, pickX=
     return viz
 
 
-# viz = viz_wine(pickX=True)
+def weird_binary_case():
+    # See bug https://github.com/parrt/dtreeviz/issues/17
+    import numpy as np
+    from sklearn.tree import DecisionTreeClassifier
+    from dtreeviz.trees import dtreeviz
+
+    x = np.random.choice([-1,1], size=(100, 2))
+    y = np.random.choice([0, 1], size=100)
+
+    viz = dtreeviz(
+        tree_model=DecisionTreeClassifier(max_depth=1).fit(x, y),
+        X_train=x,
+        y_train=y,
+        feature_names=['a', 'b'],
+        target_name='y',
+        class_names=[1, 0]
+    )
+    return viz
+
+
+viz = weird_binary_case()
+# viz = viz_wine(pickX=False, orientation='TD', max_depth=4, fancy=True)
 # viz = viz_diabetes(pickX=True)
-viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
+# viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
 # viz = viz_iris(fancy=True, orientation='TD', max_depth=3)
 # viz = viz_digits(fancy=True, max_depth=3, orientation='TD')
 # viz = viz_knowledge(fancy=True, orientation='TD', max_depth=2)
@@ -172,5 +193,5 @@ viz = viz_boston(fancy=True, max_depth=4, orientation='TD')
 #print(viz.dot)
 # viz.save("/tmp/t.pdf")
 # viz.save("/tmp/t.png")
-viz.save("/tmp/t.svg")
+# viz.save("/tmp/t.svg")
 viz.view()

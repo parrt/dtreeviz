@@ -312,13 +312,12 @@ def ctreeviz_univar(ax, x_train, y_train, max_depth, feature_name, class_names,
     X_hist = [x_train[y_train == cl] for cl in class_values]
     binwidth = r / nbins
     if gtype == 'barstacked':
+        bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
         hist, bins, barcontainers = ax.hist(X_hist,
                                             color=X_colors,
                                             align='mid',
                                             histtype='barstacked',
-                                            bins=np.arange(overall_feature_range[0],
-                                                           overall_feature_range[
-                                                               1] + binwidth, binwidth),
+                                            bins=bins,
                                             label=class_names)
 
         for patch in barcontainers:
@@ -883,11 +882,14 @@ def class_split_viz(node: ShadowDecTreeNode,
         X_colors = [colors[cl] for cl in class_values]
         binwidth = r / nbins
 
+        bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
+        # print(f"\nrange: {overall_feature_range}, r={r}, nbins={nbins}, len(bins)={len(bins)}, binwidth={binwidth}\n{bins}")
+        # bins[-1] = overall_feature_range[1] # make sure rounding doesn't kill last value on right
         hist, bins, barcontainers = ax.hist(X_hist,
                                             color=X_colors,
                                             align='mid',
                                             histtype=histtype,
-                                            bins=np.arange(overall_feature_range[0],overall_feature_range[1] + binwidth, binwidth),
+                                            bins=bins,
                                             label=class_names)
         # Alter appearance of each bar
         for patch in barcontainers:

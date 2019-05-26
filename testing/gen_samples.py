@@ -113,7 +113,7 @@ def viz_sweets(orientation="TD",
                ticks_fontsize=8,
                fontname="Arial"):
 
-    sweets = pd.read_csv("testing/data/sweetrs.csv")
+    sweets = pd.read_csv("data/sweetrs.csv")
     sweets = sweets.sample(n=500)  # just grab 500 of 17k for plotting
 
     X_train, y_train = sweets.drop('rating', axis=1), sweets['rating']
@@ -150,7 +150,7 @@ def viz_fires(orientation="TD",
               ticks_fontsize=8,
               fontname="Arial"):
 
-    fires = pd.read_csv("testing/data/forestfires.csv")
+    fires = pd.read_csv("data/forestfires.csv")
     fires['month'] = fires['month'].astype('category').cat.as_ordered()
     fires['month'] = fires['month'].cat.codes + 1
     fires['day'] = fires['day'].astype('category').cat.as_ordered()
@@ -338,7 +338,7 @@ def viz_knowledge(orientation="TD",
     # data from https://archive.ics.uci.edu/ml/datasets/User+Knowledge+Modeling
     clf = tree.DecisionTreeClassifier(max_depth=max_depth,
                                       random_state=random_state)
-    know = pd.read_csv("testing/data/knowledge.csv")
+    know = pd.read_csv("data/knowledge.csv")
     target_names = ['very_low', 'Low', 'Middle', 'High']
     know['UNS'] = know['UNS'].map({n: i for i, n in enumerate(target_names)})
 
