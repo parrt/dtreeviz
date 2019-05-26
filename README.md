@@ -34,6 +34,8 @@ pip install dtreeviz
 
 This should also pull in the `graphviz` Python library (>=0.9), which we are using for platform specific stuff.
 
+**Limitations.** Only svg files can be generated at this time, which reduces dependencies and dramatically simplifies install process.
+
 Please email [Terence](mailto:parrt@cs.usfca.edu) with any helpful notes on making dtreeviz work (better) on other platforms. Thanks! 
 
 For your specific platform, please see the following subsections.
@@ -42,7 +44,7 @@ For your specific platform, please see the following subsections.
 
 Make sure to have the latest XCode installed and command-line tools installed. You can run `xcode-select --install` from the command-line to install those if XCode is already installed. You also have to sign the XCode license agreement, which you can do with `sudo xcodebuild -license` from command-line. The brew install shown next needs to build graphviz, so you need XCode set up properly.
 
-You need the graphviz binary for `dot`. Make sure you follow this procedure (verified on 10.13, 10.14):
+You need the graphviz binary for `dot`. Make sure you have latest version (verified on 10.13, 10.14):
 
 ```bash
 brew reinstall graphviz
@@ -60,7 +62,7 @@ From command line, this command
 dot -Tsvg
 ```
 
-should work, in the sense that it just stares at you without giving an error. You can hit control-C to escape back to the shell. If you still get an error message that says something about trying `-Tsvg:svg:core` option, then we still have a problem. Make sure that you are using the right `dot` as installed by brew:
+should work, in the sense that it just stares at you without giving an error. You can hit control-C to escape back to the shell.  Make sure that you are using the right `dot` as installed by brew:
 
 ```bash
 $ which dot
@@ -69,8 +71,6 @@ $ ls -l $(which dot)
 lrwxr-xr-x  1 parrt  wheel  33 May 26 11:04 /usr/local/bin/dot@ -> ../Cellar/graphviz/2.40.1/bin/dot
 $
 ```
- 
-The OS X version is able to generate/save images in any format `dot` is allowed to use with the `-T{format}` option. So .svg, .pdf are totally safe bets.
 
 **Limitations.** Jupyter notebook has a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
 
