@@ -80,32 +80,23 @@ class DTreeViz:
 
         g = graphviz.Source(self.dot, format='svg')
         dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem)
+        format = path.suffix[1:]  # ".svg" -> "svg" etc...
 
-        if PLATFORM=='darwin':
-            # dot seems broken in terms of fonts if we use -Tsvg. Force users to
-            # brew install graphviz with librsvg (else metrics are off) and
-            # use -Tsvg:cairo which fixes bug and also automatically embeds images
-            format = path.suffix[1:]  # ".svg" -> "svg" etc...
-            cmd = ["dot", f"-T{format}:cairo", "-o", filename, dotfilename]
-            # print(' '.join(cmd))
-            stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
+        if not filename.endswith(".svg") and PLATFORM!='darwin':
+            raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
+        # Gen .svg file from .dot but output .svg has image refs to other files
+        #orig_svgfilename = filename.replace('.svg', '-orig.svg')
+        cmd = ["dot", f"-T{format}", "-o", filename, dotfilename]
+        # print(' '.join(cmd))
+        stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
 
-        else:
-            if not filename.endswith(".svg"):
-                raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
-            # Gen .svg file from .dot but output .svg has image refs to other files
-            #orig_svgfilename = filename.replace('.svg', '-orig.svg')
-            cmd = ["dot", "-Tsvg", "-o", filename, dotfilename]
-            # print(' '.join(cmd))
-            stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
-
+        if filename.endswith(".svg"):
             # now merge in referenced SVG images to make all-in-one file
             with open(filename, encoding='UTF-8') as f:
                 svg = f.read()
             svg = inline_svg_images(svg)
             with open(filename, "w", encoding='UTF-8') as f:
                 f.write(svg)
-
 
 def rtreeviz_univar(ax,
                     x_train: (pd.Series, np.ndarray),  # 1 vector of X data
@@ -458,6 +449,7 @@ def add_classifier_legend(ax, class_names, class_values, colors, target_name):
                     borderpad=.8,
                     bbox_to_anchor=(1.0, 1.0),
                     edgecolor=GREY)
+
     leg.get_frame().set_linewidth(.5)
     leg.get_title().set_color(GREY)
     leg.get_title().set_fontsize(10)
@@ -581,7 +573,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         <table border="0" cellspacing="0" cellpadding="0">
             <tr>
                 <td border="0" cellspacing="0" cellpadding="0"><img src="{tmp}/legend_{getpid()}.svg"/></td>
-            </tr>        
+            </tr>
         </table>
         """
 
@@ -597,7 +589,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             }}
             """
 
-    def instance_html(path, label_fontsize: int = 11):
+    def instance_html(path, label_fontsize: int = 11, label_fontscale: float = 0.66):
         headers = []
         features_used = [node.feature() for node in path[:-1]] # don't include leaf
         display_X = X
@@ -614,7 +606,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             color = GREY
             if i in highlight_feature_indexes:
                 color = HIGHLIGHT_COLOR
-            headers.append(f'<td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}"><b>{name}</b></font></td>')
+            headers.append(f'<td cellpadding="1" align="text" width="{len(name)*label_fontsize*label_fontscale}px" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}"><b>{name}</b></font></td>')
 
         values = []
         for i,v in enumerate(display_X):
@@ -625,7 +617,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                 disp_v = v
             else:
                 disp_v = myround(v, precision)
-            values.append(f'<td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}">{disp_v}</font></td>')
+            values.append(f'<td cellpadding="1" align="text" fixedsize="false" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}">{disp_v}</font></td>')
 
         return f"""
         <table border="0" cellspacing="0" cellpadding="0">
@@ -644,9 +636,9 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         pred, path = shadow_tree.predict(X)
         leaf = f"leaf{path[-1].id}"
         if shadow_tree.isclassifier():
-            edge_label = f" Prediction<br/> {path[-1].prediction_name()}"
+            edge_label = f" &#160;Prediction<br/> {path[-1].prediction_name()}"
         else:
-            edge_label = f" Prediction<br/> {myround(path[-1].prediction(), precision)}"
+            edge_label = f" &#160;Prediction<br/> {myround(path[-1].prediction(), precision)}"
         return f"""
             subgraph cluster_instance {{
                 style=invis;
@@ -791,11 +783,11 @@ digraph G {{
     margin=0.0;
     node [margin="0.03" penwidth="0.5" width=.1, height=.1];
     edge [arrowsize=.4 penwidth="0.3"]
-    
+
     {newline.join(internal)}
     {newline.join(edges)}
     {newline.join(leaves)}
-    
+
     {class_legend_gr()}
     {instance_gr()}
 }}
@@ -993,7 +985,7 @@ def regr_split_viz(node: ShadowDecTreeNode,
     if highlight_node:
         wedge(ax, X[node.feature()], color=HIGHLIGHT_COLOR)
 
-    plt.tight_layout()
+    #plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
@@ -1042,7 +1034,7 @@ def regr_leaf_viz(node : ShadowDecTreeNode,
     ax.scatter(X, y, s=5, c='#225ea8', alpha=alpha, lw=.3)
     ax.plot([0,len(node.samples())],[m,m],'--', color=GREY, linewidth=1)
 
-    plt.tight_layout()
+    #plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
@@ -1156,11 +1148,11 @@ def get_num_bins(histtype, n_classes):
     with open(dotfilename, "w") as f:
         f.write("digraph G { A -> B }\n")
     svgfilename = f"{tmp}/testing_svg_{getpid()}.svg"
-    cmd = ["dot", "-Tsvg:cairo", "-o", svgfilename, dotfilename]
+    cmd = ["dot", "-Tsvg", "-o", svgfilename, dotfilename]
     print(' '.join(cmd))
     ok = True
     try:
-        os.execlp("dot", "dot", "-Tsvg:cairo", "-o", svgfilename, dotfilename)
+        os.execlp("dot", "dot", "-Tsvg", "-o", svgfilename, dotfilename)
         # run(cmd, capture_output=False, check=False, quiet=True)
     except:
         ok = False
