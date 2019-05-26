@@ -606,7 +606,11 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             color = GREY
             if i in highlight_feature_indexes:
                 color = HIGHLIGHT_COLOR
-            headers.append(f'<td cellpadding="1" align="text" width="{len(name)*label_fontsize*label_fontscale}px" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}"><b>{name}</b></font></td>')
+            headers.append(f'<td cellpadding="1" align="right" bgcolor="white">'
+                           f'<font face="Helvetica" color="{color}" point-size="{label_fontsize}">'
+                           f'{name}'
+                           '</font>'
+                           '</td>')
 
         values = []
         for i,v in enumerate(display_X):
@@ -617,7 +621,9 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                 disp_v = v
             else:
                 disp_v = myround(v, precision)
-            values.append(f'<td cellpadding="1" align="text" fixedsize="false" bgcolor="white"><font face="Helvetica" color="{color}" point-size="{label_fontsize}">{disp_v}</font></td>')
+            values.append(f'<td cellpadding="1" align="right" bgcolor="white">'
+                          f'<font face="Helvetica" color="{color}" point-size="{label_fontsize}">{disp_v}</font>'
+                          '</td>')
 
         return f"""
         <table border="0" cellspacing="0" cellpadding="0">
