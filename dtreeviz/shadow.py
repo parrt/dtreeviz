@@ -334,5 +334,5 @@ if __name__ == "__main__":
 
     regr = regr.fit(X_train, y_train)
 
-    dtree = ShadowDecTree(regr, X_train, feature_names=X_train.columns)
+    dtree = ShadowDecTree(regr, X_train, y_train, feature_names=X_train.columns)
     print(dtree)
