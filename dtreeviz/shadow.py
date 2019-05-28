@@ -323,16 +323,3 @@ class ShadowDecTreeNode:
                                                      s=round(self.split(),1),
                                                      left=self.left if self.left is not None else '',
                                                      right=self.right if self.right is not None else '')
-
-
-if __name__ == "__main__":
-    regr = tree.DecisionTreeRegressor(max_depth=5, random_state=666)
-    boston = load_boston()
-
-    X_train = pd.DataFrame(boston.data, columns=boston.feature_names)
-    y_train = boston.target
-
-    regr = regr.fit(X_train, y_train)
-
-    dtree = ShadowDecTree(regr, X_train, feature_names=X_train.columns)
-    print(dtree)
