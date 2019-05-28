@@ -121,7 +121,7 @@ print( stderr )
 
 If you are having issues with run command you can try copying the following files from: https://github.com/xflr6/graphviz/tree/master/graphviz.
 
-Place them in the AppData\Local\Continuum\anaconda3\Lib\site-packages\graphviz\site-packages\graphviz folder.
+Place them in the AppData\Local\Continuum\anaconda3\Lib\site-packages\graphviz folder. 
 
 Clean out the __pycache__ directory too.
 
