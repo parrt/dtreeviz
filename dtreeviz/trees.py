@@ -199,7 +199,7 @@ def rtreeviz_bivar_heatmap(ax, X_train, y_train, max_depth, feature_names,
     x, y, z = X_train[:,0], X_train[:,1], y_train
     
     cmap = matplotlib.colors.ListedColormap(color_map)
-    pts = ax.scatter(x, y, marker='o', alpha=.95, edgecolor=GREY, lw=.3, cmap=cmap, c=z, vmin=z.min(), vmax=z.max())
+    pts = ax.scatter(x, y, marker='o', alpha=.95, edgecolor=GREY, lw=.3, cmap=cmap, c=z)
     plt.colorbar(pts)
     
     ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=GREY)
