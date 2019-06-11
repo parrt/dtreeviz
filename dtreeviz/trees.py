@@ -108,7 +108,9 @@ def rtreeviz_univar(ax,
                     target_name: str = None,
                     min_samples_leaf = 1,
                     fontsize: int = 14,
-                    show={'title','splits'}):
+                    show={'title','splits'},
+                    split_linewidth=.5,
+                    mean_linewidth = 2):
     if isinstance(x_train, pd.Series):
         x_train = x_train.values
     if isinstance(y_train, pd.Series):
@@ -139,14 +141,14 @@ def rtreeviz_univar(ax,
 
     if 'splits' in show:
         for split in splits:
-            ax.plot([split, split], [*y_range], '--', color='grey', linewidth=.7)
+            ax.plot([split, split], [*y_range], '--', color='grey', linewidth=split_linewidth)
 
         prevX = overall_feature_range[0]
         for i, m in enumerate(means):
             split = overall_feature_range[1]
             if i < len(splits):
                 split = splits[i]
-            ax.plot([prevX, split], [m, m], '-', color='#f46d43', linewidth=2)
+            ax.plot([prevX, split], [m, m], '-', color='#f46d43', linewidth=mean_linewidth)
             prevX = split
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=GREY, labelsize=fontsize)
