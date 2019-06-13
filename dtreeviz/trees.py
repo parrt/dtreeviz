@@ -110,7 +110,8 @@ def rtreeviz_univar(ax,
                     fontsize: int = 14,
                     show={'title','splits'},
                     split_linewidth=.5,
-                    mean_linewidth = 2):
+                    mean_linewidth = 2,
+                    markersize=10):
     if isinstance(x_train, pd.Series):
         x_train = x_train.values
     if isinstance(y_train, pd.Series):
@@ -136,7 +137,7 @@ def rtreeviz_univar(ax,
         inrange = y_train[(x_train >= left) & (x_train < right)]
         means.append(np.mean(inrange))
 
-    ax.scatter(x_train, y_train, marker='o', alpha=.4, c=BLUE,
+    ax.scatter(x_train, y_train, marker='o', alpha=.4, c=BLUE, s=markersize,
                 edgecolor=GREY, lw=.3)
 
     if 'splits' in show:
