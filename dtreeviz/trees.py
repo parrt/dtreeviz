@@ -131,10 +131,11 @@ def rtreeviz_univar(ax,
     bins = [overall_feature_range[0]] + splits + [overall_feature_range[1]]
 
     means = []
+    # print(bins)
     for i in range(len(bins) - 1):
         left = bins[i]
         right = bins[i + 1]
-        inrange = y_train[(x_train >= left) & (x_train < right)]
+        inrange = y_train[(x_train >= left) & (x_train <= right)]
         means.append(np.mean(inrange))
 
     ax.scatter(x_train, y_train, marker='o', alpha=.4, c=BLUE, s=markersize,
