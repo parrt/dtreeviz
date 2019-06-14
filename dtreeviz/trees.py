@@ -1,5 +1,3 @@
-from dtreeviz.utils import *
-
 import numpy as np
 import pandas as pd
 import graphviz
@@ -7,14 +5,16 @@ from pathlib import Path
 from sklearn import tree
 from graphviz.backend import run, view
 import matplotlib.pyplot as plt
-from dtreeviz.shadow import *
 from numbers import Number
 import matplotlib.patches as patches
-from mpl_toolkits.mplot3d import Axes3D
 import tempfile
 from os import getpid, makedirs
 from sys import platform as PLATFORM
 from colour import Color
+from typing import Mapping, List
+from dtreeviz.utils import inline_svg_images, myround
+from dtreeviz.shadow import ShadowDecTree, ShadowDecTreeNode
+
 
 YELLOW = "#fefecd" # "#fbfbd0" # "#FBFEB0"
 GREEN = "#cfe2d4"
@@ -90,7 +90,7 @@ class DTreeViz:
         # Gen .svg file from .dot but output .svg has image refs to other files
         cmd = ["dot", f"-T{format}", "-o", filename, dotfilename]
         # print(' '.join(cmd))
-        stdout, stderr = run(cmd, capture_output=True, check=True, quiet=False)
+        run(cmd, capture_output=True, check=True, quiet=False)
 
         if filename.endswith(".svg"):
             # now merge in referenced SVG images to make all-in-one file
@@ -312,12 +312,8 @@ def ctreeviz_univar(ax, x_train, y_train, max_depth, feature_name, class_names,
     ax.spines['left'].set_visible(False)
     ax.spines['bottom'].set_linewidth(.3)
 
-    r = overall_feature_range[1] - overall_feature_range[0]
-
-    dot_w = 25
-
     X_hist = [x_train[y_train == cl] for cl in class_values]
-    binwidth = r / nbins
+
     if gtype == 'barstacked':
         bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
         hist, bins, barcontainers = ax.hist(X_hist,
@@ -517,7 +513,10 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
     :param X: Instance to run down the tree; derived path to highlight from this vector.
               Show feature vector with labels underneath leaf reached. highlight_path
               is ignored if X is not None.
-    :type np.ndarray
+    :type X: np.ndarray
+    :param label_fontsize: Size of the label font
+    :param ticks_fontsize: Size of the tick font
+    :param fontname: Font which is used for labels and text
     :param max_X_features_LR: If len(X) exceeds this limit for LR layout,
                             display only those features
                            used to guide X vector down tree. Helps when len(X) is large.
@@ -867,8 +866,6 @@ def class_split_viz(node: ShadowDecTreeNode,
 
     class_names = node.shadow_tree.class_names
 
-    r = overall_feature_range[1]-overall_feature_range[0]
-
     class_values = node.shadow_tree.unique_target_values
     X_hist = [X_feature[y_train == cl] for cl in class_values]
 
@@ -887,7 +884,6 @@ def class_split_viz(node: ShadowDecTreeNode,
                        edgecolors=GREY, lw=.3)
     else:
         X_colors = [colors[cl] for cl in class_values]
-        binwidth = r / nbins
 
         bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
         # print(f"\nrange: {overall_feature_range}, r={r}, nbins={nbins}, len(bins)={len(bins)}, binwidth={binwidth}\n{bins}")
@@ -1016,7 +1012,6 @@ def regr_split_viz(node: ShadowDecTreeNode,
         ymin, ymax = ax.get_ylim()
         xr = xmax - xmin
         yr = ymax - ymin
-        hr = figsize[1]
         th = yr * .1
         tw = xr * .018
         tipy = ymin
@@ -1182,24 +1177,3 @@ def get_num_bins(histtype, n_classes):
     if histtype == 'barstacked':
         bins *= 2
     return bins
-
-
-    global dot_already_tested
-    if dot_already_tested: return
-    dot_already_tested = True
-
-    tmp = tempfile.gettempdir()
-    dotfilename = f"{tmp}/testing_svg_{getpid()}.dot"
-    with open(dotfilename, "w") as f:
-        f.write("digraph G { A -> B }\n")
-    svgfilename = f"{tmp}/testing_svg_{getpid()}.svg"
-    cmd = ["dot", "-Tsvg", "-o", svgfilename, dotfilename]
-    print(' '.join(cmd))
-    ok = True
-    try:
-        os.execlp("dot", "dot", "-Tsvg", "-o", svgfilename, dotfilename)
-        # run(cmd, capture_output=False, check=False, quiet=True)
-    except:
-        ok = False
-
-    return ok
