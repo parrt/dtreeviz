@@ -42,6 +42,7 @@ COLORS = {'scatter_edge': GREY,
           'wedge': WEDGE_COLOR,
           'text_wedge': WEDGE_COLOR,
           'arrow': GREY,
+          'node_label': GREY,
           'tick_label': GREY,
           'leaf_label': GREY, # missing
           'pie': GREY,
