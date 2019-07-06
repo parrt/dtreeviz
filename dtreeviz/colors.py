@@ -44,7 +44,7 @@ COLORS = {'scatter_edge': GREY,
           'arrow': GREY,
           'node_label': GREY,
           'tick_label': GREY,
-          'leaf_label': GREY, # missing
+          'leaf_label': GREY,
           'pie': GREY,
           }
 
