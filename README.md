@@ -380,6 +380,55 @@ python setup.py install -f
 
 E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.3-py3.6.egg`.
 
+## Customize colors
+
+Each function has an optional parameter `colors` which allows passing a dictionary of colors which is used in the plot. For an example of each parameter have a look at this [notebook](notebooks/colors.ipynb).
+
+### Example
+    dtreeviz.trees.dtreeviz(regr,
+                            boston.data,
+                            boston.target,
+                            target_name='price',
+                            feature_names=boston.feature_names,
+                            colors={'scatter_marker': '#00ff00'})
+
+would paint the scatter (dots) in red.
+
+![Green plot](testing/samples/colors_scatter_marker.svg)
+### Parameters
+The colors are defined in `colors.py`, all options and default parameters are shown below.
+
+
+
+
+    COLORS = {'scatter_edge': GREY,         
+              'scatter_marker': BLUE,
+              'split_line': GREY,
+              'mean_line': '#f46d43',
+              'axis_label': GREY,
+              'title': GREY,
+              'legend_title': GREY,
+              'legend_edge': GREY,
+              'edge': GREY,
+              'color_map_min': '#c7e9b4',
+              'color_map_max': '#081d58',
+              'classes': color_blind_friendly_colors,
+              'rect_edge': GREY,
+              'text': GREY,
+              'highlight': HIGHLIGHT_COLOR,
+              'wedge': WEDGE_COLOR,
+              'text_wedge': WEDGE_COLOR,
+              'arrow': GREY,
+              'node_label': GREY,
+              'tick_label': GREY,
+              'leaf_label': GREY,
+              'pie': GREY,
+              }
+          
+
+The color needs be in a format [matplotlib](https://matplotlib.org/2.0.2/api/colors_api.html) can interpret, e.g. a html hex like `'#eeefff'` .
+
+`classes` needs to be a list of lists of colors with a minimum length of your number of colors. The index is the number of classes and the list with this index needs to have the same amount of colors.  
 
 ## Useful Resources
 
