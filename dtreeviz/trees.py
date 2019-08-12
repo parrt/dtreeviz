@@ -264,8 +264,10 @@ def rtreeviz_bivar_3D(ax, X_train, y_train, max_depth, feature_names, target_nam
     return None
 
 
-def ctreeviz_univar(ax, x_train, y_train, max_depth, feature_name, class_names,
+def ctreeviz_univar(ax, x_train, y_train, feature_name, class_names,
                     target_name,
+                    max_depth=None,
+                    min_samples_leaf=None,
                     fontsize=14, fontname="Arial", nbins=25, gtype='strip',
                     show={'title','legend','splits'},
                     colors=None):
@@ -274,10 +276,15 @@ def ctreeviz_univar(ax, x_train, y_train, max_depth, feature_name, class_names,
     if isinstance(y_train, pd.Series):
         y_train = y_train.values
 
+    if max_depth is None and min_samples_leaf is None:
+        raise ValueError("Either max_depth or min_samples_leaf must be set")
+    if max_depth is not None and min_samples_leaf is None:
+        min_samples_leaf = 1
+
     colors = adjust_colors(colors)
 
     #    ax.set_facecolor('#F9F9F9')
-    ct = tree.DecisionTreeClassifier(max_depth=max_depth)
+    ct = tree.DecisionTreeClassifier(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
     ct.fit(x_train.reshape(-1, 1), y_train)
 
     shadow_tree = ShadowDecTree(ct, x_train.reshape(-1, 1), y_train,
@@ -362,8 +369,10 @@ def ctreeviz_univar(ax, x_train, y_train, max_depth, feature_name, class_names,
             plt.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
 
 
-def ctreeviz_bivar(ax, X_train, y_train, max_depth, feature_names, class_names,
+def ctreeviz_bivar(ax, X_train, y_train, feature_names, class_names,
                    target_name,
+                   max_depth=None,
+                   min_samples_leaf=None,
                    fontsize=14,
                    fontname="Arial",
                    show={'title','legend','splits'},
@@ -377,9 +386,14 @@ def ctreeviz_bivar(ax, X_train, y_train, max_depth, feature_names, class_names,
     if isinstance(y_train, pd.Series):
         y_train = y_train.values
 
+    if max_depth is None and min_samples_leaf is None:
+        raise ValueError("Either max_depth or min_samples_leaf must be set")
+    if max_depth is not None and min_samples_leaf is None:
+        min_samples_leaf = 1
+
     colors = adjust_colors(colors)
 
-    ct = tree.DecisionTreeClassifier(max_depth=max_depth)
+    ct = tree.DecisionTreeClassifier(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
     ct.fit(X_train, y_train)
 
     shadow_tree = ShadowDecTree(ct, X_train, y_train,
