@@ -704,12 +704,19 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         color_map = {v: color_values[i] for i, v in enumerate(class_values)}
         draw_legend(shadow_tree, target_name, f"{tmp}/legend_{os.getpid()}.svg", colors=colors)
 
-    y_range = (min(y_train)*1.03, max(y_train)*1.03) # same y axis for all
-
-    if isinstance(X_train,pd.DataFrame):
+    if isinstance(X_train, pd.DataFrame):
         X_train = X_train.values
-    if isinstance(y_train,pd.Series):
+    if isinstance(y_train, pd.Series):
         y_train = y_train.values
+    if y_train.dtype == np.dtype(object):
+        try:
+            y_train = y_train.astype('float')
+        except ValueError as e:
+            raise ValueError('y_train needs to consist only of numerical values. {}'.format(e))
+        if len(y_train.shape) != 1:
+            raise ValueError('y_train must a one-dimensional list or Pandas Series, got: {}'.format(y_train.shape))
+
+    y_range = (min(y_train) * 1.03, max(y_train) * 1.03)  # same y axis for all
 
     # Find max height (count) for any bar in any node
     if shadow_tree.isclassifier():
