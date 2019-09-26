@@ -1208,3 +1208,80 @@ def get_num_bins(histtype, n_classes):
     if histtype == 'barstacked':
         bins *= 2
     return bins
+
+
+def _get_node_type(tree_model:(tree.DecisionTreeRegressor, tree.DecisionTreeClassifier)):
+    """Determine the nodes type from the tree.
+
+    The array node_type[i]=True if node with index=i is a leaf,
+    or False if the node is a split node.
+    """
+
+    node_type = np.zeros(shape=tree_model.tree_.node_count, dtype=bool)
+    stack = [(0)]  # the root node id
+    while len(stack) > 0:
+        node_id = stack.pop()
+        # If we have a split node
+        if tree_model.tree_.children_left[node_id] != tree_model.tree_.children_right[node_id]:
+            stack.append((tree_model.tree_.children_left[node_id]))
+            stack.append((tree_model.tree_.children_right[node_id]))
+        else:
+            node_type[node_id] = True  # we have a leaf node
+
+    return node_type
+
+
+def _get_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier)):
+    """Get the number of samples for each leaf.
+
+    :param tree_model: sklearn.tree
+        The tree to interpret
+    :return: tuple
+        Contains a list of leaf ids and a list of leaf samples
+    """
+
+    node_type = _get_node_type(tree_model)
+    n_node_samples = tree_model.tree_.n_node_samples
+
+    leaf_samples = [(i, n_node_samples[i]) for i in range(0, tree_model.tree_.node_count) if node_type[i]]
+    x, y = zip(*leaf_samples)
+    return x, y
+
+
+def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
+                     figsize: tuple = (10, 5),
+                     display_type: str = "plot",
+                     colors: dict = None,
+                     fontsize: int = 14):
+    """Show the number of training samples from each leaf.
+
+    If display_type = 'plot' it will show leaf samples using a plot.
+    If display_type = 'text' it will show leaf samples as plain text. This method is preferred if number
+    of leaves is very large and the plot becomes unreadable.
+
+    :param tree_model: sklearn.tree
+        The tree to interpret
+    :param figsize: tuple of int
+        The plot size
+    :param display_type: str, optional
+       'plot' or 'text'
+    :param colors: dict
+        The set of colors used for plotting
+    :param fontsize: int
+        Plot labels fontsize
+    """
+
+    colors = adjust_colors(colors)
+    leaf_id, leaf_samples = _get_leaf_samples(tree_model)
+    if display_type == "plot":
+        if figsize:
+            plt.figure(figsize=figsize)
+        plt.xticks(range(0, len(leaf_id)), leaf_id)
+        plt.bar(range(0, len(leaf_id)), leaf_samples, color=colors["scatter_marker"], lw=.3)
+        plt.xlabel("leaf ids",  fontsize=fontsize, color=colors['axis_label'])
+        plt.ylabel("samples count", fontsize=fontsize, color=colors['axis_label'])
+        plt.grid()
+    elif display_type == "text":
+        for leaf, samples in zip(leaf_id,leaf_samples):
+            print(f"leaf {leaf} has {samples} samples")
+
