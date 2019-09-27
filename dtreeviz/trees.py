@@ -1248,6 +1248,25 @@ def _get_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTree
     return x, y
 
 
+def _get_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier)):
+    """Get the number of samples by class for each leaf.
+
+    :param tree_model: sklearn.tree
+        The tree to interpret
+    :return: tuple
+        Contains a list of leaf ids and a two lists of leaf samples (one for each class)
+    """
+
+    node_type = _get_node_type(tree_model)
+    sample_values = tree_model.tree_.value
+
+    leaf_samples = [(i, sample_values[i][0][0], sample_values[i][0][1])
+                    for i in range(0, tree_model.tree_.node_count) if (node_type[i])]
+
+    index, leaf_samples_0, leaf_samples_1 = zip(*leaf_samples)
+    return index, leaf_samples_0, leaf_samples_1
+
+
 def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
                      figsize: tuple = (10, 5),
                      display_type: str = "plot",
@@ -1257,7 +1276,7 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
 
     If display_type = 'plot' it will show leaf samples using a plot.
     If display_type = 'text' it will show leaf samples as plain text. This method is preferred if number
-    of leaves is very large and the plot becomes unreadable.
+    of leaves is very large and the plot become very big and hard to interpret.
 
     :param tree_model: sklearn.tree
         The tree to interpret
@@ -1271,11 +1290,11 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
         Plot labels fontsize
     """
 
-    colors = adjust_colors(colors)
     leaf_id, leaf_samples = _get_leaf_samples(tree_model)
     if display_type == "plot":
         if figsize:
             plt.figure(figsize=figsize)
+        colors = adjust_colors(colors)
         plt.xticks(range(0, len(leaf_id)), leaf_id)
         plt.bar(range(0, len(leaf_id)), leaf_samples, color=colors["scatter_marker"], lw=.3)
         plt.xlabel("leaf ids",  fontsize=fontsize, color=colors['axis_label'])
@@ -1284,4 +1303,63 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
     elif display_type == "text":
         for leaf, samples in zip(leaf_id,leaf_samples):
             print(f"leaf {leaf} has {samples} samples")
+
+
+def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
+                              figsize: tuple = (10, 5),
+                              display_type: str = "plot",
+                              plot_ylim: int = None,
+                              colors: dict = None,
+                              fontsize: int = 14):
+    """Show leaf samples by class.
+
+
+
+    :param tree_model: sklearn.tree.DecisionTreeClassifier
+        The tree to interpret
+    :param figsize: tuple of int, optional
+        The plot size
+    :param plot_ylim: int, optional
+        The max value for oY. This is useful in case we have few leaves with big sample values which 'shadow'
+        the other leaves values.
+    :param colors: dict
+        The set of colors used for plotting
+    :param fontsize: int
+        Plot labels fontsize
+    """
+
+    if not isinstance(tree_model, tree.DecisionTreeClassifier):
+        print("Only sklearn.tree.DecisionTreeClassifier can be used for this vizualisation.")
+        return
+
+    if tree_model.n_classes_ != 2:
+        print("Right now only binary classification is supported.")
+        print("Please create an issue if you need more classes.")
+        return
+
+    index, leaf_samples_0, leaf_samples_1 = _get_leaf_samples_by_class(tree_model)
+
+    if display_type == "plot":
+        if figsize:
+            plt.figure(figsize=figsize)
+        colors = adjust_colors(colors)
+        colors_classes = colors['classes'][tree_model.n_classes_]
+        plt.xticks(range(0, len(index)), index)
+        p0 = plt.bar(range(0, len(index)), leaf_samples_0, color=colors_classes[0], lw=.3)
+        p1 = plt.bar(range(0, len(index)), leaf_samples_1, bottom=leaf_samples_0, color=colors_classes[1], lw=.3)
+
+        if plot_ylim is not None:
+            plt.ylim(0, plot_ylim)
+
+        plt.xlabel("leaf ids", fontsize=fontsize, color=colors['axis_label'])
+        plt.ylabel("samples by class", fontsize=fontsize, color=colors['axis_label'])
+        plt.grid()
+        plt.legend((p0[0], p1[0]), (f'class {tree_model.classes_[0]}', f'class {tree_model.classes_[1]}'))
+    elif display_type == "text":
+        for leaf, samples_0, samples_1 in zip(index, leaf_samples_0, leaf_samples_1):
+            print(f"leaf {leaf}, samples : {samples_0}, {samples_1}")
+
+
+
+
 
