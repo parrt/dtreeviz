@@ -1210,64 +1210,11 @@ def get_num_bins(histtype, n_classes):
     return bins
 
 
-def _get_node_type(tree_model:(tree.DecisionTreeRegressor, tree.DecisionTreeClassifier)):
-    """Determine the nodes type from the tree.
-
-    The array node_type[i]=True if node with index=i is a leaf,
-    or False if the node is a split node.
-    """
-
-    node_type = np.zeros(shape=tree_model.tree_.node_count, dtype=bool)
-    stack = [(0)]  # the root node id
-    while len(stack) > 0:
-        node_id = stack.pop()
-        # If we have a split node
-        if tree_model.tree_.children_left[node_id] != tree_model.tree_.children_right[node_id]:
-            stack.append((tree_model.tree_.children_left[node_id]))
-            stack.append((tree_model.tree_.children_right[node_id]))
-        else:
-            node_type[node_id] = True  # we have a leaf node
-
-    return node_type
-
-
-def _get_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier)):
-    """Get the number of samples for each leaf.
-
-    :param tree_model: sklearn.tree
-        The tree to interpret
-    :return: tuple
-        Contains a list of leaf ids and a list of leaf samples
-    """
-
-    node_type = _get_node_type(tree_model)
-    n_node_samples = tree_model.tree_.n_node_samples
-
-    leaf_samples = [(i, n_node_samples[i]) for i in range(0, tree_model.tree_.node_count) if node_type[i]]
-    x, y = zip(*leaf_samples)
-    return x, y
-
-
-def _get_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier)):
-    """Get the number of samples by class for each leaf.
-
-    :param tree_model: sklearn.tree
-        The tree to interpret
-    :return: tuple
-        Contains a list of leaf ids and a two lists of leaf samples (one for each class)
-    """
-
-    node_type = _get_node_type(tree_model)
-    sample_values = tree_model.tree_.value
-
-    leaf_samples = [(i, sample_values[i][0][0], sample_values[i][0][1])
-                    for i in range(0, tree_model.tree_.node_count) if (node_type[i])]
-
-    index, leaf_samples_0, leaf_samples_1 = zip(*leaf_samples)
-    return index, leaf_samples_0, leaf_samples_1
-
-
 def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
+                     X_train,
+                     y_train,
+                     features,
+                     class_names=None,
                      figsize: tuple = (10, 5),
                      display_type: str = "plot",
                      colors: dict = None,
@@ -1287,10 +1234,12 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
     :param colors: dict
         The set of colors used for plotting
     :param fontsize: int
-        Plot labels fontsize
+        Plot labels font size
     """
 
-    leaf_id, leaf_samples = _get_leaf_samples(tree_model)
+    shadow_tree = ShadowDecTree(tree_model, X_train, y_train, features, class_names=class_names)
+    leaf_id, leaf_samples = shadow_tree.get_leaf_sample_counts()
+
     if display_type == "plot":
         if figsize:
             plt.figure(figsize=figsize)
@@ -1306,14 +1255,16 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
 
 
 def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
+                              X_train,
+                              y_train,
+                              features,
+                              class_names=None,
                               figsize: tuple = (10, 5),
                               display_type: str = "plot",
                               plot_ylim: int = None,
                               colors: dict = None,
                               fontsize: int = 14):
     """Show leaf samples by class.
-
-
 
     :param tree_model: sklearn.tree.DecisionTreeClassifier
         The tree to interpret
@@ -1337,7 +1288,10 @@ def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
         print("Please create an issue if you need more classes.")
         return
 
-    index, leaf_samples_0, leaf_samples_1 = _get_leaf_samples_by_class(tree_model)
+    # index, leaf_samples_0, leaf_samples_1 = _get_leaf_samples_by_class(tree_model)
+
+    shadow_tree = ShadowDecTree(tree_model, X_train, y_train, features, class_names=class_names)
+    index, leaf_samples_0, leaf_samples_1 = shadow_tree.get_leaf_sample_counts_by_class()
 
     if display_type == "plot":
         if figsize:
