@@ -1121,7 +1121,7 @@ def draw_legend(shadow_tree, target_name, filename, colors=None):
     boxes = []
     for i, c in enumerate(class_values):
         box = patches.Rectangle((0, 0), 20, 10, linewidth=.4, edgecolor=colors['rect_edge'],
-                                facecolor=color_map[c], label=class_names[c])
+                                facecolor=color_map[c], label=class_names[i])
         boxes.append(box)
 
     fig, ax = plt.subplots(1, 1, figsize=(1,1))
