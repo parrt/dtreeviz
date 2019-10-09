@@ -120,8 +120,8 @@ class ShadowDecTree:
             X, y = X_feature[node.samples()], y_train[node.samples()]
             X_hist = [X[y == cl] for cl in class_values]
             height_of_bins = np.zeros(nbins)
-            for cl in class_values:
-                hist, foo = np.histogram(X_hist[cl], bins=bins, range=overall_feature_range)
+            for i,_ in enumerate(class_values):
+                hist, foo = np.histogram(X_hist[i], bins=bins, range=overall_feature_range)
                 # print(f"class {cl}: goal_n={len(bins):2d} n={len(hist):2d} {hist}")
                 height_of_bins += hist
             node_heights[node.id] = np.max(height_of_bins)
