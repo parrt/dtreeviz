@@ -1211,10 +1211,6 @@ def get_num_bins(histtype, n_classes):
 
 
 def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
-                     X_train,
-                     y_train,
-                     features,
-                     class_names=None,
                      figsize: tuple = (10, 5),
                      display_type: str = "plot",
                      colors: dict = None,
@@ -1237,8 +1233,7 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
         Plot labels font size
     """
 
-    shadow_tree = ShadowDecTree(tree_model, X_train, y_train, features, class_names=class_names)
-    leaf_id, leaf_samples = shadow_tree.get_leaf_sample_counts()
+    leaf_id, leaf_samples = ShadowDecTree.get_leaf_sample_counts(tree_model)
 
     if display_type == "plot":
         if figsize:
@@ -1255,10 +1250,6 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
 
 
 def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
-                              X_train,
-                              y_train,
-                              features,
-                              class_names=None,
                               figsize: tuple = (10, 5),
                               display_type: str = "plot",
                               plot_ylim: int = None,
@@ -1288,10 +1279,7 @@ def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
         print("Please create an issue if you need more classes.")
         return
 
-    # index, leaf_samples_0, leaf_samples_1 = _get_leaf_samples_by_class(tree_model)
-
-    shadow_tree = ShadowDecTree(tree_model, X_train, y_train, features, class_names=class_names)
-    index, leaf_samples_0, leaf_samples_1 = shadow_tree.get_leaf_sample_counts_by_class()
+    index, leaf_samples_0, leaf_samples_1 = ShadowDecTree.get_leaf_sample_counts_by_class(tree_model)
 
     if display_type == "plot":
         if figsize:
