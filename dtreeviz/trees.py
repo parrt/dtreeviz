@@ -1210,11 +1210,11 @@ def get_num_bins(histtype, n_classes):
     return bins
 
 
-def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
-                     figsize: tuple = (10, 5),
-                     display_type: str = "plot",
-                     colors: dict = None,
-                     fontsize: int = 14):
+def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
+                          figsize: tuple = (10, 5),
+                          display_type: str = "plot",
+                          colors: dict = None,
+                          fontsize: int = 14):
     """Show the number of training samples from each leaf.
 
     If display_type = 'plot' it will show leaf samples using a plot.
