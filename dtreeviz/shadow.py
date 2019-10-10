@@ -208,6 +208,59 @@ class ShadowDecTree:
 
         return node_to_samples
 
+    @staticmethod
+    def get_node_type(_tree_model):
+        """Determine the nodes type from the tree.
+
+        The array node_type[i]=True if node with index=i is a leaf,
+        or False if the node is a split node.
+        """
+
+        node_type = np.zeros(shape=_tree_model.tree_.node_count, dtype=bool)
+        stack = [(0)]  # the root node id
+        while len(stack) > 0:
+            node_id = stack.pop()
+            # If we have a split node
+            if _tree_model.tree_.children_left[node_id] != _tree_model.tree_.children_right[node_id]:
+                stack.append((_tree_model.tree_.children_left[node_id]))
+                stack.append((_tree_model.tree_.children_right[node_id]))
+            else:
+                node_type[node_id] = True  # we have a leaf node
+
+        return node_type
+
+    @staticmethod
+    def get_leaf_sample_counts(_tree_model):
+        """Get the number of samples for each leaf.
+
+        :return: tuple
+            Contains a list of leaf ids and a list of leaf samples
+        """
+
+        node_type = ShadowDecTree.get_node_type(_tree_model)
+        n_node_samples = _tree_model.tree_.n_node_samples
+
+        leaf_samples = [(i, n_node_samples[i]) for i in range(0, _tree_model.tree_.node_count) if node_type[i]]
+        x, y = zip(*leaf_samples)
+        return x, y
+
+    @staticmethod
+    def get_leaf_sample_counts_by_class(_tree_model):
+        """Get the number of samples by class for each leaf.
+
+        :return: tuple
+            Contains a list of leaf ids and a two lists of leaf samples (one for each class)
+        """
+
+        node_type = ShadowDecTree.get_node_type(_tree_model)
+        sample_values = _tree_model.tree_.value
+
+        leaf_samples = [(i, sample_values[i][0][0], sample_values[i][0][1])
+                        for i in range(0, _tree_model.tree_.node_count) if (node_type[i])]
+
+        index, leaf_samples_0, leaf_samples_1 = zip(*leaf_samples)
+        return index, leaf_samples_0, leaf_samples_1
+
     def __str__(self):
         return str(self.root)
 
