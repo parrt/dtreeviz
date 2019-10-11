@@ -1240,7 +1240,7 @@ def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.Decision
             plt.figure(figsize=figsize)
         colors = adjust_colors(colors)
         plt.xticks(range(0, len(leaf_id)), leaf_id)
-        plt.bar(range(0, len(leaf_id)), leaf_samples, color=colors["scatter_marker"], lw=.3)
+        plt.bar(range(0, len(leaf_id)), leaf_samples, color=colors["hist_bar"], lw=.3, align='center', width=1)
         plt.xlabel("leaf ids",  fontsize=fontsize, color=colors['axis_label'])
         plt.ylabel("samples count", fontsize=fontsize, color=colors['axis_label'])
         plt.grid()
@@ -1287,8 +1287,9 @@ def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
         colors = adjust_colors(colors)
         colors_classes = colors['classes'][tree_model.n_classes_]
         plt.xticks(range(0, len(index)), index)
-        p0 = plt.bar(range(0, len(index)), leaf_samples_0, color=colors_classes[0], lw=.3)
-        p1 = plt.bar(range(0, len(index)), leaf_samples_1, bottom=leaf_samples_0, color=colors_classes[1], lw=.3)
+        p0 = plt.bar(range(0, len(index)), leaf_samples_0, color=colors_classes[0], lw=.3, align='center', width=1)
+        p1 = plt.bar(range(0, len(index)), leaf_samples_1, bottom=leaf_samples_0, color=colors_classes[1], lw=.3,
+                     align='center', width=1)
 
         if plot_ylim is not None:
             plt.ylim(0, plot_ylim)
