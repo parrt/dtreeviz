@@ -1240,7 +1240,7 @@ def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.Decision
             plt.figure(figsize=figsize)
         colors = adjust_colors(colors)
         plt.xticks(range(0, len(leaf_id)), leaf_id)
-        plt.bar(range(0, len(leaf_id)), leaf_samples, color=colors["scatter_marker"], lw=.3, align='center', width=1)
+        plt.bar(range(0, len(leaf_id)), leaf_samples, color=colors["hist_bar"], lw=.3, align='center', width=1)
         plt.xlabel("leaf ids",  fontsize=fontsize, color=colors['axis_label'])
         plt.ylabel("samples count", fontsize=fontsize, color=colors['axis_label'])
         plt.grid()

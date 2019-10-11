@@ -46,6 +46,7 @@ COLORS = {'scatter_edge': GREY,
           'tick_label': GREY,
           'leaf_label': GREY,
           'pie': GREY,
+          'hist_bar': LIGHTBLUE
           }
 
 
