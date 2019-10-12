@@ -1214,7 +1214,10 @@ def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.Decision
                           figsize: tuple = (10, 5),
                           display_type: str = "plot",
                           colors: dict = None,
-                          fontsize: int = 14):
+                          fontsize: int = 14,
+                          fontname: str = "Arial",
+                          grid: bool = False
+                          ):
     """Show the number of training samples from each leaf.
 
     If display_type = 'plot' it will show leaf samples using a plot.
@@ -1231,21 +1234,35 @@ def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.Decision
         The set of colors used for plotting
     :param fontsize: int
         Plot labels font size
+    :param fontname: str
+        Plot labels font name
+    :param grid: bool
+        Whether to show the grid lines
+
     """
 
     leaf_id, leaf_samples = ShadowDecTree.get_leaf_sample_counts(tree_model)
 
     if display_type == "plot":
-        if figsize:
-            plt.figure(figsize=figsize)
         colors = adjust_colors(colors)
-        plt.xticks(range(0, len(leaf_id)), leaf_id)
-        plt.bar(range(0, len(leaf_id)), leaf_samples, color=colors["hist_bar"], lw=.3, align='center', width=1)
-        plt.xlabel("leaf ids",  fontsize=fontsize, color=colors['axis_label'])
-        plt.ylabel("samples count", fontsize=fontsize, color=colors['axis_label'])
-        plt.grid()
+
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_linewidth(.3)
+        ax.spines['bottom'].set_linewidth(.3)
+        ax.set_xticks(range(0, len(leaf_id)))
+        ax.set_xticklabels(leaf_id)
+        barcontainers = ax.bar(range(0, len(leaf_id)), leaf_samples, color=colors["hist_bar"], lw=.3, align='center',
+                               width=1)
+        for rect in barcontainers.patches:
+            rect.set_linewidth(.5)
+            rect.set_edgecolor(colors['rect_edge'])
+        ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel("samples count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.grid(b=grid)
     elif display_type == "text":
-        for leaf, samples in zip(leaf_id,leaf_samples):
+        for leaf, samples in zip(leaf_id, leaf_samples):
             print(f"leaf {leaf} has {samples} samples")
 
 
