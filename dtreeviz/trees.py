@@ -809,7 +809,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             lcolor = colors['highlight']
             lpw = "1.2"
         if node.right.id in highlight_path:
-            lcolor = colors['highlight']
+            rcolor = colors['highlight']
             rpw = "1.2"
         edges.append( f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]' )
         edges.append( f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]' )
