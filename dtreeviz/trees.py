@@ -1210,13 +1210,13 @@ def get_num_bins(histtype, n_classes):
     return bins
 
 
-def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
-                          figsize: tuple = (10, 5),
-                          display_type: str = "plot",
-                          colors: dict = None,
-                          fontsize: int = 14,
-                          fontname: str = "Arial",
-                          grid: bool = False):
+def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
+                     figsize: tuple = (10, 5),
+                     display_type: str = "plot",
+                     colors: dict = None,
+                     fontsize: int = 14,
+                     fontname: str = "Arial",
+                     grid: bool = False):
     """Visualize the number of training samples from each leaf.
 
     If display_type = 'plot' it will show leaf samples using a plot.
@@ -1264,14 +1264,14 @@ def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.Decision
             print(f"leaf {leaf} has {samples} samples")
 
 
-def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
-                              figsize: tuple = (10, 5),
-                              display_type: str = "plot",
-                              plot_ylim: int = None,
-                              colors: dict = None,
-                              fontsize: int = 14,
-                              fontname: str = "Arial",
-                              grid: bool = False):
+def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeClassifier),
+                          figsize: tuple = (10, 5),
+                          display_type: str = "plot",
+                          plot_ylim: int = None,
+                          colors: dict = None,
+                          fontsize: int = 14,
+                          fontname: str = "Arial",
+                          grid: bool = False):
     """Visualize the number of training samples by class from each leaf.
 
     It's a good way to see how training classes are distributed in leaves. For example, you can observe that in some
