@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sys import maxsize
 from collections import defaultdict, Sequence
 from typing import Mapping, List, Tuple
 from numbers import Number
@@ -230,8 +231,13 @@ class ShadowDecTree:
         return node_type
 
     @staticmethod
-    def get_leaf_sample_counts(_tree_model):
+    def get_leaf_sample_counts(_tree_model, min_samples=0, max_samples=maxsize):
         """Get the number of samples for each leaf.
+
+        :param min_samples: int
+            Min number of samples for a leaf
+        :param max_samples: int
+            Max number of samples for a leaf
 
         :return: tuple
             Contains a list of leaf ids and a list of leaf samples
@@ -240,7 +246,8 @@ class ShadowDecTree:
         node_type = ShadowDecTree.get_node_type(_tree_model)
         n_node_samples = _tree_model.tree_.n_node_samples
 
-        leaf_samples = [(i, n_node_samples[i]) for i in range(0, _tree_model.tree_.node_count) if node_type[i]]
+        leaf_samples = [(i, n_node_samples[i]) for i in range(0, _tree_model.tree_.node_count) if node_type[i]
+                        and min_samples <= n_node_samples[i] <= max_samples]
         x, y = zip(*leaf_samples)
         return x, y
 
