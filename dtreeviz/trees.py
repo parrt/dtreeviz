@@ -1210,15 +1210,14 @@ def get_num_bins(histtype, n_classes):
     return bins
 
 
-def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
-                          figsize: tuple = (10, 5),
-                          display_type: str = "plot",
-                          colors: dict = None,
-                          fontsize: int = 14,
-                          fontname: str = "Arial",
-                          grid: bool = False
-                          ):
-    """Show the number of training samples from each leaf.
+def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifier),
+                     figsize: tuple = (10, 5),
+                     display_type: str = "plot",
+                     colors: dict = None,
+                     fontsize: int = 14,
+                     fontname: str = "Arial",
+                     grid: bool = False):
+    """Visualize the number of training samples from each leaf.
 
     If display_type = 'plot' it will show leaf samples using a plot.
     If display_type = 'text' it will show leaf samples as plain text. This method is preferred if number
@@ -1238,7 +1237,6 @@ def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.Decision
         Plot labels font name
     :param grid: bool
         Whether to show the grid lines
-
     """
 
     leaf_id, leaf_samples = ShadowDecTree.get_leaf_sample_counts(tree_model)
@@ -1266,18 +1264,29 @@ def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.Decision
             print(f"leaf {leaf} has {samples} samples")
 
 
-def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
-                              figsize: tuple = (10, 5),
-                              display_type: str = "plot",
-                              plot_ylim: int = None,
-                              colors: dict = None,
-                              fontsize: int = 14):
-    """Show leaf samples by class.
+def ctreeviz_leaf_samples(tree_model: (tree.DecisionTreeClassifier),
+                          figsize: tuple = (10, 5),
+                          display_type: str = "plot",
+                          plot_ylim: int = None,
+                          colors: dict = None,
+                          fontsize: int = 14,
+                          fontname: str = "Arial",
+                          grid: bool = False):
+    """Visualize the number of training samples by class from each leaf.
+
+    It's a good way to see how training classes are distributed in leaves. For example, you can observe that in some
+    leaves all the samples belong only to one class, or that in other leaves the distribution of classes is almost
+    50/50.
+    You could get all the samples from these leaves and look over them/understand what they have in common. Now, you
+    can understand your data in a model driven way.
+    Right now it supports only binary classifications decision trees.
 
     :param tree_model: sklearn.tree.DecisionTreeClassifier
         The tree to interpret
     :param figsize: tuple of int, optional
         The plot size
+    :param display_type: str, optional
+       'plot' or 'text'
     :param plot_ylim: int, optional
         The max value for oY. This is useful in case we have few leaves with big sample values which 'shadow'
         the other leaves values.
@@ -1285,6 +1294,10 @@ def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
         The set of colors used for plotting
     :param fontsize: int
         Plot labels fontsize
+    :param fontname: str
+        Plot labels font name
+    :param grid: bool
+        Whether to show the grid lines
     """
 
     if not isinstance(tree_model, tree.DecisionTreeClassifier):
@@ -1299,22 +1312,32 @@ def viz_leaf_samples_by_class(tree_model: (tree.DecisionTreeClassifier),
     index, leaf_samples_0, leaf_samples_1 = ShadowDecTree.get_leaf_sample_counts_by_class(tree_model)
 
     if display_type == "plot":
-        if figsize:
-            plt.figure(figsize=figsize)
         colors = adjust_colors(colors)
         colors_classes = colors['classes'][tree_model.n_classes_]
-        plt.xticks(range(0, len(index)), index)
-        p0 = plt.bar(range(0, len(index)), leaf_samples_0, color=colors_classes[0], lw=.3, align='center', width=1)
-        p1 = plt.bar(range(0, len(index)), leaf_samples_1, bottom=leaf_samples_0, color=colors_classes[1], lw=.3,
-                     align='center', width=1)
 
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_linewidth(.3)
+        ax.spines['bottom'].set_linewidth(.3)
+        ax.set_xticks(range(0, len(index)))
+        ax.set_xticklabels(index)
         if plot_ylim is not None:
-            plt.ylim(0, plot_ylim)
+            ax.set_ylim(0, plot_ylim)
 
-        plt.xlabel("leaf ids", fontsize=fontsize, color=colors['axis_label'])
-        plt.ylabel("samples by class", fontsize=fontsize, color=colors['axis_label'])
-        plt.grid()
-        plt.legend((p0[0], p1[0]), (f'class {tree_model.classes_[0]}', f'class {tree_model.classes_[1]}'))
+        bar_container0 = ax.bar(range(0, len(index)), leaf_samples_0, color=colors_classes[0], lw=.3, align='center',
+                                width=1)
+        bar_container1 = ax.bar(range(0, len(index)), leaf_samples_1, bottom=leaf_samples_0, color=colors_classes[1],
+                                lw=.3, align='center', width=1)
+        for bar_container in [bar_container0, bar_container1]:
+            for rect in bar_container.patches:
+                rect.set_linewidth(.5)
+                rect.set_edgecolor(colors['rect_edge'])
+
+        ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel("samples by class", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.grid(grid)
+        ax.legend([bar_container0, bar_container1],[f'class {tree_model.classes_[0]}', f'class {tree_model.classes_[1]}'])
     elif display_type == "text":
         for leaf, samples_0, samples_1 in zip(index, leaf_samples_0, leaf_samples_1):
             print(f"leaf {leaf}, samples : {samples_0}, {samples_1}")
