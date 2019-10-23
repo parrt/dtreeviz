@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from dtreeviz.shadow import *
 from numbers import Number
 import matplotlib.patches as patches
+from mpl_toolkits.mplot3d import Axes3D
 import tempfile
 import os
 from sys import platform as PLATFORM
@@ -78,9 +79,9 @@ class DTreeViz:
                 f.write(svg)
 
 
-def rtreeviz_univar(ax,
-                    x_train: (pd.Series, np.ndarray),  # 1 vector of X data
-                    y_train: (pd.Series, np.ndarray),
+def rtreeviz_univar(ax=None,
+                    x_train: (pd.Series, np.ndarray) = None,  # 1 vector of X data
+                    y_train: (pd.Series, np.ndarray) = None,
                     max_depth = 10,
                     feature_name: str = None,
                     target_name: str = None,
@@ -96,15 +97,22 @@ def rtreeviz_univar(ax,
     if isinstance(y_train, pd.Series):
         y_train = y_train.values
 
+    # ax as first arg is not good now that it's optional but left for compatibility reasons
+    if ax is None:
+        fig, ax = plt.subplots(1, 1)
+
+    if x_train is None or y_train is None:
+        raise ValueError(f"x_train and y_train must not be none")
+
     colors = adjust_colors(colors)
 
     y_range = (min(y_train), max(y_train))  # same y axis for all
     overall_feature_range = (np.min(x_train), np.max(x_train))
 
     t = tree.DecisionTreeRegressor(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
-    t.fit(x_train.reshape(-1,1), y_train)
+    t.fit(x_train.reshape(-1, 1), y_train)
 
-    shadow_tree = ShadowDecTree(t, x_train.reshape(-1,1), y_train, feature_names=[feature_name])
+    shadow_tree = ShadowDecTree(t, x_train.reshape(-1, 1), y_train, feature_names=[feature_name])
     splits = []
     for node in shadow_tree.internal:
         splits.append(node.split())
@@ -136,14 +144,14 @@ def rtreeviz_univar(ax,
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=fontsize)
 
     if 'title' in show:
-        title = f"Regression tree depth {max_depth}, samples per leaf {min_samples_leaf},\nTraining $R^2$={t.score(x_train.reshape(-1,1),y_train):.3f}"
+        title = f"Regression tree depth {max_depth}, samples per leaf {min_samples_leaf},\nTraining $R^2$={t.score(x_train.reshape(-1, 1), y_train):.3f}"
         plt.title(title, fontsize=fontsize, color=colors['title'])
 
     plt.xlabel(feature_name, fontsize=fontsize, color=colors['axis_label'])
     plt.ylabel(target_name, fontsize=fontsize, color=colors['axis_label'])
 
 
-def rtreeviz_bivar_heatmap(ax, X_train, y_train, max_depth, feature_names,
+def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, feature_names=None,
                            fontsize=14, ticks_fontsize=12, fontname="Arial",
                            show={'title'},
                            n_colors_in_map=100,
@@ -153,6 +161,14 @@ def rtreeviz_bivar_heatmap(ax, X_train, y_train, max_depth, feature_names,
     Show tesselated 2D feature space for bivariate regression tree. X_train can
     have lots of features but features lists indexes of 2 features to train tree with.
     """
+
+    # ax as first arg is not good now that it's optional but left for compatibility reasons
+    if ax is None:
+        fig, ax = plt.subplots(1, 1)
+
+    if X_train is None or y_train is None:
+        raise ValueError(f"x_train and y_train must not be none")
+
     if isinstance(X_train,pd.DataFrame):
         X_train = X_train.values
     if isinstance(y_train, pd.Series):
@@ -200,7 +216,7 @@ def rtreeviz_bivar_heatmap(ax, X_train, y_train, max_depth, feature_names,
     return None
 
 
-def rtreeviz_bivar_3D(ax, X_train, y_train, max_depth, feature_names, target_name,
+def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature_names=None, target_name=None,
                       fontsize=14, ticks_fontsize=10, fontname="Arial",
                       azim=0, elev=0, dist=7,
                       show={'title'},
@@ -208,9 +224,18 @@ def rtreeviz_bivar_3D(ax, X_train, y_train, max_depth, feature_names, target_nam
                       n_colors_in_map = 100
                       ) -> tree.DecisionTreeClassifier:
     """
-    Show 3D feature space for bivariate regression tree. X_train can
-    have lots of features but features lists indexes of 2 features to train tree with.
+    Show 3D feature space for bivariate regression tree. X_train should have
+    just the 2 variables used for training.
     """
+
+    # ax as first arg is not good now that it's optional but left for compatibility reasons
+    if ax is None:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+    if X_train is None or y_train is None:
+        raise ValueError(f"x_train and y_train must not be none")
+
     if isinstance(X_train, pd.DataFrame):
         X_train = X_train.values
     if isinstance(y_train, pd.Series):
@@ -264,13 +289,20 @@ def rtreeviz_bivar_3D(ax, X_train, y_train, max_depth, feature_names, target_nam
     return None
 
 
-def ctreeviz_univar(ax, x_train, y_train, feature_name, class_names,
-                    target_name,
+def ctreeviz_univar(ax=None, x_train=None, y_train=None, feature_name=None, class_names=None,
+                    target_name=None,
                     max_depth=None,
                     min_samples_leaf=None,
                     fontsize=14, fontname="Arial", nbins=25, gtype='strip',
                     show={'title','legend','splits'},
                     colors=None):
+    # ax as first arg is not good now that it's optional but left for compatibility reasons
+    if ax is None:
+        fig, ax = plt.subplots(1, 1)
+
+    if x_train is None or y_train is None:
+        raise ValueError(f"x_train and y_train must not be none")
+
     if isinstance(x_train, pd.Series):
         x_train = x_train.values
     if isinstance(y_train, pd.Series):
@@ -369,8 +401,8 @@ def ctreeviz_univar(ax, x_train, y_train, feature_name, class_names,
             plt.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
 
 
-def ctreeviz_bivar(ax, X_train, y_train, feature_names, class_names,
-                   target_name,
+def ctreeviz_bivar(ax=None, X_train=None, y_train=None, feature_names=None, class_names=None,
+                   target_name=None,
                    max_depth=None,
                    min_samples_leaf=None,
                    fontsize=14,
@@ -381,6 +413,14 @@ def ctreeviz_bivar(ax, X_train, y_train, feature_names, class_names,
     Show tesselated 2D feature space for bivariate classification tree. X_train can
     have lots of features but features lists indexes of 2 features to train tree with.
     """
+    # ax as first arg is not good now that it's optional but left for compatibility reasons
+    if ax is None:
+        fig, ax = plt.subplots(1, 1)
+
+    if X_train is None or y_train is None:
+        raise ValueError(f"x_train and y_train must not be none")
+
+
     if isinstance(X_train,pd.DataFrame):
         X_train = X_train.values
     if isinstance(y_train, pd.Series):
