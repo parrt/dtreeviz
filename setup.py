@@ -1,5 +1,7 @@
 from setuptools import setup, find_packages
 
+# python setup.py sdist upload
+
 setup(
     name='dtreeviz',
     version='0.7',
