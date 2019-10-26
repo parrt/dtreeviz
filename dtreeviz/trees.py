@@ -145,10 +145,10 @@ def rtreeviz_univar(ax=None,
 
     if 'title' in show:
         title = f"Regression tree depth {max_depth}, samples per leaf {min_samples_leaf},\nTraining $R^2$={t.score(x_train.reshape(-1, 1), y_train):.3f}"
-        plt.title(title, fontsize=fontsize, color=colors['title'])
+        ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
-    plt.xlabel(feature_name, fontsize=fontsize, color=colors['axis_label'])
-    plt.ylabel(target_name, fontsize=fontsize, color=colors['axis_label'])
+    ax.set_xlabel(feature_name, fontsize=fontsize, color=colors['axis_label'])
+    ax.set_ylabel(target_name, fontsize=fontsize, color=colors['axis_label'])
 
 
 def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, feature_names=None,
@@ -211,7 +211,7 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, fe
     if 'title' in show:
         accur = rt.score(X_train, y_train)
         title = f"Regression tree depth {max_depth}, training $R^2$={accur:.3f}"
-        plt.title(title, fontsize=fontsize, color=colors['title'])
+        ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     return None
 
@@ -284,7 +284,7 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
     if 'title' in show:
         accur = rt.score(X_train, y_train)
         title = f"Regression tree depth {max_depth}, training $R^2$={accur:.3f}"
-        plt.title(title, fontsize=fontsize, color=colors['title'])
+        ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     return None
 
@@ -394,11 +394,11 @@ def ctreeviz_univar(ax=None, x_train=None, y_train=None, feature_name=None, clas
     if 'title' in show:
         accur = ct.score(x_train.reshape(-1, 1), y_train)
         title = f"Classifier tree depth {max_depth}, training accuracy={accur*100:.2f}%"
-        plt.title(title, fontsize=fontsize, color=colors['title'])
+        ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     if 'splits' in show:
         for split in splits:
-            plt.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
+            ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
 
 
 def ctreeviz_bivar(ax=None, X_train=None, y_train=None, feature_names=None, class_names=None,
@@ -475,7 +475,7 @@ def ctreeviz_bivar(ax=None, X_train=None, y_train=None, feature_names=None, clas
     if 'title' in show:
         accur = ct.score(X_train, y_train)
         title = f"Classifier tree depth {max_depth}, training accuracy={accur*100:.2f}%"
-        plt.title(title, fontsize=fontsize, color=colors['title'],)
+        ax.set_title(title, fontsize=fontsize, color=colors['title'],)
 
     return None
 
