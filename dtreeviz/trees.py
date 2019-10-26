@@ -155,8 +155,9 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, fe
                            fontsize=14, ticks_fontsize=12, fontname="Arial",
                            show={'title'},
                            n_colors_in_map=100,
-                           colors=None
-                           ) -> tree.DecisionTreeClassifier:
+                           colors=None,
+                           markersize = None
+                          ) -> tree.DecisionTreeClassifier:
     """
     Show tesselated 2D feature space for bivariate regression tree. X_train can
     have lots of features but features lists indexes of 2 features to train tree with.
@@ -201,7 +202,7 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, fe
 
     color_map = [color_map[int(((y-y_lim[0])/y_range)*(n_colors_in_map-1))] for y in y_train]
     x, y, z = X_train[:,0], X_train[:,1], y_train
-    ax.scatter(x, y, marker='o', alpha=.95, c=color_map, edgecolor=colors['scatter_edge'], lw=.3)
+    ax.scatter(x, y, marker='o', alpha=.95, c=color_map, edgecolor=colors['scatter_edge'], lw=.3, s=markersize)
 
     ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
@@ -221,6 +222,7 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
                       azim=0, elev=0, dist=7,
                       show={'title'},
                       colors=None,
+                      markersize=None,
                       n_colors_in_map = 100
                       ) -> tree.DecisionTreeClassifier:
     """
@@ -273,7 +275,7 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
         plane(node, bbox)
 
     x, y, z = X_train[:, 0], X_train[:, 1], y_train
-    ax.scatter(x, y, z, marker='o', alpha=.7, edgecolor=colors['scatter_edge'], lw=.3, c=color_map)
+    ax.scatter(x, y, z, marker='o', alpha=.7, edgecolor=colors['scatter_edge'], lw=.3, c=color_map, s=markersize)
 
     ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
