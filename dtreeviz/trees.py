@@ -377,18 +377,17 @@ def ctreeviz_univar(ax=None, x_train=None, y_train=None, feature_name=None, clas
     splits = sorted(splits)
     bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
 
-    pred_box_height = .07 * ax.get_ylim()[1]
-    preds = []
-    for i in range(len(bins) - 1):
-        left = bins[i]
-        right = bins[i + 1]
-        inrange = y_train[(x_train >= left) & (x_train <= right)]
-        values, counts = np.unique(inrange, return_counts=True)
-        pred = values[np.argmax(counts)]
-        rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
-                                 edgecolor=colors['edge'], facecolor=color_map[pred])
-        ax.add_patch(rect)
-        preds.append(pred)
+    if 'splits' in show: # this gets the horiz bars showing prediction region
+        pred_box_height = .07 * ax.get_ylim()[1]
+        for i in range(len(bins) - 1):
+            left = bins[i]
+            right = bins[i + 1]
+            inrange = y_train[(x_train >= left) & (x_train <= right)]
+            values, counts = np.unique(inrange, return_counts=True)
+            pred = values[np.argmax(counts)]
+            rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
+                                     edgecolor=colors['edge'], facecolor=color_map[pred])
+            ax.add_patch(rect)
 
     if 'legend' in show:
         add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
