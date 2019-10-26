@@ -90,7 +90,7 @@ def rtreeviz_univar(ax=None,
                     show={'title','splits'},
                     split_linewidth=.5,
                     mean_linewidth = 2,
-                    markersize=None,
+                    markersize=15,
                     colors=None):
     if isinstance(x_train, pd.Series):
         x_train = x_train.values
@@ -126,7 +126,7 @@ def rtreeviz_univar(ax=None,
         inrange = y_train[(x_train >= left) & (x_train <= right)]
         means.append(np.mean(inrange))
 
-    ax.scatter(x_train, y_train, marker='o', alpha=.4, c=colors['scatter_marker'], s=markersize,
+    ax.scatter(x_train, y_train, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'], s=markersize,
                edgecolor=colors['scatter_edge'], lw=.3)
 
     if 'splits' in show:
@@ -156,7 +156,7 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, fe
                            show={'title'},
                            n_colors_in_map=100,
                            colors=None,
-                           markersize = None
+                           markersize = 15
                           ) -> tree.DecisionTreeClassifier:
     """
     Show tesselated 2D feature space for bivariate regression tree. X_train can
@@ -196,13 +196,13 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, fe
         y = bbox[1]
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-        rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=.5,
+        rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
                                  edgecolor=colors['edge'], facecolor=color)
         ax.add_patch(rect)
 
     color_map = [color_map[int(((y-y_lim[0])/y_range)*(n_colors_in_map-1))] for y in y_train]
     x, y, z = X_train[:,0], X_train[:,1], y_train
-    ax.scatter(x, y, marker='o', alpha=.95, c=color_map, edgecolor=colors['scatter_edge'], lw=.3, s=markersize)
+    ax.scatter(x, y, marker='o', c=color_map, edgecolor=colors['scatter_edge'], lw=.3, s=markersize)
 
     ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
@@ -222,7 +222,7 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
                       azim=0, elev=0, dist=7,
                       show={'title'},
                       colors=None,
-                      markersize=None,
+                      markersize=15,
                       n_colors_in_map = 100
                       ) -> tree.DecisionTreeClassifier:
     """
@@ -255,7 +255,7 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
         z = np.full(xx.shape, node.prediction())
         # print(f"{node.prediction()}->{int(((node.prediction()-y_lim[0])/y_range)*(n_colors_in_map-1))}, lim {y_lim}")
         # print(f"{color_map[int(((node.prediction()-y_lim[0])/y_range)*(n_colors_in_map-1))]}")
-        ax.plot_surface(xx, yy, z, alpha=.85, shade=False,
+        ax.plot_surface(xx, yy, z, alpha=colors['tesselation_alpha_3D'], shade=False,
                         color=color_map[int(((node.prediction()-y_lim[0])/y_range)*(n_colors_in_map-1))],
                         edgecolor=colors['edge'], lw=.3)
 
@@ -275,7 +275,7 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
         plane(node, bbox)
 
     x, y, z = X_train[:, 0], X_train[:, 1], y_train
-    ax.scatter(x, y, z, marker='o', alpha=.7, edgecolor=colors['scatter_edge'], lw=.3, c=color_map, s=markersize)
+    ax.scatter(x, y, z, marker='o', alpha=colors['scatter_marker_alpha'], edgecolor=colors['scatter_edge'], lw=.3, c=color_map, s=markersize)
 
     ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
@@ -367,7 +367,7 @@ def ctreeviz_univar(ax=None, x_train=None, y_train=None, feature_name=None, clas
         ax.set_ylim(0, mu + n_classes*class_step)
         for i, bucket in enumerate(X_hist):
             y_noise = np.random.normal(mu+i*class_step, sigma, size=len(bucket))
-            ax.scatter(bucket, y_noise, alpha=.7, marker='o', s=dot_w, c=color_map[i],
+            ax.scatter(bucket, y_noise, alpha=colors['scatter_marker_alpha'], marker='o', s=dot_w, c=color_map[i],
                        edgecolors=colors['scatter_edge'], lw=.3)
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
@@ -454,14 +454,14 @@ def ctreeviz_bivar(ax=None, X_train=None, y_train=None, feature_names=None, clas
             y = bbox[1]
             w = bbox[2]-bbox[0]
             h = bbox[3]-bbox[1]
-            rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=.4,
+            rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
                                      edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
             ax.add_patch(rect)
 
     dot_w = 25
     X_hist = [X_train[y_train == cl] for cl in class_values]
     for i, h in enumerate(X_hist):
-        ax.scatter(h[:,0], h[:,1], alpha=1, marker='o', s=dot_w, c=color_map[i],
+        ax.scatter(h[:,0], h[:,1], marker='o', s=dot_w, c=color_map[i],
                    edgecolors=colors['scatter_edge'], lw=.3)
 
     ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
@@ -936,7 +936,7 @@ def class_split_viz(node: ShadowDecTreeNode,
         dot_w = 20
         ax.set_ylim(0, mu + n_classes * class_step)
         for i, bucket in enumerate(X_hist):
-            alpha = .6 if len(bucket) > 10 else 1
+            alpha = colors['scatter_marker_alpha'] if len(bucket) > 10 else 1
             y_noise = np.random.normal(mu + i * class_step, sigma, size=len(bucket))
             ax.scatter(bucket, y_noise, alpha=alpha, marker='o', s=dot_w, c=colors[i],
                        edgecolors=colors['edge'], lw=.3)
@@ -1065,7 +1065,7 @@ def regr_split_viz(node: ShadowDecTreeNode,
         xticks += [node.split()]
     ax.set_xticks(xticks)
 
-    ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=.4, lw=.3)
+    ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
     left, right = node.split_samples()
     left = y_train[left]
     right = y_train[right]
@@ -1140,7 +1140,7 @@ def regr_leaf_viz(node : ShadowDecTreeNode,
     sigma = .08
     X = np.random.normal(mu, sigma, size=len(y))
     ax.set_xlim(0, 1)
-    alpha = .25
+    alpha = colors['scatter_marker_alpha'] # was .25
 
     ax.scatter(X, y, s=5, c=colors['scatter_marker'], alpha=alpha, lw=.3)
     ax.plot([0,len(node.samples())],[m,m],'--', color=colors['split_line'], linewidth=1)
