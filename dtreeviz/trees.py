@@ -7,7 +7,6 @@ import matplotlib.patches as patches
 from mpl_toolkits.mplot3d import Axes3D
 import tempfile
 import os
-from sys import maxsize
 from sys import platform as PLATFORM
 from colour import Color, rgb2hex
 from typing import Mapping, List
@@ -1261,8 +1260,11 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
                      grid: bool = False,
                      bins: int = 10,
                      min_samples: int = 0,
-                     max_samples: int = maxsize):
+                     max_samples: int = None):
     """Visualize the number of training samples from each leaf.
+
+    There is the option to filter the leaves with less than min_samples or more than max_samples. This is helpful
+    especially when you want to investigate leaves with number of samples from a specific range.
 
     If display_type = 'plot' it will show leaf samples using a plot.
     If display_type = 'text' it will show leaf samples as plain text. This method is preferred if number
