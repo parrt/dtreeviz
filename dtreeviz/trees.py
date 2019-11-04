@@ -1431,10 +1431,10 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
         np.random.seed(0)  # generate the same list of random values for each call
         X = np.random.normal(mu, sigma, size=len(leaf_target))
 
-        x.append(X + i - mu)
-        y.append(leaf_target)
+        x.extend(X + i - mu)
+        y.extend(leaf_target)
         means.append([leaf_target_mean, leaf_target_mean])
-        means_range.append([np.min(X + i - mu), np.max(X + i - mu)])
+        means_range.append([i - (mu / 3), i + (mu / 3)])
         x_labels.append(f"{target_name}={myround(leaf_target_mean, precision)}")
 
     return x, y, means, means_range, x_labels
@@ -1445,14 +1445,14 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
                     y_train,
                     feature_names: list,
                     target_name: str,
-                    plot_leaf_count: int = None,
                     show_leaf_labels: bool = True,
                     colors: dict = None,
                     markersize: int = 50,
-                    label_fontsize: int = 9,
+                    label_fontsize: int = 14,
                     fontname: str = "Arial",
                     precision: int = 1,
-                    figsize: tuple = (10, 4)):
+                    figsize: tuple = (10, 4),
+                    grid: bool = False):
     """Visualize leaf target distribution for DecisionTreeRegressor.
 
     In case there is a big tree with a lot of leaves, the visualisations can become hard to interpret. In these
@@ -1468,46 +1468,38 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         A list of the feature names.
     :param target_name: str
         The name of the target variable.
-    :param plot_leaf_count: int
-        How many leaf to visualize into a single plot.
-    :param show_leaf_labels: bool
+     :param show_leaf_labels: bool
         True if the plot should contains the leaf labels on x ax, False otherwise.
     :param markersize: int
         Marker size in points.
     :param precision: int
         When displaying floating-point numbers, how many digits to display after the decimal point. Default is 1.
-
-
+    :param grid: bool
+        Whether to show the grid lines
     """
 
     shadow_tree = ShadowDecTree(tree_model, x_train, y_train, feature_names=feature_names)
-    x, y, means, means_range, x_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision)
-    leaf_count = len(x_labels)
-    step = leaf_count if plot_leaf_count is None else plot_leaf_count
-    colors = adjust_colors(None)
-    for i in range(0, len(x_labels), step):
-        j = i + step if i + step <= leaf_count else leaf_count
-        fig, ax = plt.subplots(figsize=figsize)
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['bottom'].set_linewidth(.3)
-        ax.spines['left'].set_linewidth(.3)
+    x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision)
+    colors = adjust_colors(colors)
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_linewidth(.3)
+    ax.spines['left'].set_linewidth(.3)
 
-        _x = []
-        _y = []
-        for l in x[i:j]:
-            _x.extend(l)
-        for l in y[i:j]:
-            _y.extend(l)
-        ax.set_xlim(i - 1, i + step)
-        ax.set_ylim(0, max(_y))
-        ax.scatter(_x, _y, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'], s=markersize,
-                   edgecolor=colors['scatter_edge'], lw=.3)
-        ax.set_xticks(range(i, j))
-        if show_leaf_labels:
-            ax.set_xticklabels(x_labels[i:j], rotation="45", fontsize=label_fontsize, fontname=fontname)
-        for z in range(i, j):
-            ax.plot(means_range[z], means[z], color=colors['split_line'], linewidth=1)
+    ax.set_ylim(-1, len(y_labels))
+    ax.set_xlim(min(y), max(y))
+    ax.set_yticks(range(0, len(y_labels)))
+    if show_leaf_labels:
+        ax.set_yticklabels(y_labels)
+    ax.scatter(y, x, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'], s=markersize,
+               edgecolor=colors['scatter_edge'], lw=.3)
+    ax.set_xlabel(target_name, fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel("leaf", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.grid(b=grid)
+
+    for i in range(len(means)):
+        ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=1)
 
 
 
