@@ -1416,25 +1416,25 @@ def ctreeviz_leaf_samples(tree_model: tree.DecisionTreeClassifier,
 def _get_leaf_target_input(shadow_tree: ShadowDecTree,
                            y_train,
                            target_name: str,
-                           precision: int):
+                           precision: int,
+                           leaf_space: int):
     x = []
     y = []
     means = []
     means_range = []
     x_labels = []
-    mu = .5
     sigma = .08
     for i, node in enumerate(shadow_tree.leaves):
         leaf_index_sample = node.samples()
         leaf_target = y_train[leaf_index_sample]
         leaf_target_mean = np.mean(leaf_target)
         np.random.seed(0)  # generate the same list of random values for each call
-        X = np.random.normal(mu, sigma, size=len(leaf_target))
+        X = np.random.normal(i / leaf_space, sigma, size=len(leaf_target))
 
-        x.extend(X + i - mu)
+        x.extend(X)
         y.extend(leaf_target)
         means.append([leaf_target_mean, leaf_target_mean])
-        means_range.append([i - (mu / 3), i + (mu / 3)])
+        means_range.append([(i / leaf_space) - 0.16, (i / leaf_space) + 0.16])
         x_labels.append(f"{target_name}={myround(leaf_target_mean, precision)}")
 
     return x, y, means, means_range, x_labels
@@ -1478,8 +1478,11 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         Whether to show the grid lines
     """
 
+    # used to calculate the space between leaves during visualisation.
+    # if leaf_space increase, the space between leaves decrease
+    leaf_space = 1.5
     shadow_tree = ShadowDecTree(tree_model, x_train, y_train, feature_names=feature_names)
-    x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision)
+    x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision, leaf_space)
     colors = adjust_colors(colors)
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     ax.spines['top'].set_visible(False)
@@ -1487,9 +1490,9 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
     ax.spines['bottom'].set_linewidth(.3)
     ax.spines['left'].set_linewidth(.3)
 
-    ax.set_ylim(-1, len(y_labels))
+    ax.set_ylim(-1 / leaf_space, len(y_labels) / leaf_space)
     ax.set_xlim(min(y), max(y))
-    ax.set_yticks(range(0, len(y_labels)))
+    ax.set_yticks(np.arange(0, len(y_labels) / leaf_space, 1 / leaf_space))
     if show_leaf_labels:
         ax.set_yticklabels(y_labels)
     ax.scatter(y, x, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'], s=markersize,
