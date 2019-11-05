@@ -1435,7 +1435,7 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
         y.extend(leaf_target)
         means.append([leaf_target_mean, leaf_target_mean])
         means_range.append([(i / leaf_space) - 0.16, (i / leaf_space) + 0.16])
-        x_labels.append(f"{target_name}={myround(leaf_target_mean, precision)}")
+        x_labels.append(f"{myround(leaf_target_mean, precision)}")
 
     return x, y, means, means_range, x_labels
 
@@ -1452,7 +1452,8 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
                     fontname: str = "Arial",
                     precision: int = 1,
                     figsize: tuple = (10, 4),
-                    grid: bool = False):
+                    grid: bool = False,
+                    leaf_space: int = 1.5):
     """Visualize leaf target distribution for DecisionTreeRegressor.
 
     In case there is a big tree with a lot of leaves, the visualisations can become hard to interpret. In these
@@ -1476,11 +1477,12 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         When displaying floating-point numbers, how many digits to display after the decimal point. Default is 1.
     :param grid: bool
         Whether to show the grid lines
+    :param leaf_space: int
+        Used to calculate the space between leaves during visualisation. If leaf_space increase, the space between
+        leaves decrease
     """
 
-    # used to calculate the space between leaves during visualisation.
-    # if leaf_space increase, the space between leaves decrease
-    leaf_space = 1.5
+
     shadow_tree = ShadowDecTree(tree_model, x_train, y_train, feature_names=feature_names)
     x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision, leaf_space)
     colors = adjust_colors(colors)
@@ -1490,15 +1492,16 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
     ax.spines['bottom'].set_linewidth(.3)
     ax.spines['left'].set_linewidth(.3)
 
-    ax.set_ylim(-1 / leaf_space, len(y_labels) / leaf_space)
     ax.set_xlim(min(y), max(y))
+    ax.set_ylim(-1 / leaf_space, len(y_labels) / leaf_space)
     ax.set_yticks(np.arange(0, len(y_labels) / leaf_space, 1 / leaf_space))
+    ax.set_yticklabels([])
     if show_leaf_labels:
         ax.set_yticklabels(y_labels)
     ax.scatter(y, x, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'], s=markersize,
                edgecolor=colors['scatter_edge'], lw=.3)
     ax.set_xlabel(target_name, fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_ylabel("leaf", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel("leaf prediction", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(b=grid)
 
     for i in range(len(means)):
