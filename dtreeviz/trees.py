@@ -1500,7 +1500,7 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         ax.set_yticklabels(y_labels)
     ax.scatter(y, x, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'], s=markersize,
                edgecolor=colors['scatter_edge'], lw=.3)
-    ax.set_xlabel(target_name, fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_xlabel(target_name.lower(), fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
     ax.set_ylabel("leaf prediction", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(b=grid)
 
