@@ -1422,7 +1422,7 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
     means = []
     means_range = []
     x_labels = []
-    sigma = .08
+    sigma = .05
     for i, node in enumerate(shadow_tree.leaves):
         leaf_index_sample = node.samples()
         leaf_target = y_train[leaf_index_sample]
@@ -1433,7 +1433,7 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
         x.extend(X)
         y.extend(leaf_target)
         means.append([leaf_target_mean, leaf_target_mean])
-        means_range.append([i - (sigma * 2), i + (sigma * 2)])
+        means_range.append([i - (sigma * 3), i + (sigma * 3)])
         x_labels.append(f"{myround(leaf_target_mean, precision)}")
 
     return x, y, means, means_range, x_labels
@@ -1474,6 +1474,8 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         Marker size in points.
     :param precision: int
         When displaying floating-point numbers, how many digits to display after the decimal point. Default is 1.
+    :param figsize: tuple
+        Sets the (width, height) of the plot.
     :param grid: bool
         Whether to show the grid lines
     :param prediction_line_width: int
@@ -1483,24 +1485,28 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
     shadow_tree = ShadowDecTree(tree_model, x_train, y_train, feature_names=feature_names)
     x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision)
     colors = adjust_colors(colors)
-    figsize = (np.log(len(y_labels)), np.log(len(y_labels)) * 2) if figsize is None else figsize
+    figsize = (np.log(len(y_labels)), np.log(len(y_labels)) * 1.5) if figsize is None else figsize
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_linewidth(.3)
     ax.spines['left'].set_linewidth(.3)
 
-    ax.set_xlim(min(y), max(y))
+    ax.set_xlim(min(y), max(y) + 10)
     ax.set_ylim(-1, len(y_labels))
     ax.set_yticks(np.arange(0, len(y_labels), 1))
     ax.set_yticklabels([])
-    if show_leaf_labels:
-        ax.set_yticklabels(y_labels)
-    ax.scatter(y, x, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'], s=markersize,
+    #     ax.set_yticklabels(y_labels)
+    ax.scatter(y, x, marker='o', alpha=colors['scatter_marker_alpha'] - 0.2, c=colors['scatter_marker'], s=markersize,
                edgecolor=colors['scatter_edge'], lw=.3)
     ax.set_xlabel(target_name.lower(), fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_ylabel("leaf prediction", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel("leaf", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(b=grid)
+
+    if show_leaf_labels:
+        for i in range(len(y_labels)):
+            ax.text(max(y) + 10, i - 0.15, y_labels[i])
+        ax.text(max(y) + 10, len(y_labels) - 0.15, target_name.lower())
 
     for i in range(len(means)):
         ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
