@@ -368,6 +368,14 @@ plt.tight_layout()
 plt.show()
 ```
 
+### Leaf plots
+
+Thanks to [Tudor Lapusan](https://github.com/tlapusan), we now have leaf plots that show the size of leaves, the histogram of classes in leaves, or split plots for the regressor leaves:
+
+<img src="testing/samples/regr-leaf.png" width="30%"> 
+
+See [notebooks/tree_structure_example.ipynb](https://github.com/parrt/dtreeviz/blob/master/notebooks/tree_structure_example.ipynb) for more details and examples.
+
 ## Install dtreeviz locally
 
 Make sure to follow the install guidelines above.
