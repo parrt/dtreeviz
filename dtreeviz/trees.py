@@ -1453,7 +1453,8 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
                     precision: int = 1,
                     figsize: tuple = (10, 4),
                     grid: bool = False,
-                    leaf_space: int = 1.5):
+                    leaf_space: int = 1.5,
+                    prediction_line_width: int = 2):
     """Visualize leaf target distribution for DecisionTreeRegressor.
 
     In case there is a big tree with a lot of leaves, the visualisations can become hard to interpret. In these
@@ -1480,8 +1481,9 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
     :param leaf_space: int
         Used to calculate the space between leaves during visualisation. If leaf_space increase, the space between
         leaves decrease
+    :param prediction_line_width: int
+        The width of prediction line.
     """
-
 
     shadow_tree = ShadowDecTree(tree_model, x_train, y_train, feature_names=feature_names)
     x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision, leaf_space)
@@ -1505,7 +1507,7 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
     ax.grid(b=grid)
 
     for i in range(len(means)):
-        ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=1)
+        ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
 
 
 
