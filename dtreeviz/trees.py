@@ -1416,8 +1416,7 @@ def ctreeviz_leaf_samples(tree_model: tree.DecisionTreeClassifier,
 def _get_leaf_target_input(shadow_tree: ShadowDecTree,
                            y_train,
                            target_name: str,
-                           precision: int,
-                           leaf_space: int):
+                           precision: int):
     x = []
     y = []
     means = []
@@ -1429,12 +1428,12 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
         leaf_target = y_train[leaf_index_sample]
         leaf_target_mean = np.mean(leaf_target)
         np.random.seed(0)  # generate the same list of random values for each call
-        X = np.random.normal(i / leaf_space, sigma, size=len(leaf_target))
+        X = np.random.normal(i, sigma, size=len(leaf_target))
 
         x.extend(X)
         y.extend(leaf_target)
         means.append([leaf_target_mean, leaf_target_mean])
-        means_range.append([(i / leaf_space) - 0.16, (i / leaf_space) + 0.16])
+        means_range.append([i - (sigma * 2), i + (sigma * 2)])
         x_labels.append(f"{myround(leaf_target_mean, precision)}")
 
     return x, y, means, means_range, x_labels
@@ -1451,9 +1450,8 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
                     label_fontsize: int = 14,
                     fontname: str = "Arial",
                     precision: int = 1,
-                    figsize: tuple = (10, 4),
+                    figsize: tuple = None,
                     grid: bool = False,
-                    leaf_space: int = 1.5,
                     prediction_line_width: int = 2):
     """Visualize leaf target distribution for DecisionTreeRegressor.
 
@@ -1478,16 +1476,14 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         When displaying floating-point numbers, how many digits to display after the decimal point. Default is 1.
     :param grid: bool
         Whether to show the grid lines
-    :param leaf_space: int
-        Used to calculate the space between leaves during visualisation. If leaf_space increase, the space between
-        leaves decrease
     :param prediction_line_width: int
         The width of prediction line.
     """
 
     shadow_tree = ShadowDecTree(tree_model, x_train, y_train, feature_names=feature_names)
-    x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision, leaf_space)
+    x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision)
     colors = adjust_colors(colors)
+    figsize = (np.log(len(y_labels)), np.log(len(y_labels)) * 2) if figsize is None else figsize
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -1495,8 +1491,8 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
     ax.spines['left'].set_linewidth(.3)
 
     ax.set_xlim(min(y), max(y))
-    ax.set_ylim(-1 / leaf_space, len(y_labels) / leaf_space)
-    ax.set_yticks(np.arange(0, len(y_labels) / leaf_space, 1 / leaf_space))
+    ax.set_ylim(-1, len(y_labels))
+    ax.set_yticks(np.arange(0, len(y_labels), 1))
     ax.set_yticklabels([])
     if show_leaf_labels:
         ax.set_yticklabels(y_labels)
