@@ -517,6 +517,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
              orientation: ('TD', 'LR') = "TD",
              show_root_edge_labels: bool = True,
              show_node_labels: bool = False,
+             show_just_path: bool = False,
              fancy: bool = True,
              histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
              highlight_path: List[int] = [],
@@ -764,8 +765,33 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         nbins = get_num_bins(histtype, n_classes)
         node_heights = shadow_tree.get_split_node_heights(X_train, y_train, nbins=nbins)
 
+    def get_internal_nodes():
+        if show_just_path and X is not None:
+            _internal = []
+            for _node in shadow_tree.internal:
+                if _node.id in highlight_path:
+                    _internal.append(_node)
+                    if _node.left.id not in highlight_path and not _node.left.isleaf():
+                        _internal.append(_node.left)
+                    elif _node.right.id not in highlight_path and not _node.right.isleaf():
+                        _internal.append(_node.right)
+            return _internal
+        else:
+            return shadow_tree.internal
+
+    def get_leaves():
+        if show_just_path and X is not None:
+            _leaves = []
+            for _node in shadow_tree.leaves:
+                if _node.id in highlight_path:
+                    _leaves.append(_node)
+            return _leaves
+        else:
+            return shadow_tree.leaves
+
+    # print([node.id for node in get_internal_nodes()])
     internal = []
-    for node in shadow_tree.internal:
+    for node in get_internal_nodes():
         if fancy:
             if shadow_tree.isclassifier():
                 class_split_viz(node, X_train, y_train,
@@ -798,7 +824,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         internal.append(gr_node)
 
     leaves = []
-    for node in shadow_tree.leaves:
+    for node in get_leaves():
         if shadow_tree.isclassifier():
             class_leaf_viz(node, colors=color_values,
                            filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
@@ -826,7 +852,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
 
     edges = []
     # non leaf edges with > and <=
-    for node in shadow_tree.internal:
+    for node in get_internal_nodes():
         nname = node_name(node)
         if node.left.isleaf():
             left_node_name ='leaf%d' % node.left.id
@@ -852,14 +878,17 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         if node.right.id in highlight_path:
             rcolor = colors['highlight']
             rpw = "1.2"
-        edges.append( f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]' )
-        edges.append( f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]' )
-        edges.append(f"""
-        {{
-            rank=same;
-            {left_node_name} -> {right_node_name} [style=invis]
-        }}
-        """)
+
+        # TODO fix it to work also for show_just_path=False
+        if node.id in highlight_path:
+            edges.append( f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]' )
+            edges.append( f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]' )
+            edges.append(f"""
+            {{
+                rank=same;
+                {left_node_name} -> {right_node_name} [style=invis]
+            }}
+            """)
 
     newline = "\n\t"
     dot = f"""
