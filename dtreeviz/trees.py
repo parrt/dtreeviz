@@ -547,6 +547,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
     :param orientation:  Is the tree top down, "TD", or left to right, "LR"?
     :param show_root_edge_labels: Include < and >= on the edges emanating from the root?
     :param show_node_labels: Add "Node id" to top of each node in graph for educational purposes
+    :param show_just_path: If True, it shows only the sample(X) prediction path
     :param fancy:
     :param histtype: [For classifiers] Either 'bar' or 'barstacked' to indicate
                      histogram type. We find that 'barstacked' looks great up to about.
@@ -714,6 +715,27 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             {leaf} -> X_y [dir=back; penwidth="1.2" color="{colors['highlight']}" label=<<font face="Helvetica" color="{colors['leaf_label']}" point-size="{11}">{edge_label}</font>>]
             """
 
+    def get_internal_nodes():
+        if show_just_path and X is not None:
+            _internal = []
+            for _node in shadow_tree.internal:
+                if _node.id in highlight_path:
+                    _internal.append(_node)
+            return _internal
+        else:
+            return shadow_tree.internal
+
+    def get_leaves():
+        if show_just_path and X is not None:
+            _leaves = []
+            for _node in shadow_tree.leaves:
+                if _node.id in highlight_path:
+                    _leaves.append(_node)
+                    break
+            return _leaves
+        else:
+            return shadow_tree.leaves
+
     colors = adjust_colors(colors)
 
     if orientation=="TD":
@@ -765,31 +787,6 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
         nbins = get_num_bins(histtype, n_classes)
         node_heights = shadow_tree.get_split_node_heights(X_train, y_train, nbins=nbins)
 
-    def get_internal_nodes():
-        if show_just_path and X is not None:
-            _internal = []
-            for _node in shadow_tree.internal:
-                if _node.id in highlight_path:
-                    _internal.append(_node)
-                    if _node.left.id not in highlight_path and not _node.left.isleaf():
-                        _internal.append(_node.left)
-                    elif _node.right.id not in highlight_path and not _node.right.isleaf():
-                        _internal.append(_node.right)
-            return _internal
-        else:
-            return shadow_tree.internal
-
-    def get_leaves():
-        if show_just_path and X is not None:
-            _leaves = []
-            for _node in shadow_tree.leaves:
-                if _node.id in highlight_path:
-                    _leaves.append(_node)
-            return _leaves
-        else:
-            return shadow_tree.leaves
-
-    # print([node.id for node in get_internal_nodes()])
     internal = []
     for node in get_internal_nodes():
         if fancy:
@@ -844,6 +841,8 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                           colors=colors)
             leaves.append( regr_leaf_node(node) )
 
+    if show_just_path:
+        show_root_edge_labels = False
     show_edge_labels = False
     all_llabel = '&lt;' if show_edge_labels else ''
     all_rlabel = '&ge;' if show_edge_labels else ''
@@ -879,10 +878,14 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             rcolor = colors['highlight']
             rpw = "1.2"
 
-        # TODO fix it to work also for show_just_path=False
-        if node.id in highlight_path:
-            edges.append( f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]' )
-            edges.append( f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]' )
+        if show_just_path:
+            if node.left.id in highlight_path:
+                edges.append( f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]' )
+            if node.right.id in highlight_path:
+                edges.append( f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]' )
+        else:
+            edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]')
+            edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]')
             edges.append(f"""
             {{
                 rank=same;
