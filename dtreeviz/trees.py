@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import tempfile
 import os
 from sys import platform as PLATFORM
-from colour import Color, rgb2hex
+from colour import Color, rgb2hex, color_scale
 from typing import Mapping, List
 from dtreeviz.utils import inline_svg_images, myround
 from dtreeviz.shadow import ShadowDecTree, ShadowDecTreeNode
@@ -248,7 +248,11 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
     ax.view_init(elev=elev, azim=azim)
     ax.dist = dist
 
-    def plane(node, bbox):
+    def y_to_color_index(y):
+        y_range = y_lim[1] - y_lim[0]
+        return int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))
+
+    def plane(node, bbox, color_spectrum):
         x = np.linspace(bbox[0], bbox[2], 2)
         y = np.linspace(bbox[1], bbox[3], 2)
         xx, yy = np.meshgrid(x, y)
@@ -256,7 +260,7 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
         # print(f"{node.prediction()}->{int(((node.prediction()-y_lim[0])/y_range)*(n_colors_in_map-1))}, lim {y_lim}")
         # print(f"{color_map[int(((node.prediction()-y_lim[0])/y_range)*(n_colors_in_map-1))]}")
         ax.plot_surface(xx, yy, z, alpha=colors['tesselation_alpha_3D'], shade=False,
-                        color=color_map[int(((node.prediction()-y_lim[0])/y_range)*(n_colors_in_map-1))],
+                        color=color_spectrum[y_to_color_index(node.prediction())],
                         edgecolor=colors['edge'], lw=.3)
 
     rt = tree.DecisionTreeRegressor(max_depth=max_depth)
@@ -264,18 +268,21 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
 
     y_lim = np.min(y_train), np.max(y_train)
     y_range = y_lim[1] - y_lim[0]
-    color_map = [rgb2hex(c.rgb, force_long=True) for c in Color(colors['color_map_min']).range_to(Color(colors['color_map_max']),
-                                                                                                  n_colors_in_map)]
-    color_map = [color_map[int(((y-y_lim[0])/y_range)*(n_colors_in_map-1))] for y in y_train]
+    color_spectrum = Color(colors['color_map_min']).range_to(Color(colors['color_map_max']), n_colors_in_map)
+    color_spectrum = [rgb2hex(c.rgb, force_long=True) for c in color_spectrum]
+    y_colors = [color_spectrum[y_to_color_index(y)] for y in y_train]
+    # print(color_indexes, color_map, len(color_map))
+    # y_colors = [color_spectrum[ci] for ci in color_indexes]
 
     shadow_tree = ShadowDecTree(rt, X_train, y_train, feature_names=feature_names)
     tesselation = shadow_tree.tesselation()
 
     for node, bbox in tesselation:
-        plane(node, bbox)
+        plane(node, bbox, color_spectrum)
 
     x, y, z = X_train[:, 0], X_train[:, 1], y_train
-    ax.scatter(x, y, z, marker='o', alpha=colors['scatter_marker_alpha'], edgecolor=colors['scatter_edge'], lw=.3, c=color_map, s=markersize)
+    ax.scatter(x, y, z, marker='o', alpha=colors['scatter_marker_alpha'], edgecolor=colors['scatter_edge'],
+               lw=.3, c=y_colors, s=markersize)
 
     ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
