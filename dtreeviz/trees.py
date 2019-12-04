@@ -1044,7 +1044,8 @@ def class_leaf_viz(node : ShadowDecTreeNode,
     # we visually need n=1 and n=9 to appear different but diff between 300 and 400 is no big deal
     # size = np.sqrt(np.log(size))
     counts = node.class_counts()
-    draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}",
+    prediction = node.prediction_name()
+    draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                   graph_colors=graph_colors)
 
 
