@@ -471,4 +471,8 @@ See also the list of [contributors](https://github.com/parrt/dtreeviz/graphs/con
 This project is licensed under the terms of the MIT license, see [LICENSE](LICENSE).
 
 
+## Deploy
 
+```
+$ python setup.py sdist upload
+``` 
