@@ -7,6 +7,12 @@ By [Terence Parr](http://parrt.cs.usfca.edu), a professor in the [University of 
 
 See [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made. 
 
+## Quick start
+
+Jump right into the examples using this Colab notebook
+
+https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/examples.ipynb
+
 ## Discussion
 
 Decision trees are the fundamental building block of [gradient boosting machines](http://explained.ai/gradient-boosting/index.html) and [Random Forests](https://en.wikipedia.org/wiki/Random_forest)(tm), probably the two most popular machine learning models for structured data.  Visualizing decision trees is a tremendous aid when learning how these models work and when interpreting models.  Unfortunately, current visualization packages are rudimentary and not immediately helpful to the novice. For example, we couldn't find a library that visualizes how decision nodes split up the feature space. It is also uncommon for libraries to support visualizing a specific feature vector as it weaves down through a tree's decision nodes; we could only find one image showing this.
