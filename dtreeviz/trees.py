@@ -49,8 +49,8 @@ class DTreeViz:
     def save(self, filename):
         """
         Save the svg of this tree visualization into filename argument.
-        Mac platform can save any file type (.pdf, .png, .svg).  Other platforms
-        would fail with errors. See https://github.com/parrt/dtreeviz/issues/4
+        Can only save .svg; others fail with errors.
+        See https://github.com/parrt/dtreeviz/issues/4
         """
         path = Path(filename)
         if not path.parent.exists:
