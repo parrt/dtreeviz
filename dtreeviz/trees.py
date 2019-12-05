@@ -22,7 +22,7 @@ NUM_BINS = [0, 0, 10, 9, 8, 6, 6, 6, 5, 5, 5]
 
 
 class DTreeViz:
-    def __init__(self, dot, scale=(1,1)):
+    def __init__(self, dot, scale=1.0):
         self.dot = dot
         self.scale = scale
 
@@ -537,7 +537,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
              ticks_fontsize: int=8,
              fontname: str="Arial",
              colors: dict=None,
-             scale=(1,1)
+             scale=1.0
              ) \
     -> DTreeViz:
     """
@@ -581,7 +581,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                             display only those features
                            used to guide X vector down tree. Helps when len(X) is large.
                            Default is 25.
-    :param scale: Default is (1, 1). Scale the width, height of the overall SVG
+    :param scale: Default is 1.0. Scale the width, height of the overall SVG preserving aspect ratio
     :return: A string in graphviz DOT language that describes the decision tree.
     """
     def node_name(node : ShadowDecTreeNode) -> str:

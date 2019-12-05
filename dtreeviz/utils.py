@@ -82,7 +82,7 @@ def get_SVG_shape(svg) -> Tuple[Number,Number,Sequence[Number]]:
             viewBox)
 
 
-def scale_SVG(svg:str, scale:Tuple[Number,Number]) -> str:
+def scale_SVG(svg:str, scale:float) -> str:
     """
     Convert:
 
@@ -97,17 +97,17 @@ def scale_SVG(svg:str, scale:Tuple[Number,Number]) -> str:
     # Scale bounding box etc...
     w, h, viewBox = get_SVG_shape(svg)
     root = ET.fromstring(svg)
-    root.set("width", str(w*scale[0]))
-    root.set("height", str(h*scale[1]))
-    viewBox[2] *= scale[0]
-    viewBox[3] *= scale[1]
+    root.set("width", str(w*scale))
+    root.set("height", str(h*scale))
+    viewBox[2] *= scale
+    viewBox[3] *= scale
     root.set("viewBox", ' '.join([str(v) for v in viewBox]))
 
     # Deal with graph scale
     ns = {"svg": "http://www.w3.org/2000/svg"}
     graph = root.find(".//svg:g", ns) # get first node, which is graph
     transform = graph.attrib['transform']
-    transform = transform.replace('scale(1 1)', f'scale({scale[0]} {scale[1]})')
+    transform = transform.replace('scale(1 1)', f'scale({scale} {scale})')
     graph.set("transform", transform)
 
     ET.register_namespace('', "http://www.w3.org/2000/svg")
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     # test rig
     with open("/tmp/t.svg") as f:
         svg = f.read()
-        svg2 = scale_SVG(svg, scale=(.8,.3))
+        svg2 = scale_SVG(svg, scale=(.8))
 
     with open("/tmp/u.svg", "w") as f:
         f.write(svg2)
