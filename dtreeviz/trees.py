@@ -10,7 +10,7 @@ import os
 from sys import platform as PLATFORM
 from colour import Color, rgb2hex, color_scale
 from typing import Mapping, List
-from dtreeviz.utils import inline_svg_images, myround
+from dtreeviz.utils import inline_svg_images, myround, scale_SVG
 from dtreeviz.shadow import ShadowDecTree, ShadowDecTreeNode
 from dtreeviz.colors import adjust_colors
 from sklearn import tree
@@ -22,8 +22,9 @@ NUM_BINS = [0, 0, 10, 9, 8, 6, 6, 6, 5, 5, 5]
 
 
 class DTreeViz:
-    def __init__(self, dot):
+    def __init__(self, dot, scale=(1,1)):
         self.dot = dot
+        self.scale = scale
 
     def _repr_svg_(self):
         return self.svg()
@@ -75,6 +76,7 @@ class DTreeViz:
             with open(filename, encoding='UTF-8') as f:
                 svg = f.read()
             svg = inline_svg_images(svg)
+            svg = scale_SVG(svg, self.scale)
             with open(filename, "w", encoding='UTF-8') as f:
                 f.write(svg)
 
@@ -534,7 +536,8 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
              label_fontsize: int=12,
              ticks_fontsize: int=8,
              fontname: str="Arial",
-             colors: dict=None
+             colors: dict=None,
+             scale=(1,1)
              ) \
     -> DTreeViz:
     """
@@ -578,7 +581,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                             display only those features
                            used to guide X vector down tree. Helps when len(X) is large.
                            Default is 25.
-
+    :param scale: Default is (1, 1). Scale the width, height of the overall SVG
     :return: A string in graphviz DOT language that describes the decision tree.
     """
     def node_name(node : ShadowDecTreeNode) -> str:
@@ -920,7 +923,7 @@ digraph G {{
 }}
     """
 
-    return DTreeViz(dot)
+    return DTreeViz(dot, scale)
 
 
 def class_split_viz(node: ShadowDecTreeNode,

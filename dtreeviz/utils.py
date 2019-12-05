@@ -1,6 +1,6 @@
 import xml.etree.cElementTree as ET
 from numbers import Number
-from typing import Tuple
+from typing import Tuple, Sequence
 
 def inline_svg_images(svg) -> str:
     """
@@ -67,25 +67,57 @@ def inline_svg_images(svg) -> str:
     return xml_str
 
 
-def get_SVG_shape(filename) -> Tuple[Number,Number]:
+def get_SVG_shape(svg) -> Tuple[Number,Number,Sequence[Number]]:
     """
-    Sample line from SVG file from which we can get w,h:
-    <svg height="122.511795pt" version="1.1" viewBox="0 0 451.265312 122.511795"
-         width="451.265312pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="...">
-
-    Hmm...Seems we don't need this anymore but I will leave it just in case
+    Sample line from SVG file from which we can get w,h,viewBox:
+    <svg ... height="382pt" viewBox="0.00 0.00 344.00 382.00" width="344pt">
+    Return:
+    (344.0, 382.0, [0.0, 0.0, 344.0, 382.0])
     """
-    with open(filename, mode="r", encoding='UTF-8') as f:
-        for line in f.readlines():
-            if line.startswith("<svg "):
-                args = line[len("<svg "):].split()
-                d = {}
-                for arg in args:
-                    a = arg.split('=')
-                    if len(a) == 2:
-                        d[a[0]] = a[1].strip('"').strip('pt')
-                return float(d['width']), float(d['height'])
+    root = ET.fromstring(svg)
+    attrs = root.attrib
+    viewBox = [float(v) for v in attrs['viewBox'].split(' ')]
+    return (float(attrs['width'].strip('pt')),
+            float(attrs['height'].strip('pt')),
+            viewBox)
 
+
+def scale_SVG(svg:str, scale:Tuple[Number,Number]) -> str:
+    """
+    Convert:
+
+    <svg ... height="382pt" viewBox="0.00 0.00 344.00 382.00" width="344pt">
+    <g class="graph" id="graph0" transform="scale(1 1) rotate(0) translate(4 378)">
+
+    To:
+
+    <svg ... height="191.0" viewBox="0.0 0.0 172.0 191.0" width="172.0">
+    <g class="graph" id="graph0" transform="scale(.5 .5) rotate(0) translate(4 378)">
+    """
+    # Scale bounding box etc...
+    w, h, viewBox = get_SVG_shape(svg)
+    root = ET.fromstring(svg)
+    root.set("width", str(w*scale[0]))
+    root.set("height", str(h*scale[1]))
+    viewBox[2] *= scale[0]
+    viewBox[3] *= scale[1]
+    root.set("viewBox", ' '.join([str(v) for v in viewBox]))
+
+    # Deal with graph scale
+    ns = {"svg": "http://www.w3.org/2000/svg"}
+    graph = root.find(".//svg:g", ns) # get first node, which is graph
+    transform = graph.attrib['transform']
+    transform = transform.replace('scale(1 1)', f'scale({scale[0]} {scale[1]})')
+    graph.set("transform", transform)
+
+    ET.register_namespace('', "http://www.w3.org/2000/svg")
+    ET.register_namespace('xlink', "http://www.w3.org/1999/xlink")
+    xml_str = ET.tostring(root).decode()
+    return xml_str
+    # print(root.attrib)
+    # return ET.tostring(root, encoding='utf8', method='xml').decode("utf-8")
+
+    # return root.tostring()#ET.tostring(root, 'utf-8')
 
 def myround(v,ndigits=2):
     return format(v, '.' + str(ndigits) + 'f')
@@ -93,11 +125,9 @@ def myround(v,ndigits=2):
 
 if __name__ == '__main__':
     # test rig
-    with open("/tmp/foo.svg") as f:
+    with open("/tmp/t.svg") as f:
         svg = f.read()
+        svg2 = scale_SVG(svg, scale=(.8,.3))
 
-    svg2 = inline_svg_images(svg)
-    print(svg2)
-
-    with open("/tmp/bar.svg", "w") as f:
+    with open("/tmp/u.svg", "w") as f:
         f.write(svg2)

@@ -58,8 +58,11 @@ def viz_iris(orientation="TD",
                    X=X,
                    label_fontsize=label_fontsize,
                    ticks_fontsize=ticks_fontsize,
-                   fontname=fontname)
+                   fontname=fontname,
+                   scale=(.5,.5))
 
     return viz
 
-viz_iris().view()
+viz_iris().save("/tmp/t.svg")
+
+# viz_iris().view()
