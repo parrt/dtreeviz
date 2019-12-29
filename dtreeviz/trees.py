@@ -1555,6 +1555,26 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
 
 
+def describe_node_sample(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTreeRegressor),
+                         x_train: pd.DataFrame,
+                         node_id: int):
+    """Generate stats (count, mean, std, etc) based on training samples from a specified node.
+
+    This method is especially useful to investigate leaf samples from a decision tree. This is a way to discover data
+    patterns, to better understand our tree model and to get new ideas for feature generation.
+
+    :param tree_model: (sklearn.tree.DecisionTreeClassifier, sklearn.tree.DecisionTreeRegressor)
+        Tree to interpret
+    :param x_train: pd.DataFrame
+        Training dataset during training model
+    :param node_id: int
+        Node id to interpret
+    :return: pd.DataFrame
+        Node training samples' description
+    """
+
+    node_samples = ShadowDecTree.node_samples(tree_model, x_train)
+    return x_train.iloc[node_samples[node_id]].describe()
 
 
 
