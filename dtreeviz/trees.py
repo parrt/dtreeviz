@@ -524,6 +524,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
              class_names: (Mapping[Number, str], List[str]) = None, # required if classifier
              precision: int = 2,
              orientation: ('TD', 'LR') = "TD",
+             instance_orientation: ("TD", "LR") = "LR",
              show_root_edge_labels: bool = True,
              show_node_labels: bool = False,
              show_just_path: bool = False,
@@ -670,7 +671,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
             display_feature_names = [node.feature_name() for node in path[:-1]] + ['...']
             highlight_feature_indexes = range(0,len(features_used))
 
-        for i,name in enumerate(display_feature_names):
+        for i, name in enumerate(display_feature_names):
             if i in highlight_feature_indexes:
                 color = colors['highlight']
             else:
@@ -695,16 +696,23 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
                           f'<font face="Helvetica" color="{color}" point-size="{instance_fontsize}">{disp_v}</font>'
                           '</td>')
 
-        return f"""
-        <table border="0" cellspacing="0" cellpadding="0">
-        <tr>
-            {''.join(headers)}
-        </tr>
-        <tr>
-            {''.join(values)}
-        </tr>
-        </table>
-        """
+        if instance_orientation == "TD":
+            html_output = """<table border="0" cellspacing="0" cellpadding="0">"""
+            for header, value in zip(headers, values):
+                html_output += f"<tr> {header} {value} </tr>"
+            html_output += "</table>"
+            return html_output
+        else:
+            return f"""
+                <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    {''.join(headers)}
+                </tr>
+                <tr>
+                    {''.join(values)}
+                </tr>
+                </table>
+                """
 
     def instance_gr():
         if X is None:
