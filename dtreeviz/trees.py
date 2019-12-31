@@ -556,6 +556,7 @@ def dtreeviz(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeClassifie
     :param precision: When displaying floating-point numbers, how many digits to display
                       after the decimal point. Default is 2.
     :param orientation:  Is the tree top down, "TD", or left to right, "LR"?
+    :param instance_orientation: table orientation (TD, LR) for showing feature prediction's values.
     :param show_root_edge_labels: Include < and >= on the edges emanating from the root?
     :param show_node_labels: Add "Node id" to top of each node in graph for educational purposes
     :param show_just_path: If True, it shows only the sample(X) prediction path
