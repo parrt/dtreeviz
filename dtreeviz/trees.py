@@ -15,6 +15,7 @@ from dtreeviz.shadow import ShadowDecTree, ShadowDecTreeNode
 from dtreeviz.colors import adjust_colors
 from sklearn import tree
 import graphviz
+from model_interpretation import prediction_path_interpretation as prediction_path
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [0, 0, 10, 9, 8, 6, 6, 6, 5, 5, 5]
@@ -1588,33 +1589,17 @@ def describe_node_sample(tree_model: (tree.DecisionTreeClassifier, tree.Decision
     return x_train.iloc[node_samples[node_id]].describe()
 
 
-def explain_prediction_plain_english(tree_model, X):
-    return "plain english"
-
-
-def explain_prediction_weights(tree_model, X):
-    return "weights"
-
-
-def get_prediction_explainer(type):
-    if type == "plain_english":
-        return explain_prediction_plain_english
-    elif type == "weights":
-        return explain_prediction_weights
-    else:
-        raise ValueError(f"Explanation type {type} is not supported.")
-
-
 def explain_prediction_path(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTreeRegressor),
                             X: np.ndarray = None,
-                            type: str = None):
+                            features: list = None,
+                            explanation_type: str = None):
     """Prediction path interpretation
 
     TODO - move functions to another python module
     """
 
-    explainer = get_prediction_explainer(type)
-    return explainer(tree_model, X)
+    explainer = prediction_path.get_prediction_explainer(explanation_type)
+    return explainer(tree_model, X, features)
 
 
 
