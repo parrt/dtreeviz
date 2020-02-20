@@ -15,7 +15,7 @@ from dtreeviz.shadow import ShadowDecTree, ShadowDecTreeNode
 from dtreeviz.colors import adjust_colors
 from sklearn import tree
 import graphviz
-from model_interpretation import prediction_path_interpretation as prediction_path
+from dtreeviz.model_interpretation import prediction_path_interpretation as prediction_path
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [0, 0, 10, 9, 8, 6, 6, 6, 5, 5, 5]

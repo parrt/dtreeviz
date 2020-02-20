@@ -2,12 +2,13 @@
 Prediction path interpretation for decision tree models.
 In this moment, it contains "plain english" implementation, but others can be added in the future.
 """
-
+import numpy
+import pandas
 from sklearn import tree
 
 
 def explain_prediction_plain_english(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTreeRegressor),
-                                     X,
+                                     X: (pandas.core.series.Series, numpy.ndarray),
                                      feature_names):
     """
     Explains the prediction path using feature value's range.
@@ -33,7 +34,6 @@ def explain_prediction_plain_english(tree_model: (tree.DecisionTreeClassifier, t
     node_feature_index = tree_model.tree_.feature
     node_threshold = tree_model.tree_.threshold
 
-    # print(f"Prediction : {tree_model.predict([X])}")
     node_indicator = tree_model.decision_path([X])
     decision_node_path = node_indicator.indices[node_indicator.indptr[0]:
                                                 node_indicator.indptr[1]]
@@ -47,17 +47,9 @@ def explain_prediction_plain_english(tree_model: (tree.DecisionTreeClassifier, t
         feature_value = X[node_feature_index[node_id]]
         feature_split_value = round(node_threshold[node_id], 2)
 
-        # print(f"features {node_feature_index[node_id]}, threshold {node_threshold[node_id]}")
-        # if feature_value <= node_threshold[node_id]:
-        #      threshold_sign = "<="
-        #  else:
-        #      threshold_sign = ">"
-        # print(f"{feature_name} {X[node_feature_index[node_id]]} {threshold_sign} {node_threshold[node_id]} ")
-
         if feature_min_range.get(feature_name, feature_value) >= feature_split_value:
             feature_min_range[feature_name] = feature_split_value
-
-        if feature_max_range.get(feature_name, feature_value) < feature_split_value:
+        elif feature_max_range.get(feature_name, feature_value) < feature_split_value:
             feature_max_range[feature_name] = feature_split_value
 
     # TODO
@@ -65,11 +57,11 @@ def explain_prediction_plain_english(tree_model: (tree.DecisionTreeClassifier, t
     for feature_name in feature_names:
         feature_range = ""
         if feature_name in feature_min_range:
-            feature_range = f"{feature_min_range[feature_name]} <= {feature_name}({round(X[feature_name], 2)})"
+            feature_range = f"{feature_min_range[feature_name]} <= {feature_name}"
 
         if feature_name in feature_max_range:
             if feature_range == "":
-                feature_range = f"{feature_name}({round(X[feature_name], 2)}) < {feature_max_range[feature_name]}"
+                feature_range = f"{feature_name} < {feature_max_range[feature_name]}"
             else:
                 feature_range += f" < {feature_max_range[feature_name]}"
 
@@ -84,7 +76,7 @@ def explain_prediction_weights(tree_model, X):
 def get_prediction_explainer(explanation_type: str):
     """Factory method responsible to return a prediction path implementation based on argument 'explanation_type'
 
-    :param explanation_type: specify the type of explanation to be returned
+    :param explanation_type: specify the type of path explanation to be returned
     :return: method implementation for specified path explanation.
     """
 
