@@ -4,18 +4,17 @@ import matplotlib.pyplot as plt
 from dtreeviz.shadow import *
 from numbers import Number
 import matplotlib.patches as patches
-from mpl_toolkits.mplot3d import Axes3D
 import tempfile
 import os
 from sys import platform as PLATFORM
-from colour import Color, rgb2hex, color_scale
+from colour import Color, rgb2hex
 from typing import Mapping, List
 from dtreeviz.utils import inline_svg_images, myround, scale_SVG
 from dtreeviz.shadow import ShadowDecTree, ShadowDecTreeNode
 from dtreeviz.colors import adjust_colors
 from sklearn import tree
 import graphviz
-from dtreeviz.model_interpretation import prediction_path_interpretation as prediction_path
+from dtreeviz import interpretation as prediction_path
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [0, 0, 10, 9, 8, 6, 6, 6, 5, 5, 5]
