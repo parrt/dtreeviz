@@ -84,7 +84,7 @@ class DTreeViz:
 def rtreeviz_univar(ax=None,
                     x_train: (pd.Series, np.ndarray) = None,  # 1 vector of X data
                     y_train: (pd.Series, np.ndarray) = None,
-                    max_depth = 10,
+                    max_depth=10,
                     feature_name: str = None,
                     target_name: str = None,
                     min_samples_leaf = 1,
@@ -153,7 +153,9 @@ def rtreeviz_univar(ax=None,
     ax.set_ylabel(target_name, fontsize=fontsize, color=colors['axis_label'])
 
 
-def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, feature_names=None,
+def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None,
+                           max_depth=10, min_samples_leaf=1,
+                           feature_names=None,
                            fontsize=14, ticks_fontsize=12, fontname="Arial",
                            show={'title'},
                            n_colors_in_map=100,
@@ -179,7 +181,7 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, fe
 
     colors = adjust_colors(colors)
 
-    rt = tree.DecisionTreeRegressor(max_depth=max_depth)
+    rt = tree.DecisionTreeRegressor(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
     rt.fit(X_train, y_train)
 
     y_lim = np.min(y_train), np.max(y_train)
@@ -219,7 +221,9 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None, max_depth=10, fe
     return None
 
 
-def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature_names=None, target_name=None,
+def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None,
+                      max_depth=10, min_samples_leaf=1,
+                      feature_names=None, target_name=None,
                       fontsize=14, ticks_fontsize=10, fontname="Arial",
                       azim=0, elev=0, dist=7,
                       show={'title'},
@@ -265,7 +269,7 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None, max_depth=10, feature
                         color=color_spectrum[y_to_color_index(node.prediction())],
                         edgecolor=colors['edge'], lw=.3)
 
-    rt = tree.DecisionTreeRegressor(max_depth=max_depth)
+    rt = tree.DecisionTreeRegressor(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
     rt.fit(X_train, y_train)
 
     y_lim = np.min(y_train), np.max(y_train)
