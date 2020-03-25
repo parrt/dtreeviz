@@ -173,7 +173,10 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None,
         fig, ax = plt.subplots(1, 1)
 
     if X_train is None or y_train is None:
-        raise ValueError(f"x_train and y_train must not be none")
+        raise ValueError(f"X_train and y_train must not be none")
+
+    if X_train.shape[1]!=2:
+        raise ValueError(f"X_train must have exactly 2 columns")
 
     if isinstance(X_train,pd.DataFrame):
         X_train = X_train.values
