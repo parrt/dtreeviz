@@ -45,7 +45,7 @@ def inline_svg_images(svg) -> str:
 
     # Find all image tags in document (must use svg namespace)
     image_tags = tree.findall(".//svg:g/svg:image", ns)
-    for img in image_tags:
+    for i, img in enumerate(image_tags):
         # load ref'd image and get svg root
         svgfilename = img.attrib["{http://www.w3.org/1999/xlink}href"]
         with open(svgfilename, encoding='UTF-8') as f:
@@ -54,6 +54,13 @@ def inline_svg_images(svg) -> str:
         for k,v in img.attrib.items(): # copy IMAGE tag attributes to svg from image file
             if k not in {"{http://www.w3.org/1999/xlink}href"}:
                 imgroot.attrib[k] = v
+        # fix IDs so they're unique
+        prefix = 'inlined' + str(i) + '-'
+        for p in imgroot.iter():
+            if 'id' in p.attrib:
+                p.attrib['id'] = prefix + p.attrib['id']
+            elif "{http://www.w3.org/1999/xlink}href" in p.attrib and p.attrib["{http://www.w3.org/1999/xlink}href"].startswith('#'):
+                p.attrib["{http://www.w3.org/1999/xlink}href"] = '#' + prefix + p.attrib["{http://www.w3.org/1999/xlink}href"][1:]
         # replace IMAGE with SVG tag
         p = parent_map[img]
         # print("BEFORE " + ', '.join([str(c) for c in p]))
