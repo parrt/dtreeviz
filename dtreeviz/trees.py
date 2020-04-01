@@ -1391,6 +1391,84 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
         ax.grid(b=grid)
 
 
+def viz_leaf_criterion(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTreeRegressor),
+                       figsize: tuple = (10, 5),
+                       display_type: str = "plot",
+                       colors: dict = None,
+                       fontsize: int = 14,
+                       fontname: str = "Arial",
+                       grid: bool = False,
+                       bins: int = 10):
+    """
+    Leaves from regressor and classifier trees contain two important information : number of samples and criterion.
+    Criterion for regressor are “mse”, “friedman_mse”, “mae” and for classifer are "gini" and "entropy".
+    All of them shows the leaf performance/confidence for its predictions. Each leaf performance, in the end,
+    will determine the general tree performance.
+
+    This method contains three types of visualizations:
+    - a plot bar visualisations for each leaf criterion, when we want to interpret individual leaves
+    - a hist visualizations with leaf criterion, when we want to have a general overview for all leaves
+    - a text visualisations, useful when number of leaves is very large and visual interpretation becomes difficult.
+
+    :param tree_model: sklearn.tree
+        The tree to interpret
+    :param figsize: tuple of int
+        The plot size
+    :param display_type: str, optional
+       'plot', 'hist' or 'text'
+    :param colors: dict
+        The set of colors used for plotting
+    :param fontsize: int
+        Plot labels font size
+    :param fontname: str
+        Plot labels font name
+    :param grid: bool
+        Whether to show the grid lines
+    :param bins:  int
+        Number of histogram bins
+    :return:
+    """
+
+    leaf_id, leaf_criteria = ShadowDecTree.get_leaf_criterion(tree_model)
+
+    if display_type == "plot":
+        colors = adjust_colors(colors)
+
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_linewidth(.3)
+        ax.spines['bottom'].set_linewidth(.3)
+        ax.set_xticks(range(0, len(leaf_id)))
+        ax.set_xticklabels(leaf_id)
+        barcontainers = ax.bar(range(0, len(leaf_id)), leaf_criteria, color=colors["hist_bar"], lw=.3, align='center',
+                               width=1)
+        for rect in barcontainers.patches:
+            rect.set_linewidth(.5)
+            rect.set_edgecolor(colors['rect_edge'])
+        ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel(f"{tree_model.criterion.upper()}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.grid(b=grid)
+    elif display_type == "text":
+        for leaf, criteria in zip(leaf_id, leaf_criteria):
+            print(f"leaf {leaf} has {criteria} {tree_model.criterion}")
+    elif display_type == "hist":
+        colors = adjust_colors(colors)
+
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_linewidth(.3)
+        ax.spines['bottom'].set_linewidth(.3)
+        n, bins, patches = ax.hist(leaf_criteria, bins=bins, color=colors["hist_bar"])
+        for rect in patches:
+            rect.set_linewidth(.5)
+            rect.set_edgecolor(colors['rect_edge'])
+        ax.set_xlabel(f"{tree_model.criterion.upper()}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.grid(b=grid)
+
+
 def ctreeviz_leaf_samples(tree_model: tree.DecisionTreeClassifier,
                           figsize: tuple = (10, 5),
                           display_type: str = "plot",
