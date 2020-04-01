@@ -253,6 +253,7 @@ class ShadowDecTree:
         x, y = zip(*leaf_samples)
         return np.array(x), np.array(y)
 
+    @staticmethod
     def get_leaf_criterion(_tree_model):
         """Get criterion for each leaf
         For classification, supported criteria are “gini” for the Gini impurity and “entropy” for the information gain.
