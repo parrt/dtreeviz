@@ -254,6 +254,20 @@ class ShadowDecTree:
         return np.array(x), np.array(y)
 
     @staticmethod
+    def get_leaf_criterion(_tree_model):
+        """Get criterion for each leaf
+        For classification, supported criteria are “gini” for the Gini impurity and “entropy” for the information gain.
+        For regression, supported criteria are “mse”, “friedman_mse”, “mae”.
+        """
+
+        node_type = ShadowDecTree.get_node_type(_tree_model)
+        node_criterion = _tree_model.tree_.impurity
+
+        leaf_criterion = [(i, node_criterion[i]) for i in range(0, len(node_type)) if node_type[i]]
+        x, y = zip(*leaf_criterion)
+        return np.array(x), np.array(y)
+
+    @staticmethod
     def get_leaf_sample_counts_by_class(_tree_model):
         """Get the number of samples by class for each leaf.
 
