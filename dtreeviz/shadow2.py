@@ -1,11 +1,16 @@
-from dtreeviz.models.trees import DTree, SKDTree, XGBDTree
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from collections import defaultdict, Sequence
-import pandas as pd
-from typing import Mapping, List, Tuple
+from collections import Sequence
+from numbers import Number
+from typing import List, Tuple
+
 import numpy as np
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
+from dtreeviz.models.trees import SKDTree
 
+# TODO
+# check again all properties and methods
+# difference between class_weight and class_weights
 class ShadowDecTree2:
     def __init__(self, tree_model,
                  X_train,
@@ -15,7 +20,6 @@ class ShadowDecTree2:
         self.feature_names = feature_names
         self.class_names = class_names
         self.dtree = self._get_dtree_type(tree_model)
-        self.class_weight = self.dtree.get_class_weight()
 
         if not self.dtree.is_fit():
             raise Exception(f"Model {tree_model} is not fit.")
@@ -23,6 +27,8 @@ class ShadowDecTree2:
         self.class_names = ShadowDecTree2._get_class_names(self.dtree, self.class_names)
         self.X_train = ShadowDecTree2._get_x_train(X_train)
         self.y_train = ShadowDecTree2._get_y_train(y_train)
+        self.class_weight = tree_model.class_weight
+        self.class_weights = self.dtree.get_class_weight(y_train)
         self.node_to_samples = self.dtree.get_node_samples(self.X_train)
 
         # difference between local variable and self. variables
@@ -50,6 +56,9 @@ class ShadowDecTree2:
         self.root = walk(root_node_id)
         self.leaves = leaves
         self.internal = internal
+
+    def nclasses(self):
+        return self.dtree.get_n_classes()
 
     @staticmethod
     def _get_dtree_type(tree_model):
@@ -138,3 +147,47 @@ class ShadowDecTreeNode():
 
     def isclassifier(self) -> bool:
         return self.shadow_tree.dtree.get_n_classes() > 1
+
+    def prediction(self) -> (Number, None):
+
+        if not self.isleaf():
+            return None
+        if self.isclassifier():
+            counts = self.shadow_tree.dtree.get_value(self.id)
+            return np.argmax(counts)
+        else:
+            return self.shadow_tree.dtree.get_value(self.id)[0]
+
+    def prediction_name(self) -> (str, None):
+        """
+        If the tree model is a classifier and we know the class names,
+        return the class name associated with the prediction for this leaf node.
+        Return prediction class or value otherwise.
+        """
+        if self.isclassifier():
+            if self.shadow_tree.class_names is not None:
+                return self.shadow_tree.class_names[self.prediction()]
+        return self.prediction()
+
+    def class_counts(self) -> (List[int], None):
+        """
+        If this tree model is a classifier, return a list with the count
+        associated with each class.
+        """
+        if self.isclassifier():
+            if self.shadow_tree.class_weight is None:
+                # return np.array(np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]), dtype=int)
+                return np.array(np.round(self.shadow_tree.dtree.get_value(self.id)), dtype=int)
+            else:
+                return np.round(
+                    self.shadow_tree.dtree.get_value(self.id) / self.shadow_tree.class_weights).astype(int)
+        return None
+
+    def __str__(self):
+        if self.left is None and self.right is None:
+            return "<pred={value},n={n}>".format(value=round(self.prediction(), 1), n=self.nsamples())
+        else:
+            return "({f}@{s} {left} {right})".format(f=self.feature_name(),
+                                                     s=round(self.split(), 1),
+                                                     left=self.left if self.left is not None else '',
+                                                     right=self.right if self.right is not None else '')

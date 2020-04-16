@@ -1,5 +1,8 @@
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from collections import defaultdict
+import numpy as np
+from sklearn.utils import compute_class_weight
+
 
 
 class DTree:
@@ -14,11 +17,16 @@ class SKDTree(DTree):
     def is_fit(self):
         return getattr(self.tree_model, 'tree_') is not None
 
-    def get_class_weight(self):
+    # TODO
+    # check results with original shadow.py
+    def get_class_weight(self, y_train):
+        if self.tree_model.tree_.n_classes > 1:
+            unique_target_values = np.unique(y_train)
+            return compute_class_weight(self.tree_model.class_weight, unique_target_values, y_train)
         return self.tree_model.class_weight
 
     def get_n_classes(self):
-        return self.tree_model.tree_.n_classes
+        return self.tree_model.tree_.n_classes[0]
 
     def get_node_samples(self, data):
         """
@@ -51,6 +59,8 @@ class SKDTree(DTree):
     def get_node_feature(self, id) -> int:
         return self.tree_model.tree_.feature[id]
 
+    def get_value(self, id):
+        return self.tree_model.tree_.value[id][0]
 
 class XGBDTree(DTree):
     def __init__(self):
