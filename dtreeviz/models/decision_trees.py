@@ -1,16 +1,11 @@
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from collections import defaultdict
+
 import numpy as np
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.utils import compute_class_weight
 
 
-
-class DTree:
-    def __init__(self):
-        pass
-
-
-class SKDTree(DTree):
+class SKDTree:
     def __init__(self, tree_model):
         self.tree_model: (DecisionTreeClassifier, DecisionTreeRegressor) = tree_model
 
@@ -61,6 +56,21 @@ class SKDTree(DTree):
 
     def get_value(self, id):
         return self.tree_model.tree_.value[id][0]
+
+    def get_node_count(self):
+        return self.tree_model.tree_.node_count
+
+    # def get_leaf_sample_counts(self, leaves):
+    #     return [self.tree_model.tree_.n_node_samples[leaf.id] for leaf in leaves]
+
+    def get_node_nsamples(self, id) -> int:
+        return self.tree_model.tree_.n_node_samples[id]
+
+    def get_node_criterion(self, id):
+        return self.tree_model.tree_.impurity[id]
+
+    def get_prediction_value(self, id):
+        return self.tree_model.tree_.value[id]
 
 class XGBDTree(DTree):
     def __init__(self):

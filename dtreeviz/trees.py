@@ -10,6 +10,8 @@ import os
 from sys import platform as PLATFORM
 from colour import Color, rgb2hex, color_scale
 from typing import Mapping, List
+
+from dtreeviz.shadow2 import ShadowDecTree2
 from dtreeviz.utils import inline_svg_images, myround, scale_SVG
 from dtreeviz.shadow import ShadowDecTree, ShadowDecTreeNode
 from dtreeviz.colors import adjust_colors
@@ -1354,7 +1356,8 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
         Max number of samples for a leaf
     """
 
-    leaf_id, leaf_samples = ShadowDecTree.get_leaf_sample_counts(tree_model, min_samples, max_samples)
+    shadow_tree = ShadowDecTree2(tree_model)
+    leaf_id, leaf_samples = shadow_tree.get_leaf_sample_counts(min_samples, max_samples)
 
     if display_type == "plot":
         colors = adjust_colors(colors)
@@ -1432,7 +1435,8 @@ def viz_leaf_criterion(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTr
     :return:
     """
 
-    leaf_id, leaf_criteria = ShadowDecTree.get_leaf_criterion(tree_model)
+    shadow_tree = ShadowDecTree2(tree_model)
+    leaf_id, leaf_criteria = shadow_tree.get_leaf_criterion()
 
     if display_type == "plot":
         colors = adjust_colors(colors)
@@ -1517,7 +1521,8 @@ def ctreeviz_leaf_samples(tree_model: tree.DecisionTreeClassifier,
         print("Please create an issue if you need more classes.")
         return
 
-    index, leaf_samples_0, leaf_samples_1 = ShadowDecTree.get_leaf_sample_counts_by_class(tree_model)
+    shadow_tree = ShadowDecTree2(tree_model)
+    index, leaf_samples_0, leaf_samples_1 = shadow_tree.get_leaf_sample_counts_by_class()
 
     if display_type == "plot":
         colors = adjust_colors(colors)
