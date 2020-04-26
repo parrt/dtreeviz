@@ -1322,7 +1322,8 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
                      grid: bool = False,
                      bins: int = 10,
                      min_samples: int = 0,
-                     max_samples: int = None):
+                     max_samples: int = None,
+                     shadow_type: int = 1):
     """Visualize the number of training samples from each leaf.
 
     There is the option to filter the leaves with less than min_samples or more than max_samples. This is helpful
@@ -1356,8 +1357,11 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
         Max number of samples for a leaf
     """
 
-    shadow_tree = ShadowDecTree2(tree_model)
-    leaf_id, leaf_samples = shadow_tree.get_leaf_sample_counts(min_samples, max_samples)
+    if shadow_type == 1:
+        leaf_id, leaf_samples = ShadowDecTree.get_leaf_sample_counts(tree_model, min_samples, max_samples)
+    elif shadow_type == 2:
+        shadow_tree = ShadowDecTree2(tree_model)
+        leaf_id, leaf_samples = shadow_tree.get_leaf_sample_counts(min_samples, max_samples)
 
     if display_type == "plot":
         colors = adjust_colors(colors)
@@ -1404,7 +1408,8 @@ def viz_leaf_criterion(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTr
                        fontsize: int = 14,
                        fontname: str = "Arial",
                        grid: bool = False,
-                       bins: int = 10):
+                       bins: int = 10,
+                       shadow_type: int = 1):
     """
     Leaves from regressor and classifier trees contain two important information : number of samples and criterion.
     Criterion for regressor are “mse”, “friedman_mse”, “mae” and for classifer are "gini" and "entropy".
@@ -1435,8 +1440,11 @@ def viz_leaf_criterion(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTr
     :return:
     """
 
-    shadow_tree = ShadowDecTree2(tree_model)
-    leaf_id, leaf_criteria = shadow_tree.get_leaf_criterion()
+    if shadow_type == 1:
+        leaf_id, leaf_criteria = ShadowDecTree.get_leaf_criterion(tree_model)
+    elif shadow_type == 2:
+        shadow_tree = ShadowDecTree2(tree_model)
+        leaf_id, leaf_criteria = shadow_tree.get_leaf_criterion()
 
     if display_type == "plot":
         colors = adjust_colors(colors)
@@ -1483,7 +1491,8 @@ def ctreeviz_leaf_samples(tree_model: tree.DecisionTreeClassifier,
                           colors: dict = None,
                           fontsize: int = 14,
                           fontname: str = "Arial",
-                          grid: bool = False):
+                          grid: bool = False,
+                          shadow_type: int = 1):
     """Visualize the number of training samples by class from each leaf.
 
     It's a good way to see how training classes are distributed in leaves. For example, you can observe that in some
@@ -1521,8 +1530,11 @@ def ctreeviz_leaf_samples(tree_model: tree.DecisionTreeClassifier,
         print("Please create an issue if you need more classes.")
         return
 
-    shadow_tree = ShadowDecTree2(tree_model)
-    index, leaf_samples_0, leaf_samples_1 = shadow_tree.get_leaf_sample_counts_by_class()
+    if shadow_type == 1:
+        index, leaf_samples_0, leaf_samples_1 = ShadowDecTree.get_leaf_sample_counts_by_class(tree_model)
+    elif shadow_type == 2:
+        shadow_tree = ShadowDecTree2(tree_model)
+        index, leaf_samples_0, leaf_samples_1 = shadow_tree.get_leaf_sample_counts_by_class()
 
     if display_type == "plot":
         colors = adjust_colors(colors)

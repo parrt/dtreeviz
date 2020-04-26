@@ -5,8 +5,9 @@ from typing import List, Tuple, Mapping
 import numpy as np
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from xgboost.core import Booster
 
-from dtreeviz.models.decision_trees import SKDTree
+from dtreeviz.models.decision_trees import SKDTree, XGBDTree
 
 
 # TODO
@@ -15,16 +16,18 @@ from dtreeviz.models.decision_trees import SKDTree
 # we need to find a way to initialize more easily the ShadowDecTree (ex. None)
 # add docs
 # ask Terence to look over all visualisations
+# interpretation.py is not yet adapted
 class ShadowDecTree2:
     def __init__(self, tree_model,
-                 X_train = None,
-                 y_train = None,
+                 X_train=None,
+                 y_train=None,
                  feature_names: List[str] = None,
-                 class_names: (List[str], Mapping[int, str]) = None):
+                 class_names: (List[str], Mapping[int, str]) = None,
+                 tree_index: int = 0):
         self.feature_names = feature_names
         self.class_names = class_names
-        self.dtree = self._get_dtree_type(tree_model)
-        self.class_weight = tree_model.class_weight
+        self.dtree = self._get_dtree_type(tree_model, tree_index)
+        self.class_weight = self.dtree.get_class_weight()
 
         if not self.dtree.is_fit():
             raise Exception(f"Model {tree_model} is not fit.")
@@ -35,7 +38,7 @@ class ShadowDecTree2:
         if X_train is not None and y_train is not None:
             self.X_train = ShadowDecTree2._get_x_train(X_train)
             self.y_train = ShadowDecTree2._get_y_train(y_train)
-            self.class_weights = self.dtree.get_class_weight(y_train)
+            self.class_weights = self.dtree.get_class_weights(y_train)
             self.unique_target_values = np.unique(y_train)
             self.node_to_samples = self.dtree.get_node_samples(self.X_train)
 
@@ -44,6 +47,9 @@ class ShadowDecTree2:
         internal = []  # non-leaf nodes
         children_left = self.dtree.get_children_left()
         children_right = self.dtree.get_children_right()
+
+        print(children_left)
+        print(children_right)
 
         def walk(node_id):
             if children_left[node_id] == -1 and children_right[node_id] == -1:  # leaf
@@ -230,11 +236,12 @@ class ShadowDecTree2:
         index, leaf_samples_0, leaf_samples_1 = zip(*leaf_samples)
         return index, leaf_samples_0, leaf_samples_1
 
-    @staticmethod
-    def _get_dtree_type(tree_model):
+    def _get_dtree_type(self, tree_model, tree_index=None):
         # factory method for dtree
         if isinstance(tree_model, (DecisionTreeClassifier, DecisionTreeRegressor)):
             dtree = SKDTree(tree_model)
+        elif isinstance(tree_model, Booster):
+            dtree = XGBDTree(tree_model, tree_index)
         else:
             raise Exception("raise unknown dtree type")
 
