@@ -19,6 +19,8 @@ from sklearn import tree
 import graphviz
 from dtreeviz import interpretation as prediction_path
 
+import xgboost as xgb
+
 # How many bins should we have based upon number of classes
 NUM_BINS = [0, 0, 10, 9, 8, 6, 6, 6, 5, 5, 5]
           # 0, 1, 2,  3, 4, 5, 6, 7, 8, 9, 10
@@ -1323,7 +1325,9 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
                      bins: int = 10,
                      min_samples: int = 0,
                      max_samples: int = None,
-                     shadow_type: int = 1):
+                     shadow_type: int = 1,
+                     tree_index: int = 0,
+                     dataset = None):
     """Visualize the number of training samples from each leaf.
 
     There is the option to filter the leaves with less than min_samples or more than max_samples. This is helpful
@@ -1360,7 +1364,10 @@ def viz_leaf_samples(tree_model: (tree.DecisionTreeRegressor, tree.DecisionTreeC
     if shadow_type == 1:
         leaf_id, leaf_samples = ShadowDecTree.get_leaf_sample_counts(tree_model, min_samples, max_samples)
     elif shadow_type == 2:
-        shadow_tree = ShadowDecTree2(tree_model)
+        if isinstance(tree_model, xgb.Booster):
+            shadow_tree = ShadowDecTree2(tree_model, X_train=dataset, tree_index=tree_index)
+        else:
+            shadow_tree = ShadowDecTree2(tree_model, X_train=dataset)
         leaf_id, leaf_samples = shadow_tree.get_leaf_sample_counts(min_samples, max_samples)
 
     if display_type == "plot":
@@ -1485,6 +1492,8 @@ def viz_leaf_criterion(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTr
 
 
 def ctreeviz_leaf_samples(tree_model: tree.DecisionTreeClassifier,
+                          x_dataset,
+                          y_dataset,
                           figsize: tuple = (10, 5),
                           display_type: str = "plot",
                           plot_ylim: int = None,
@@ -1521,24 +1530,23 @@ def ctreeviz_leaf_samples(tree_model: tree.DecisionTreeClassifier,
         Whether to show the grid lines
     """
 
-    if not isinstance(tree_model, tree.DecisionTreeClassifier):
-        print("Only sklearn.tree.DecisionTreeClassifier can be used for this vizualisation.")
-        return
-
-    if tree_model.n_classes_ != 2:
-        print("Right now only binary classification is supported.")
-        print("Please create an issue if you need more classes.")
-        return
+    # if tree_model.n_classes_ != 2:
+    #     print("Right now only binary classification is supported.")
+    #     print("Please create an issue if you need more classes.")
+    #     return
 
     if shadow_type == 1:
         index, leaf_samples_0, leaf_samples_1 = ShadowDecTree.get_leaf_sample_counts_by_class(tree_model)
     elif shadow_type == 2:
-        shadow_tree = ShadowDecTree2(tree_model)
+        shadow_tree = ShadowDecTree2(tree_model, X_train=x_dataset, y_train=y_dataset)
         index, leaf_samples_0, leaf_samples_1 = shadow_tree.get_leaf_sample_counts_by_class()
 
     if display_type == "plot":
         colors = adjust_colors(colors)
-        colors_classes = colors['classes'][tree_model.n_classes_]
+        # colors_classes = colors['classes'][tree_model.n_classes_]
+        # TODO remove hardcoded value
+        colors_classes = colors['classes'][2]
+
 
         fig, ax = plt.subplots(figsize=figsize)
         ax.spines['top'].set_visible(False)

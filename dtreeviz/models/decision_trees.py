@@ -1,13 +1,28 @@
+from abc import ABC, abstractmethod
 from collections import defaultdict
 
 import numpy as np
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.utils import compute_class_weight
+import xgboost as xgb
 from xgboost.core import Booster
 import pandas as pd
 import math
 
-class SKDTree:
+
+
+class ShadowDecTree2(ABC):
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def is_fit(self):
+        pass
+
+
+# TODO
+# add documentation
+class SKDTree(ABC):
     def __init__(self, tree_model):
         self.tree_model: (DecisionTreeClassifier, DecisionTreeRegressor) = tree_model
 
@@ -84,7 +99,10 @@ class XGBDTree:
     NO_CHILDREN = -1
     NO_SPLIT = -2
     NO_FEATURE = -2
+    ROOT_NODE = 0
 
+    # TODO
+    # do we need data as parameter ? should it be dataframe or dmetrics ?
     def __init__(self, booster: Booster,
                  tree_index: int,
                  data: pd.DataFrame = None):
@@ -98,6 +116,12 @@ class XGBDTree:
     def is_fit(self):
         return isinstance(self.booster, Booster)
 
+    def get_class_weights(self, y_train):
+        return None
+
+    def get_n_classes(self):
+        return 2
+
     def get_class_weight(self):
         return None
 
@@ -108,6 +132,10 @@ class XGBDTree:
         return self.children_right
 
     def get_node_split(self, id) -> (float):
+        """
+        Split values could not be the same like in plot_tree(booster). This is because xgb_model.trees_to_dataframe()
+        get data using dump_format = text from xgb_model.get_dump()
+        """
         node_split = self._get_column_value("Split")[id]
         return node_split if not math.isnan(node_split) else self.__class__.NO_SPLIT
 
@@ -118,7 +146,7 @@ class XGBDTree:
         except ValueError as error:
             return self.__class__.NO_FEATURE
 
-    def get_node_samples(self, data):
+    def get_node_samples(self, data: pd.DataFrame):
         """
         Return dictionary mapping node id to list of sample indexes considered by
         the feature/split decision.
@@ -126,16 +154,41 @@ class XGBDTree:
         # Doc say: "Return a node indicator matrix where non zero elements
         #           indicates that the samples goes through the nodes."
 
-        dec_paths = self.tree_model.decision_path(data)
-
-        # each sample has path taken down tree
+        prediction_leaves = self.booster.predict(xgb.DMatrix(data, feature_names=self.booster.feature_names),
+                                                 pred_leaf=True)[:, self.tree_index]
         node_to_samples = defaultdict(list)
-        for sample_i, dec in enumerate(dec_paths):
-            _, nz_nodes = dec.nonzero()
-            for node_id in nz_nodes:
+        for sample_i, prediction_leaf in enumerate(prediction_leaves):
+            prediction_path = self._get_leaf_prediction_path(prediction_leaf)
+            for node_id in prediction_path:
                 node_to_samples[node_id].append(sample_i)
 
         return node_to_samples
+
+    def get_node_nsamples(self, id) -> int:
+        # return self.tree_model.tree_.n_node_samples[id]
+        pass
+
+    def _get_leaf_prediction_path(self, leaf):
+        prediction_path = [leaf]
+
+        def walk(node_id):
+            if node_id != self.__class__.ROOT_NODE:
+                try:
+                    parent_node = np.where(self.children_left == node_id)[0][0]
+                    prediction_path.append(parent_node)
+                    walk(parent_node)
+                except IndexError:
+                    pass
+
+                try:
+                    parent_node = np.where(self.children_right == node_id)[0][0]
+                    prediction_path.append(parent_node)
+                    walk(parent_node)
+                except IndexError:
+                    pass
+
+        walk(leaf)
+        return prediction_path
 
     def _get_tree_dataframe(self):
         return self.booster.trees_to_dataframe().query(f"Tree == {self.tree_index}")

@@ -35,21 +35,21 @@ class ShadowDecTree2:
         if class_names:
             self.class_names = ShadowDecTree2._get_class_names(self.dtree, self.class_names)
 
-        if X_train is not None and y_train is not None:
+        if X_train is not None:
             self.X_train = ShadowDecTree2._get_x_train(X_train)
+            self.node_to_samples = self.dtree.get_node_samples(self.X_train)
+
+        if y_train is not None:
             self.y_train = ShadowDecTree2._get_y_train(y_train)
             self.class_weights = self.dtree.get_class_weights(y_train)
             self.unique_target_values = np.unique(y_train)
-            self.node_to_samples = self.dtree.get_node_samples(self.X_train)
+
 
         # use locals not args to walk() for recursion speed in python
         leaves = []
         internal = []  # non-leaf nodes
         children_left = self.dtree.get_children_left()
         children_right = self.dtree.get_children_right()
-
-        print(children_left)
-        print(children_right)
 
         def walk(node_id):
             if children_left[node_id] == -1 and children_right[node_id] == -1:  # leaf
@@ -231,10 +231,9 @@ class ShadowDecTree2:
             Contains a list of leaf ids and a two lists of leaf samples (one for each class)
         """
 
-        leaf_samples = [(node.id, node.prediction_value()[0][0], node.prediction_value()[0][1]) for node in self.leaves]
-
-        index, leaf_samples_0, leaf_samples_1 = zip(*leaf_samples)
-        return index, leaf_samples_0, leaf_samples_1
+        leaf_samples = [(node.id, node.n_sample_classes()[0], node.n_sample_classes()[1]) for node in self.leaves]
+        index, leaf_sample_0, leaf_samples_1 = zip(*leaf_samples)
+        return index, leaf_sample_0, leaf_samples_1
 
     def _get_dtree_type(self, tree_model, tree_index=None):
         # factory method for dtree
@@ -306,7 +305,24 @@ class ShadowDecTreeNode():
         or class. If this is an internal node, it is the number of samples used
         to compute the split point.
         """
-        return self.shadow_tree.dtree.get_node_nsamples(self.id)
+
+        return len(self.samples())
+        # return self.shadow_tree.dtree.get_node_nsamples(self.id)
+
+    # TODO
+    # rename method name
+    def n_sample_classes(self):
+        samples = np.array(self.samples())
+        node_y_data = self.shadow_tree.y_train[samples]
+        unique, counts = np.unique(node_y_data, return_counts=True)
+
+        if len(unique) == 2:
+            return [counts[0], counts[1]]
+        elif len(unique) == 1: # one node can contain samples from only on class
+            if unique[0] == 0:
+                return [counts[0], 0]
+            elif unique[0] == 1:
+                return [0, counts[0]]
 
     def criterion(self):
         return self.shadow_tree.dtree.get_node_criterion(self.id)
@@ -348,9 +364,6 @@ class ShadowDecTreeNode():
             if self.shadow_tree.class_names is not None:
                 return self.shadow_tree.class_names[self.prediction()]
         return self.prediction()
-
-    def prediction_value(self):
-        return self.shadow_tree.dtree.get_prediction_value(self.id)
 
     def class_counts(self) -> (List[int], None):
         """
