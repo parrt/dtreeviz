@@ -7,7 +7,8 @@ import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from xgboost.core import Booster
 
-from dtreeviz.models.decision_trees import SKDTree, XGBDTree
+from dtreeviz.models.sklearn_decision_trees import SKDTree
+from dtreeviz.models.xgb_decision_tree import XGBDTree
 
 
 # TODO
@@ -70,10 +71,10 @@ class ShadowDecTree2:
         self.internal = internal
 
     def nclasses(self):
-        return self.dtree.get_n_classes()
+        return self.dtree.nclasses()
 
     def nnodes(self):
-        return self.dtree.get_node_count()
+        return self.dtree.nnodes()
 
     # def leaf_sample_counts(self) -> List[int]:
     #     # TODO
@@ -248,7 +249,7 @@ class ShadowDecTree2:
 
     @staticmethod
     def _get_class_names(dtree, class_names):
-        if dtree.get_n_classes() > 1:
+        if dtree.nclasses() > 1:
             if isinstance(class_names, dict):
                 # TODO does it make any sense ?
                 return class_names
@@ -342,7 +343,7 @@ class ShadowDecTreeNode():
         return self.left is None and self.right is None
 
     def isclassifier(self) -> bool:
-        return self.shadow_tree.dtree.get_n_classes() > 1
+        return self.shadow_tree.dtree.nclasses() > 1
 
     def prediction(self) -> (Number, None):
 
