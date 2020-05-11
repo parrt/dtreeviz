@@ -1,10 +1,16 @@
 import xgboost as xgb
 from xgboost.core import Booster
 import pandas as pd
+import numpy as np
 import math
+from typing import List, Mapping
+from collections import defaultdict
+
+from dtreeviz.models.shadow_decision_tree import ShadowDecTree3
+from dtreeviz.exceptions import VisualisationNotYetSupportedError
 
 
-class XGBDTree:
+class XGBDTree(ShadowDecTree3):
     LEFT_CHILDREN_COLUMN = "Yes"
     RIGHT_CHILDREN_COLUMN = "No"
     NO_CHILDREN = -1
@@ -16,13 +22,19 @@ class XGBDTree:
     # do we need data as parameter ? should it be dataframe or dmetrics ?
     def __init__(self, booster: Booster,
                  tree_index: int,
-                 data: pd.DataFrame = None):
-        self.booster = booster
-        self.tree_index = tree_index
-        self.data = data
-        self.tree_to_dataframe = self._get_tree_dataframe()
-        self.children_left = self._calculate_children(self.__class__.LEFT_CHILDREN_COLUMN)
-        self.children_right = self._calculate_children(self.__class__.RIGHT_CHILDREN_COLUMN)
+                 x_data,
+                 y_data,
+                 feature_names: List[str] = None,
+                 target_name: str = None,
+                 class_names: (List[str], Mapping[int, str]) = None
+                 ):
+        super().__init__(booster, x_data, y_data, feature_names, target_name, class_names)
+        # self.booster = booster
+        # self.tree_index = tree_index
+        # self.data = data
+        # self.tree_to_dataframe = self._get_tree_dataframe()
+        # self.children_left = self._calculate_children(self.__class__.LEFT_CHILDREN_COLUMN)
+        # self.children_right = self._calculate_children(self.__class__.RIGHT_CHILDREN_COLUMN)
 
     def is_fit(self):
         return isinstance(self.booster, Booster)
@@ -36,6 +48,9 @@ class XGBDTree:
     def get_class_weight(self):
         return None
 
+    def criterion(self):
+        raise VisualisationNotYetSupportedError("criterion()")
+
     def get_children_left(self):
         return self.children_left
 
@@ -44,8 +59,8 @@ class XGBDTree:
 
     def get_node_split(self, id) -> (float):
         """
-        Split values could not be the same like in plot_tree(booster). This is because xgb_model.joblib.trees_to_dataframe()
-        get data using dump_format = text from xgb_model.joblib.get_dump()
+        Split values could not be the same like in plot_tree(booster). This is because xgb_model_classifier.joblib.trees_to_dataframe()
+        get data using dump_format = text from xgb_model_classifier.joblib.get_dump()
         """
         node_split = self._get_column_value("Split")[id]
         return node_split if not math.isnan(node_split) else self.__class__.NO_SPLIT
@@ -123,3 +138,6 @@ class XGBDTree:
         children = self._split_column_value(column_name)
         children = self._change_no_children_value(children)
         return children.to_numpy(dtype=int)
+
+    def get_feature_path_importance(self):
+        raise VisualisationNotYetSupportedError("get_feature_path_importance()")

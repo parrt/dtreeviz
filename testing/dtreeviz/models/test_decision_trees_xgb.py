@@ -13,18 +13,26 @@ import pandas as pd
 
 @pytest.fixture()
 def xgb_booster() -> xgb.Booster:
-    return joblib.load("fixtures/xgb_model.joblib")
+    return joblib.load("fixtures/xgb_model_classifier.joblib")
 
 
 @pytest.fixture()
-def xgb_tree(x_dataset, xgb_booster) -> XGBDTree:
-    return XGBDTree(xgb_booster, 1)
+def xgb_tree(xgb_booster, x_dataset, y_dataset) -> XGBDTree:
+    features = ["Pclass", "Age", "Fare", "Sex_label", "Cabin_label", "Embarked_label"]
+    target = "Survived"
+    # class_names = list(dec_tree.classes_)
+    return XGBDTree(xgb_booster, 1, features, target)
 
 
 def test_x_dataset(x_dataset):
     dataset = xgb.DMatrix(x_dataset)
     assert dataset.num_row() == 20, "Number of rows should be 20"
     assert dataset.num_col() == 6, "Number of columns/features should be 6"
+
+
+def test_y_dataset(y_dataset):
+    assert y_dataset.shape[0] == 20, "Number of rows should be 20"
+    assert list(y_dataset) == [0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1]
 
 
 def test_feature_names(xgb_booster):
