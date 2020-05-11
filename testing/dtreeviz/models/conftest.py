@@ -10,3 +10,8 @@ def dataset() -> pd.DataFrame:
 @pytest.fixture(autouse=True)
 def x_dataset() -> pd.DataFrame:
     return pd.read_csv("fixtures/dataset.csv")[["Pclass", "Age", "Fare", "Sex_label", "Cabin_label", "Embarked_label"]]
+
+
+@pytest.fixture()
+def y_dataset() -> pd.Series:
+    return pd.read_csv("fixtures/dataset.csv")["Survived"]

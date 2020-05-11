@@ -41,6 +41,10 @@ def test_class_weight(shadow_dec_tree):
     assert shadow_dec_tree.get_class_weight() is None
 
 
+def test_criterion(shadow_dec_tree):
+    assert shadow_dec_tree.criterion() == "GINI"
+
+
 def test_nclasses(shadow_dec_tree):
     assert shadow_dec_tree.nclasses() == 2, "Number of classes should be 2"
 

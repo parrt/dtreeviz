@@ -19,6 +19,9 @@ class ShadowDecTree3(ABC):
         self.target_name = target_name
         self.class_names = class_names
         self.class_weight = self.get_class_weight()
+        self.thresholds = self.get_thresholds()
+        self.features = self.get_features()
+
 
         if not self.is_fit():
             raise Exception(f"Model {tree_model} is not fit.")
@@ -33,6 +36,7 @@ class ShadowDecTree3(ABC):
             self.unique_target_values = np.unique(self.y_data)
         self.root, self.leaves, self.internal = self._get_tree_nodes()
 
+
     @abstractmethod
     def is_fit(self):
         pass
@@ -43,6 +47,18 @@ class ShadowDecTree3(ABC):
 
     @abstractmethod
     def get_class_weights(self):
+        pass
+
+    @abstractmethod
+    def get_thresholds(self):
+        pass
+
+    @abstractmethod
+    def get_features(self):
+        pass
+
+    @abstractmethod
+    def criterion(self):
         pass
 
     @abstractmethod
@@ -58,7 +74,7 @@ class ShadowDecTree3(ABC):
         pass
 
     @abstractmethod
-    def get_node_samples(self, x_data):
+    def get_node_samples(self):
         pass
 
     @abstractmethod
@@ -91,6 +107,10 @@ class ShadowDecTree3(ABC):
 
     @abstractmethod
     def get_node_criterion(self, id):
+        pass
+
+    @abstractmethod
+    def get_feature_path_importance(self):
         pass
 
     def get_split_node_heights(self, X_train, y_train, nbins) -> Mapping[int, int]:

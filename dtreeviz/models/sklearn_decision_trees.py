@@ -32,6 +32,15 @@ class SKDTree(ShadowDecTree3):
             return compute_class_weight(self.tree_model.class_weight, unique_target_values, self.y_data)
         return self.tree_model.class_weight
 
+    def get_thresholds(self):
+        return self.tree_model.tree_.threshold
+
+    def get_features(self):
+        return self.tree_model.tree_.feature
+
+    def criterion(self):
+        return self.tree_model.criterion.upper()
+
     def get_class_weight(self):
         return self.tree_model.class_weight
 
@@ -89,3 +98,25 @@ class SKDTree(ShadowDecTree3):
 
     def get_prediction_value(self, id):
         return self.tree_model.tree_.value[id]
+
+    def get_feature_path_importance(self, node_list):
+        gini_importance = np.zeros(self.tree_model.tree_.n_features)
+        for node in node_list:
+            if self.tree_model.tree_.children_left[node] != -1:
+                node_left = self.tree_model.tree_.children_left[node]
+                node_right = self.tree_model.tree_.children_right[node]
+
+                gini_importance[self.tree_model.tree_.feature[node]] += self.tree_model.tree_.weighted_n_node_samples[
+                                                                            node] * \
+                                                                        self.tree_model.tree_.impurity[node] \
+                                                                        - self.tree_model.tree_.weighted_n_node_samples[
+                                                                            node_left] * \
+                                                                        self.tree_model.tree_.impurity[node_left] \
+                                                                        - self.tree_model.tree_.weighted_n_node_samples[
+                                                                            node_right] * \
+                                                                        self.tree_model.tree_.impurity[node_right]
+        normalizer = np.sum(gini_importance)
+        if normalizer > 0.0:
+            gini_importance /= normalizer
+
+        return gini_importance

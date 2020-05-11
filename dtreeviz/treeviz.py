@@ -14,10 +14,11 @@ from typing import Mapping, List
 from dtreeviz.shadow2 import ShadowDecTree2
 from dtreeviz.utils import inline_svg_images, myround, scale_SVG
 from dtreeviz.shadow import ShadowDecTree, ShadowDecTreeNode
+from dtreeviz.models.sklearn_decision_trees import SKDTree
 from dtreeviz.colors import adjust_colors
 from sklearn import tree
 import graphviz
-from dtreeviz import interpretation as prediction_path
+from dtreeviz import interpretation2 as prediction_path
 
 import xgboost as xgb
 
@@ -1327,9 +1328,7 @@ def viz_leaf_samples(shadow_tree,
                      grid: bool = False,
                      bins: int = 10,
                      min_samples: int = 0,
-                     max_samples: int = None,
-                     shadow_type: int = 1,
-                     tree_index: int = 0):
+                     max_samples: int = None):
     """Visualize the number of training samples from each leaf.
 
     There is the option to filter the leaves with less than min_samples or more than max_samples. This is helpful
@@ -1403,15 +1402,14 @@ def viz_leaf_samples(shadow_tree,
         ax.grid(b=grid)
 
 
-def viz_leaf_criterion(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTreeRegressor),
+def viz_leaf_criterion(shadow_tree,
                        figsize: tuple = (10, 5),
                        display_type: str = "plot",
                        colors: dict = None,
                        fontsize: int = 14,
                        fontname: str = "Arial",
                        grid: bool = False,
-                       bins: int = 10,
-                       shadow_type: int = 1):
+                       bins: int = 10):
     """
     Leaves from regressor and classifier trees contain two important information : number of samples and criterion.
     Criterion for regressor are “mse”, “friedman_mse”, “mae” and for classifer are "gini" and "entropy".
@@ -1441,12 +1439,12 @@ def viz_leaf_criterion(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTr
         Number of histogram bins
     :return:
     """
-
-    if shadow_type == 1:
-        leaf_id, leaf_criteria = ShadowDecTree.get_leaf_criterion(tree_model)
-    elif shadow_type == 2:
-        shadow_tree = ShadowDecTree2(tree_model)
-        leaf_id, leaf_criteria = shadow_tree.get_leaf_criterion()
+    #
+    # if shadow_type == 1:
+    #     leaf_id, leaf_criteria = ShadowDecTree.get_leaf_criterion(tree_model)
+    # elif shadow_type == 2:
+    #     shadow_tree = ShadowDecTree2(tree_model)
+    leaf_id, leaf_criteria = shadow_tree.get_leaf_criterion()
 
     if display_type == "plot":
         colors = adjust_colors(colors)
@@ -1464,12 +1462,12 @@ def viz_leaf_criterion(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTr
             rect.set_linewidth(.5)
             rect.set_edgecolor(colors['rect_edge'])
         ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.set_ylabel(f"{tree_model.criterion.upper()}", fontsize=fontsize, fontname=fontname,
+        ax.set_ylabel(f"{shadow_tree.criterion()}", fontsize=fontsize, fontname=fontname,
                       color=colors['axis_label'])
         ax.grid(b=grid)
     elif display_type == "text":
         for leaf, criteria in zip(leaf_id, leaf_criteria):
-            print(f"leaf {leaf} has {criteria} {tree_model.criterion}")
+            print(f"leaf {leaf} has {criteria} {shadow_tree.criterion()}")
     elif display_type == "hist":
         colors = adjust_colors(colors)
 
@@ -1482,7 +1480,7 @@ def viz_leaf_criterion(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTr
         for rect in patches:
             rect.set_linewidth(.5)
             rect.set_edgecolor(colors['rect_edge'])
-        ax.set_xlabel(f"{tree_model.criterion.upper()}", fontsize=fontsize, fontname=fontname,
+        ax.set_xlabel(f"{shadow_tree.criterion()}", fontsize=fontsize, fontname=fontname,
                       color=colors['axis_label'])
         ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.grid(b=grid)
@@ -1495,8 +1493,7 @@ def ctreeviz_leaf_samples(shadow_tree,
                           colors: dict = None,
                           fontsize: int = 14,
                           fontname: str = "Arial",
-                          grid: bool = False,
-                          shadow_type: int = 1):
+                          grid: bool = False):
     """Visualize the number of training samples by class from each leaf.
 
     It's a good way to see how training classes are distributed in leaves. For example, you can observe that in some
@@ -1670,16 +1667,15 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
 
 
-def describe_node_sample(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTreeRegressor),
-                         x_train: pd.DataFrame,
+def describe_node_sample(shadow_tree: SKDTree,
                          node_id: int):
     """Generate stats (count, mean, std, etc) based on training samples from a specified node.
 
     This method is especially useful to investigate leaf samples from a decision tree. This is a way to discover data
     patterns, to better understand our tree model and to get new ideas for feature generation.
 
-    :param tree_model: (sklearn.tree.DecisionTreeClassifier, sklearn.tree.DecisionTreeRegressor)
-        Tree to interpret
+    :param shadow_tree: (SKDTree)
+        Shadow tree to interpret
     :param x_train: pd.DataFrame
         Training dataset during training model
     :param node_id: int
@@ -1688,15 +1684,14 @@ def describe_node_sample(tree_model: (tree.DecisionTreeClassifier, tree.Decision
         Node training samples' description
     """
 
-    node_samples = ShadowDecTree.node_samples(tree_model, x_train)
-    return x_train.iloc[node_samples[node_id]].describe()
+    node_samples = shadow_tree.get_node_samples()
+    return pd.DataFrame(shadow_tree.x_data).iloc[node_samples[node_id]].describe()
 
 
-def explain_prediction_path(tree_model: (tree.DecisionTreeClassifier, tree.DecisionTreeRegressor),
-                            X: np.ndarray = None,
-                            features: list = None,
+def explain_prediction_path(shadow_tree,
+                            x: np.ndarray = None,
                             explanation_type: str = None):
     """Prediction path interpretation"""
 
     explainer = prediction_path.get_prediction_explainer(explanation_type)
-    return explainer(tree_model, X, features)
+    return explainer(shadow_tree, x)
