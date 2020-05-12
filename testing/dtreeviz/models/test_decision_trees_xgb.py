@@ -21,7 +21,7 @@ def xgb_tree(xgb_booster, x_dataset, y_dataset) -> XGBDTree:
     features = ["Pclass", "Age", "Fare", "Sex_label", "Cabin_label", "Embarked_label"]
     target = "Survived"
     # class_names = list(dec_tree.classes_)
-    return XGBDTree(xgb_booster, 1, features, target)
+    return XGBDTree(xgb_booster, 1, x_dataset, y_dataset, features, target)
 
 
 def test_x_dataset(x_dataset):
@@ -56,8 +56,12 @@ def test_get_node_feature(xgb_tree):
     assert xgb_tree.get_node_feature(2) == 4
 
 
-def test_get_node_samples(xgb_tree, x_dataset):
-    node_samples = xgb_tree.get_node_samples(x_dataset)
+def test_get_features(xgb_tree):
+    assert np.array_equal(xgb_tree.get_features(), np.array([3, 0, 4, -2, -2, -2, -2]))
+
+
+def test_get_node_samples(xgb_tree):
+    node_samples = xgb_tree.get_node_samples()
     assert node_samples[0] == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
     assert node_samples[1] == [1, 2, 3, 8, 9, 10, 11, 14, 15, 18, 19]
     assert node_samples[2] == [0, 4, 5, 6, 7, 12, 13, 16, 17]

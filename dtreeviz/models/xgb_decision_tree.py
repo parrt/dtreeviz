@@ -1,13 +1,14 @@
+import math
+from collections import defaultdict
+from typing import List, Mapping
+
+import numpy as np
+import pandas as pd
 import xgboost as xgb
 from xgboost.core import Booster
-import pandas as pd
-import numpy as np
-import math
-from typing import List, Mapping
-from collections import defaultdict
 
-from dtreeviz.models.shadow_decision_tree import ShadowDecTree3
 from dtreeviz.exceptions import VisualisationNotYetSupportedError
+from dtreeviz.models.shadow_decision_tree import ShadowDecTree3
 
 
 class XGBDTree(ShadowDecTree3):
@@ -28,18 +29,18 @@ class XGBDTree(ShadowDecTree3):
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None
                  ):
+        self.booster = booster
+        self.tree_index = tree_index
+        self.tree_to_dataframe = self._get_tree_dataframe()
+        self.children_left = self._calculate_children(self.__class__.LEFT_CHILDREN_COLUMN)
+        self.children_right = self._calculate_children(self.__class__.RIGHT_CHILDREN_COLUMN)
+
         super().__init__(booster, x_data, y_data, feature_names, target_name, class_names)
-        # self.booster = booster
-        # self.tree_index = tree_index
-        # self.data = data
-        # self.tree_to_dataframe = self._get_tree_dataframe()
-        # self.children_left = self._calculate_children(self.__class__.LEFT_CHILDREN_COLUMN)
-        # self.children_right = self._calculate_children(self.__class__.RIGHT_CHILDREN_COLUMN)
 
     def is_fit(self):
         return isinstance(self.booster, Booster)
 
-    def get_class_weights(self, y_train):
+    def get_class_weights(self):
         return None
 
     def get_n_classes(self):
@@ -52,10 +53,10 @@ class XGBDTree(ShadowDecTree3):
         raise VisualisationNotYetSupportedError("criterion()")
 
     def get_children_left(self):
-        return self.children_left
+        return self._calculate_children(self.__class__.LEFT_CHILDREN_COLUMN)
 
     def get_children_right(self):
-        return self.children_right
+        return self._calculate_children(self.__class__.RIGHT_CHILDREN_COLUMN)
 
     def get_node_split(self, id) -> (float):
         """
@@ -72,7 +73,11 @@ class XGBDTree(ShadowDecTree3):
         except ValueError as error:
             return self.__class__.NO_FEATURE
 
-    def get_node_samples(self, data: pd.DataFrame):
+    def get_features(self):
+        feature_index = [self.get_node_feature(i) for i in range(0, self.nnodes())]
+        return np.array(feature_index)
+
+    def get_node_samples(self):
         """
         Return dictionary mapping node id to list of sample indexes considered by
         the feature/split decision.
@@ -80,7 +85,7 @@ class XGBDTree(ShadowDecTree3):
         # Doc say: "Return a node indicator matrix where non zero elements
         #           indicates that the samples goes through the nodes."
 
-        prediction_leaves = self.booster.predict(xgb.DMatrix(data, feature_names=self.booster.feature_names),
+        prediction_leaves = self.booster.predict(xgb.DMatrix(self.x_data, feature_names=self.feature_names),
                                                  pred_leaf=True)[:, self.tree_index]
         node_to_samples = defaultdict(list)
         for sample_i, prediction_leaf in enumerate(prediction_leaves):
@@ -120,7 +125,7 @@ class XGBDTree(ShadowDecTree3):
         return self.booster.trees_to_dataframe().query(f"Tree == {self.tree_index}")
 
     def _get_column_value(self, column_name):
-        return self.tree_to_dataframe[column_name].to_numpy()
+        return self._get_tree_dataframe()[column_name].to_numpy()
 
     def _split_column_value(self, column_name):
         def split_value(value):
@@ -141,3 +146,29 @@ class XGBDTree(ShadowDecTree3):
 
     def get_feature_path_importance(self):
         raise VisualisationNotYetSupportedError("get_feature_path_importance()")
+
+    def get_node_criterion(self):
+        raise VisualisationNotYetSupportedError("get_node_criterion()")
+
+    def get_thresholds(self):
+        return np.array([1])
+
+    # TODO - add implementation
+    def get_value(self, id):
+        return np.array([12,23])
+
+    # TODO - add implementation
+    def is_classifier(self):
+        return True
+
+    def nnodes(self):
+        return self.tree_to_dataframe.shape[0]
+
+    # TODO - add implementation
+    def nclasses(self):
+        return 2
+
+    # TODO - add implementation
+    def classes(self):
+        return np.array([0, 1])
+        # raise VisualisationNotYetSupportedError("classes()")
