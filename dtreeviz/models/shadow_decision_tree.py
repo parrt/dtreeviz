@@ -22,11 +22,8 @@ class ShadowDecTree3(ABC):
         self.thresholds = self.get_thresholds()
         self.features = self.get_features()
 
-
         if not self.is_fit():
             raise Exception(f"Model {tree_model} is not fit.")
-        if class_names:
-            self.class_names = self._get_class_names()
 
         self.x_data = ShadowDecTree3._get_x_data(x_data)
         self.y_data = ShadowDecTree3._get_y_data(y_data)
@@ -36,6 +33,8 @@ class ShadowDecTree3(ABC):
             self.unique_target_values = np.unique(self.y_data)
         self.root, self.leaves, self.internal = self._get_tree_nodes()
 
+        if class_names:
+            self.class_names = self._get_class_names()
 
     @abstractmethod
     def is_fit(self):

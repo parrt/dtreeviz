@@ -1,9 +1,9 @@
-import pytest
 import joblib
-import xgboost as xgb
-from dtreeviz.models.xgb_decision_tree import XGBDTree
 import numpy as np
-import pandas as pd
+import pytest
+import xgboost as xgb
+
+from dtreeviz.models.xgb_decision_tree import XGBDTree
 
 
 # @pytest.fixture()
@@ -69,3 +69,19 @@ def test_get_node_samples(xgb_tree):
     assert node_samples[4] == [2, 8, 10, 14, 18, 19]
     assert node_samples[5] == [0, 4, 5, 7, 12, 13, 16, 17]
     assert node_samples[6] == [6]
+
+
+def test_get_value(xgb_tree):
+    assert np.array_equal(xgb_tree.get_value(0), np.array([10, 10]))
+    assert np.array_equal(xgb_tree.get_value(1), np.array([2, 9]))
+    assert np.array_equal(xgb_tree.get_value(2), np.array([8, 1]))
+    assert np.array_equal(xgb_tree.get_value(5), np.array([7, 1]))
+
+
+def test_nclasses(xgb_tree):
+    assert xgb_tree.nclasses() == 2
+
+
+def test_classes(xgb_tree):
+    assert np.array_equal(xgb_tree.classes(), np.array([0, 1]))
+

@@ -3,7 +3,6 @@ from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
-import pandas as pd
 import xgboost as xgb
 from xgboost.core import Booster
 
@@ -153,9 +152,12 @@ class XGBDTree(ShadowDecTree3):
     def get_thresholds(self):
         return np.array([1])
 
-    # TODO - add implementation
+    # TODO
+    # - find a better name
     def get_value(self, id):
-        return np.array([12,23])
+        all_nodes = self.internal + self.leaves
+        node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
+        return node_value[0][0], node_value[0][1]
 
     # TODO - add implementation
     def is_classifier(self):
@@ -164,11 +166,8 @@ class XGBDTree(ShadowDecTree3):
     def nnodes(self):
         return self.tree_to_dataframe.shape[0]
 
-    # TODO - add implementation
     def nclasses(self):
-        return 2
+        return len(np.unique(self.y_data))
 
-    # TODO - add implementation
     def classes(self):
-        return np.array([0, 1])
-        # raise VisualisationNotYetSupportedError("classes()")
+        return np.unique(self.y_data)
