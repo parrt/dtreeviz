@@ -85,3 +85,6 @@ def test_nclasses(xgb_tree):
 def test_classes(xgb_tree):
     assert np.array_equal(xgb_tree.classes(), np.array([0, 1]))
 
+
+def test_get_thresholds(xgb_tree):
+    assert np.array_equal(xgb_tree.get_thresholds(), np.array([1, 3, 4, -2, -2, -2, -2]))

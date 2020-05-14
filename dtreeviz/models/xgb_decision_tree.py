@@ -42,9 +42,11 @@ class XGBDTree(ShadowDecTree3):
     def get_class_weights(self):
         return None
 
+    # TODO - add implementation
     def get_n_classes(self):
         return 2
 
+    # TODO - add implementation
     def get_class_weight(self):
         return None
 
@@ -94,6 +96,7 @@ class XGBDTree(ShadowDecTree3):
 
         return node_to_samples
 
+    # TODO - add implementation
     def get_node_nsamples(self, id) -> int:
         # return self.tree_model.tree_.n_node_samples[id]
         pass
@@ -150,7 +153,8 @@ class XGBDTree(ShadowDecTree3):
         raise VisualisationNotYetSupportedError("get_node_criterion()")
 
     def get_thresholds(self):
-        return np.array([1])
+        thresholds = [self.get_node_split(i) for i in range(0, self.nnodes())]
+        return np.array(thresholds)
 
     # TODO
     # - find a better name
