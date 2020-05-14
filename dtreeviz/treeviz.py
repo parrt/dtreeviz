@@ -1685,7 +1685,7 @@ def describe_node_sample(shadow_tree: SKDTree,
     """
 
     node_samples = shadow_tree.get_node_samples()
-    return pd.DataFrame(shadow_tree.x_data).iloc[node_samples[node_id]].describe()
+    return pd.DataFrame(shadow_tree.x_data, columns=shadow_tree.feature_names).iloc[node_samples[node_id]].describe()
 
 
 def explain_prediction_path(shadow_tree,
