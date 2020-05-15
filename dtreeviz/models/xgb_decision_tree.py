@@ -39,12 +39,9 @@ class XGBDTree(ShadowDecTree3):
     def is_fit(self):
         return isinstance(self.booster, Booster)
 
+    # TODO - add implementation
     def get_class_weights(self):
         return None
-
-    # TODO - add implementation
-    def get_n_classes(self):
-        return 2
 
     # TODO - add implementation
     def get_class_weight(self):
@@ -95,11 +92,6 @@ class XGBDTree(ShadowDecTree3):
                 node_to_samples[node_id].append(sample_i)
 
         return node_to_samples
-
-    # TODO - add implementation
-    def get_node_nsamples(self, id) -> int:
-        # return self.tree_model.tree_.n_node_samples[id]
-        pass
 
     def _get_leaf_prediction_path(self, leaf):
         prediction_path = [leaf]

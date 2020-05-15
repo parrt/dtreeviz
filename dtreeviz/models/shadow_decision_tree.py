@@ -101,10 +101,6 @@ class ShadowDecTree3(ABC):
         pass
 
     @abstractmethod
-    def get_node_nsamples(self, id) -> int:
-        pass
-
-    @abstractmethod
     def get_node_criterion(self, id):
         pass
 

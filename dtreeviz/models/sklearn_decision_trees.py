@@ -87,12 +87,6 @@ class SKDTree(ShadowDecTree3):
     def nnodes(self):
         return self.tree_model.tree_.node_count
 
-    # def get_leaf_sample_counts(self, leaves):
-    #     return [self.tree_model.tree_.n_node_samples[leaf.id] for leaf in leaves]
-
-    def get_node_nsamples(self, id) -> int:
-        return self.tree_model.tree_.n_node_samples[id]
-
     def get_node_criterion(self, id):
         return self.tree_model.tree_.impurity[id]
 
