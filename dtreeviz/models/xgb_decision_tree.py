@@ -48,7 +48,7 @@ class XGBDTree(ShadowDecTree3):
         return None
 
     def criterion(self):
-        raise VisualisationNotYetSupportedError("criterion()")
+        raise VisualisationNotYetSupportedError("criterion()", "XGBoost")
 
     def get_children_left(self):
         return self._calculate_children(self.__class__.LEFT_CHILDREN_COLUMN)
@@ -138,11 +138,11 @@ class XGBDTree(ShadowDecTree3):
         children = self._change_no_children_value(children)
         return children.to_numpy(dtype=int)
 
-    def get_feature_path_importance(self):
-        raise VisualisationNotYetSupportedError("get_feature_path_importance()")
+    def get_feature_path_importance(self, node_list):
+        raise VisualisationNotYetSupportedError("get_feature_path_importance()", "XGBoost")
 
     def get_node_criterion(self):
-        raise VisualisationNotYetSupportedError("get_node_criterion()")
+        raise VisualisationNotYetSupportedError("get_node_criterion()", "XGBoost")
 
     def get_thresholds(self):
         thresholds = [self.get_node_split(i) for i in range(0, self.nnodes())]

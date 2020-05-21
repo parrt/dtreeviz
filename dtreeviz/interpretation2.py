@@ -36,10 +36,6 @@ def explain_prediction_plain_english(shadow_tree : ShadowDecTree3 ,
     node_feature_index = shadow_tree.features
     feature_names = shadow_tree.feature_names
     node_threshold = shadow_tree.thresholds
-
-    # print(feature_names)
-
-    # node_indicator = tree_model.decision_path([X])
     prediction_value, decision_node_path = shadow_tree.predict(x)
 
     feature_min_range = {}

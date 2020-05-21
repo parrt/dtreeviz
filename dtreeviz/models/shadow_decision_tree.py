@@ -105,7 +105,7 @@ class ShadowDecTree3(ABC):
         pass
 
     @abstractmethod
-    def get_feature_path_importance(self):
+    def get_feature_path_importance(self, node_list):
         pass
 
     def get_split_node_heights(self, X_train, y_train, nbins) -> Mapping[int, int]:
@@ -330,6 +330,9 @@ class ShadowDecTreeNode():
     # rename method name
     def n_sample_classes(self):
         samples = np.array(self.samples())
+        if samples.size == 0:
+            return [0, 0]
+
         node_y_data = self.shadow_tree.y_data[samples]
         unique, counts = np.unique(node_y_data, return_counts=True)
 

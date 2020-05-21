@@ -11,9 +11,8 @@ from sys import platform as PLATFORM
 from colour import Color, rgb2hex, color_scale
 from typing import Mapping, List
 
-from dtreeviz.shadow2 import ShadowDecTree2
 from dtreeviz.utils import inline_svg_images, myround, scale_SVG
-from dtreeviz.shadow import ShadowDecTree, ShadowDecTreeNode
+from dtreeviz.models.shadow_decision_tree import ShadowDecTree3 as ShadowDecTree, ShadowDecTreeNode
 from dtreeviz.models.sklearn_decision_trees import SKDTree
 from dtreeviz.colors import adjust_colors
 from sklearn import tree
@@ -1266,10 +1265,13 @@ def draw_legend(shadow_tree, target_name, filename, colors=None):
 def draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", graph_colors=None):
     graph_colors = adjust_colors(graph_colors)
     n_nonzero = np.count_nonzero(counts)
-    i = np.nonzero(counts)[0][0]
-    if n_nonzero == 1:
-        counts = [counts[i]]
-        colors = [colors[i]]
+
+    if n_nonzero != 0 :
+        i = np.nonzero(counts)[0][0]
+        if n_nonzero == 1:
+            counts = [counts[i]]
+            colors = [colors[i]]
+
     tweak = size * .01
     fig, ax = plt.subplots(1, 1, figsize=(size, size))
     ax.axis('equal')
@@ -1522,15 +1524,6 @@ def ctreeviz_leaf_samples(shadow_tree,
         Whether to show the grid lines
     """
 
-    # if tree_model.n_classes_ != 2:
-    #     print("Right now only binary classification is supported.")
-    #     print("Please create an issue if you need more classes.")
-    #     return
-
-    # if shadow_type == 1:
-    #     index, leaf_samples_0, leaf_samples_1 = ShadowDecTree.get_leaf_sample_counts_by_class(tree_model)
-    # elif shadow_type == 2:
-    #     shadow_tree = ShadowDecTree2(tree_model, X_train=x_dataset, y_train=y_dataset)
     index, leaf_samples_0, leaf_samples_1 = shadow_tree.get_leaf_sample_counts_by_class()
 
     if display_type == "plot":
