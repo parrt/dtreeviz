@@ -1,25 +1,25 @@
-from pathlib import Path
-from graphviz.backend import run, view
-import matplotlib.pyplot as plt
-from dtreeviz.shadow import *
-from numbers import Number
-import matplotlib.patches as patches
-from mpl_toolkits.mplot3d import Axes3D
-import tempfile
 import os
+import tempfile
+from pathlib import Path
 from sys import platform as PLATFORM
-from colour import Color, rgb2hex, color_scale
-from typing import Mapping, List
+from typing import List
 
-from dtreeviz.utils import inline_svg_images, myround, scale_SVG
-from dtreeviz.models.shadow_decision_tree import ShadowDecTree3 as ShadowDecTree, ShadowDecTreeNode
-from dtreeviz.models.sklearn_decision_trees import SKDTree
-from dtreeviz.colors import adjust_colors
-from sklearn import tree
 import graphviz
-from dtreeviz import interpretation2 as prediction_path
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import sklearn
+import xgboost
+from colour import Color, rgb2hex
+from graphviz.backend import run, view
+from sklearn import tree
 
-import xgboost as xgb
+from dtreeviz import interpretation2 as prediction_path
+from dtreeviz.colors import adjust_colors
+from dtreeviz.models.shadow_decision_tree import ShadowDecTree3, ShadowDecTreeNode
+from dtreeviz.models.sklearn_decision_trees import SKDTree
+from dtreeviz.models.xgb_decision_tree import XGBDTree
+from dtreeviz.shadow import *
+from dtreeviz.utils import inline_svg_images, myround, scale_SVG
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [0, 0, 10, 9, 8, 6, 6, 6, 5, 5, 5]
@@ -86,6 +86,15 @@ class DTreeViz:
             svg = scale_SVG(svg, self.scale)
             with open(filename, "w", encoding='UTF-8') as f:
                 f.write(svg)
+
+
+def _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index):
+    if isinstance(tree_model, ShadowDecTree3):
+        return tree_model
+    elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
+        return SKDTree(tree_model, x_data, y_data, feature_names, target_name, class_names)
+    elif isinstance(tree_model, xgboost.core.Booster):
+        return XGBDTree(tree_model, tree_index, x_data, y_data, feature_names, target_name, class_names)
 
 
 def rtreeviz_univar(ax=None,
@@ -531,12 +540,13 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
         text.set_fontsize(10)
 
 
-def dtreeviz(shadow_tree,
-             # X_train: (pd.DataFrame, np.ndarray),
-             # y_data: (pd.Series, np.ndarray),
-             # feature_names: List[str],
-             # target_name: str,
-             # class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier
+def dtreeviz(tree_model,
+             x_data: (pd.DataFrame, np.ndarray) = None,
+             y_data: (pd.DataFrame, np.ndarray) = None,
+             feature_names: List[str] = None,
+             target_name: str = None,
+             class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+             tree_index: int = None,  # required in case of tree ensemble,
              precision: int = 2,
              orientation: ('TD', 'LR') = "TD",
              instance_orientation: ("TD", "LR") = "LR",
@@ -769,6 +779,7 @@ def dtreeviz(shadow_tree,
         else:
             return shadow_tree.leaves
 
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
     colors = adjust_colors(colors)
 
     if orientation == "TD":
@@ -1266,7 +1277,7 @@ def draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", 
     graph_colors = adjust_colors(graph_colors)
     n_nonzero = np.count_nonzero(counts)
 
-    if n_nonzero != 0 :
+    if n_nonzero != 0:
         i = np.nonzero(counts)[0][0]
         if n_nonzero == 1:
             counts = [counts[i]]
@@ -1321,7 +1332,13 @@ def get_num_bins(histtype, n_classes):
     return bins
 
 
-def viz_leaf_samples(shadow_tree,
+def viz_leaf_samples(tree_model,
+                     x_data: (pd.DataFrame, np.ndarray) = None,
+                     y_data: (pd.DataFrame, np.ndarray) = None,
+                     feature_names: List[str] = None,
+                     target_name: str = None,
+                     class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+                     tree_index: int = None,  # required in case of tree ensemble
                      figsize: tuple = (10, 5),
                      display_type: str = "plot",
                      colors: dict = None,
@@ -1364,6 +1381,7 @@ def viz_leaf_samples(shadow_tree,
         Max number of samples for a leaf
     """
 
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
     leaf_id, leaf_samples = shadow_tree.get_leaf_sample_counts(min_samples, max_samples)
 
     if display_type == "plot":
@@ -1404,7 +1422,13 @@ def viz_leaf_samples(shadow_tree,
         ax.grid(b=grid)
 
 
-def viz_leaf_criterion(shadow_tree,
+def viz_leaf_criterion(tree_model,
+                       x_data: (pd.DataFrame, np.ndarray) = None,
+                       y_data: (pd.DataFrame, np.ndarray) = None,
+                       feature_names: List[str] = None,
+                       target_name: str = None,
+                       class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+                       tree_index: int = None,  # required in case of tree ensemble,
                        figsize: tuple = (10, 5),
                        display_type: str = "plot",
                        colors: dict = None,
@@ -1441,11 +1465,8 @@ def viz_leaf_criterion(shadow_tree,
         Number of histogram bins
     :return:
     """
-    #
-    # if shadow_type == 1:
-    #     leaf_id, leaf_criteria = ShadowDecTree.get_leaf_criterion(tree_model)
-    # elif shadow_type == 2:
-    #     shadow_tree = ShadowDecTree2(tree_model)
+
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
     leaf_id, leaf_criteria = shadow_tree.get_leaf_criterion()
 
     if display_type == "plot":
@@ -1488,7 +1509,13 @@ def viz_leaf_criterion(shadow_tree,
         ax.grid(b=grid)
 
 
-def ctreeviz_leaf_samples(shadow_tree,
+def ctreeviz_leaf_samples(tree_model,
+                          x_data: (pd.DataFrame, np.ndarray) = None,
+                          y_data: (pd.DataFrame, np.ndarray) = None,
+                          feature_names: List[str] = None,
+                          target_name: str = None,
+                          class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+                          tree_index: int = None,  # required in case of tree ensemble,
                           figsize: tuple = (10, 5),
                           display_type: str = "plot",
                           plot_ylim: int = None,
@@ -1524,6 +1551,7 @@ def ctreeviz_leaf_samples(shadow_tree,
         Whether to show the grid lines
     """
 
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
     index, leaf_samples_0, leaf_samples_1 = shadow_tree.get_leaf_sample_counts_by_class()
 
     if display_type == "plot":
@@ -1660,8 +1688,15 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
 
 
-def describe_node_sample(shadow_tree: SKDTree,
-                         node_id: int):
+def describe_node_sample(tree_model,
+                         node_id: int,
+                         x_data: (pd.DataFrame, np.ndarray) = None,
+                         y_data: (pd.DataFrame, np.ndarray) = None,
+                         feature_names: List[str] = None,
+                         target_name: str = None,
+                         class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+                         tree_index: int = None,  # required in case of tree ensemble
+                         ):
     """Generate stats (count, mean, std, etc) based on training samples from a specified node.
 
     This method is especially useful to investigate leaf samples from a decision tree. This is a way to discover data
@@ -1677,14 +1712,23 @@ def describe_node_sample(shadow_tree: SKDTree,
         Node training samples' description
     """
 
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
     node_samples = shadow_tree.get_node_samples()
     return pd.DataFrame(shadow_tree.x_data, columns=shadow_tree.feature_names).iloc[node_samples[node_id]].describe()
 
 
-def explain_prediction_path(shadow_tree,
-                            x: np.ndarray = None,
-                            explanation_type: str = None):
+def explain_prediction_path(tree_model,
+                            x: np.ndarray,
+                            explanation_type: str = "plain_english",
+                            x_data: (pd.DataFrame, np.ndarray) = None,
+                            y_data: (pd.DataFrame, np.ndarray) = None,
+                            feature_names: List[str] = None,
+                            target_name: str = None,
+                            class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+                            tree_index: int = None,  # required in case of tree ensemble
+                            ):
     """Prediction path interpretation"""
 
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
     explainer = prediction_path.get_prediction_explainer(explanation_type)
     return explainer(shadow_tree, x)
