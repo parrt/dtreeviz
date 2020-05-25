@@ -88,7 +88,7 @@ class DTreeViz:
                 f.write(svg)
 
 
-def _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index):
+def _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
     if isinstance(tree_model, ShadowDecTree3):
         return tree_model
     elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
@@ -1590,8 +1590,6 @@ def ctreeviz_leaf_samples(tree_model,
 
 
 def _get_leaf_target_input(shadow_tree: ShadowDecTree,
-                           y_train,
-                           target_name: str,
                            precision: int):
     x = []
     y = []
@@ -1601,7 +1599,7 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
     sigma = .05
     for i, node in enumerate(shadow_tree.leaves):
         leaf_index_sample = node.samples()
-        leaf_target = y_train[leaf_index_sample]
+        leaf_target = shadow_tree.y_data[leaf_index_sample]
         leaf_target_mean = np.mean(leaf_target)
         np.random.seed(0)  # generate the same list of random values for each call
         X = np.random.normal(i, sigma, size=len(leaf_target))
@@ -1615,11 +1613,12 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
     return x, y, means, means_range, x_labels
 
 
-def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
-                    x_train,
-                    y_train,
-                    feature_names: list,
-                    target_name: str,
+def viz_leaf_target(tree_model,
+                    x_data: (pd.DataFrame, np.ndarray) = None,
+                    y_data: (pd.DataFrame, np.ndarray) = None,
+                    feature_names: List[str] = None,
+                    target_name: str = None,
+                    tree_index: int = None,  # required in case of tree ensemble,
                     show_leaf_labels: bool = True,
                     colors: dict = None,
                     markersize: int = 50,
@@ -1658,8 +1657,8 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
         The width of prediction line.
     """
 
-    shadow_tree = ShadowDecTree(tree_model, x_train, y_train, feature_names=feature_names)
-    x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, y_train, target_name, precision)
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, None, tree_index)
+    x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, precision)
     colors = adjust_colors(colors)
     figsize = (np.log(len(y_labels)), np.log(len(y_labels)) * 1.5) if figsize is None else figsize
     fig, ax = plt.subplots(1, 1, figsize=figsize)
@@ -1675,14 +1674,14 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
     #     ax.set_yticklabels(y_labels)
     ax.scatter(y, x, marker='o', alpha=colors['scatter_marker_alpha'] - 0.2, c=colors['scatter_marker'], s=markersize,
                edgecolor=colors['scatter_edge'], lw=.3)
-    ax.set_xlabel(target_name.lower(), fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_xlabel(shadow_tree.target_name.lower(), fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
     ax.set_ylabel("leaf", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(b=grid)
 
     if show_leaf_labels:
         for i in range(len(y_labels)):
             ax.text(max(y) + 10, i - 0.15, y_labels[i])
-        ax.text(max(y) + 10, len(y_labels) - 0.15, target_name.lower())
+        ax.text(max(y) + 10, len(y_labels) - 0.15, shadow_tree.target_name.lower())
 
     for i in range(len(means)):
         ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
@@ -1691,9 +1690,7 @@ def viz_leaf_target(tree_model: tree.DecisionTreeRegressor,
 def describe_node_sample(tree_model,
                          node_id: int,
                          x_data: (pd.DataFrame, np.ndarray) = None,
-                         y_data: (pd.DataFrame, np.ndarray) = None,
                          feature_names: List[str] = None,
-                         target_name: str = None,
                          class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                          tree_index: int = None,  # required in case of tree ensemble
                          ):
@@ -1712,7 +1709,7 @@ def describe_node_sample(tree_model,
         Node training samples' description
     """
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    shadow_tree = _get_shadow_tree(tree_model, x_data, None, feature_names, None, class_names, tree_index)
     node_samples = shadow_tree.get_node_samples()
     return pd.DataFrame(shadow_tree.x_data, columns=shadow_tree.feature_names).iloc[node_samples[node_id]].describe()
 
