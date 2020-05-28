@@ -108,6 +108,18 @@ class ShadowDecTree3(ABC):
     def get_feature_path_importance(self, node_list):
         pass
 
+    @abstractmethod
+    def get_max_depth(self):
+        pass
+
+    @abstractmethod
+    def get_score(self):
+        pass
+
+    @abstractmethod
+    def get_min_samples_leaf(self):
+        pass
+
     def get_split_node_heights(self, X_train, y_train, nbins) -> Mapping[int, int]:
         # TODO
         # do we need to call np.unique(y_train) ? what about dtc.classes_
@@ -191,8 +203,8 @@ class ShadowDecTree3(ABC):
                 walk(t.right, (bbox[0], s, bbox[2], bbox[3]))
 
         # create bounding box in feature space (not zeroed)
-        f1_values = self.X_train[:, 0]
-        f2_values = self.X_train[:, 1]
+        f1_values = self.x_data[:, 0]
+        f2_values = self.x_data[:, 1]
         overall_bbox = (np.min(f1_values), np.min(f2_values),  # x,y of lower left edge
                         np.max(f1_values), np.max(f2_values))  # x,y of upper right edge
         walk(self.root, overall_bbox)

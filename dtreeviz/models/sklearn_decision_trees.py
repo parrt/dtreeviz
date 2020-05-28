@@ -58,6 +58,9 @@ class SKDTree(ShadowDecTree3):
         # Doc say: "Return a node indicator matrix where non zero elements
         #           indicates that the samples goes through the nodes."
 
+        # print("-----")
+        # print(type(self.x_data))
+        # print(self.x_data)
         dec_paths = self.tree_model.decision_path(self.x_data)
 
         # each sample has path taken down tree
@@ -114,3 +117,12 @@ class SKDTree(ShadowDecTree3):
             gini_importance /= normalizer
 
         return gini_importance
+
+    def get_max_depth(self):
+        return self.tree_model.max_depth
+
+    def get_score(self):
+        return self.tree_model.score(self.x_data, self.y_data)
+
+    def get_min_samples_leaf(self):
+        return self.tree_model.min_samples_leaf

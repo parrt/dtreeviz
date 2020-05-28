@@ -167,3 +167,12 @@ class XGBDTree(ShadowDecTree3):
 
     def classes(self):
         return np.unique(self.y_data)
+
+    def get_max_depth(self):
+        raise VisualisationNotYetSupportedError("get_max_depth()", "XGBoost")
+
+    def get_score(self):
+        raise VisualisationNotYetSupportedError("get_score()", "XGBoost")
+
+    def get_min_samples_leaf(self):
+        raise VisualisationNotYetSupportedError("get_min_samples_leaf()", "XGBoost")

@@ -97,40 +97,41 @@ def _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, cla
         return XGBDTree(tree_model, tree_index, x_data, y_data, feature_names, target_name, class_names)
 
 
-def rtreeviz_univar(ax=None,
-                    x_train: (pd.Series, np.ndarray) = None,  # 1 vector of X data
-                    y_train: (pd.Series, np.ndarray) = None,
-                    max_depth=10,
-                    feature_name: str = None,
+#TODO add checks about data sizes (ex. number of features)
+def rtreeviz_univar(tree_model,
+                    x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                    y_data: (pd.Series, np.ndarray) = None,
+                    feature_names: List[str] = None,
                     target_name: str = None,
-                    min_samples_leaf=1,
+                    class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+                    tree_index: int = None,  # required in case of tree ensemble
+                    ax=None,
                     fontsize: int = 14,
                     show={'title', 'splits'},
                     split_linewidth=.5,
                     mean_linewidth=2,
                     markersize=15,
                     colors=None):
-    if isinstance(x_train, pd.Series):
-        x_train = x_train.values
-    if isinstance(y_train, pd.Series):
-        y_train = y_train.values
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    x_data = shadow_tree.x_data.reshape(-1, )
+    y_data = shadow_tree.y_data
 
     # ax as first arg is not good now that it's optional but left for compatibility reasons
     if ax is None:
         fig, ax = plt.subplots(1, 1)
 
-    if x_train is None or y_train is None:
+    if x_data is None or y_data is None:
         raise ValueError(f"x_train and y_train must not be none")
 
     colors = adjust_colors(colors)
 
-    y_range = (min(y_train), max(y_train))  # same y axis for all
-    overall_feature_range = (np.min(x_train), np.max(x_train))
+    y_range = (min(y_data), max(y_data))  # same y axis for all
+    overall_feature_range = (np.min(x_data), np.max(x_data))
 
-    t = tree.DecisionTreeRegressor(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
-    t.fit(x_train.reshape(-1, 1), y_train)
+    # t = tree.DecisionTreeRegressor(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
+    # t.fit(x_data.reshape(-1, 1), y_data)
+    # shadow_tree = ShadowDecTree(t, x_data.reshape(-1, 1), y_data, feature_names=[shadow_tree.feature_names])
 
-    shadow_tree = ShadowDecTree(t, x_train.reshape(-1, 1), y_train, feature_names=[feature_name])
     splits = []
     for node in shadow_tree.internal:
         splits.append(node.split())
@@ -141,10 +142,10 @@ def rtreeviz_univar(ax=None,
     for i in range(len(bins) - 1):
         left = bins[i]
         right = bins[i + 1]
-        inrange = y_train[(x_train >= left) & (x_train <= right)]
+        inrange = y_data[(x_data >= left) & (x_data <= right)]
         means.append(np.mean(inrange))
 
-    ax.scatter(x_train, y_train, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'],
+    ax.scatter(x_data, y_data, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'],
                s=markersize,
                edgecolor=colors['scatter_edge'], lw=.3)
 
@@ -163,16 +164,21 @@ def rtreeviz_univar(ax=None,
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=fontsize)
 
     if 'title' in show:
-        title = f"Regression tree depth {max_depth}, samples per leaf {min_samples_leaf},\nTraining $R^2$={t.score(x_train.reshape(-1, 1), y_train):.3f}"
+        title = f"Regression tree depth {shadow_tree.get_max_depth()}, samples per leaf {shadow_tree.get_min_samples_leaf()},\nTraining $R^2$={shadow_tree.get_score()}"
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
-    ax.set_xlabel(feature_name, fontsize=fontsize, color=colors['axis_label'])
+    ax.set_xlabel(shadow_tree.feature_names, fontsize=fontsize, color=colors['axis_label'])
     ax.set_ylabel(target_name, fontsize=fontsize, color=colors['axis_label'])
 
 
-def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None,
-                           max_depth=10, min_samples_leaf=1,
-                           feature_names=None,
+def rtreeviz_bivar_heatmap(tree_model,
+                           x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                           y_data: (pd.Series, np.ndarray) = None,
+                           feature_names: List[str] = None,
+                           target_name: str = None,
+                           class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+                           tree_index: int = None,  # required in case of tree ensemble
+                           ax=None,
                            fontsize=14, ticks_fontsize=12, fontname="Arial",
                            show={'title'},
                            n_colors_in_map=100,
@@ -188,30 +194,23 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None,
     if ax is None:
         fig, ax = plt.subplots(1, 1)
 
-    if X_train is None or y_train is None:
-        raise ValueError(f"X_train and y_train must not be none")
+    # if X_train is None or y_train is None:
+    #     raise ValueError(f"X_train and y_train must not be none")
+    #
+    # if X_train.shape[1] != 2:
+    #     raise ValueError(f"X_train must have exactly 2 columns")
 
-    if X_train.shape[1] != 2:
-        raise ValueError(f"X_train must have exactly 2 columns")
-
-    if isinstance(X_train, pd.DataFrame):
-        X_train = X_train.values
-    if isinstance(y_train, pd.Series):
-        y_train = y_train.values
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    x_data = shadow_tree.x_data
+    y_data = shadow_tree.y_data
 
     colors = adjust_colors(colors)
 
-    rt = tree.DecisionTreeRegressor(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
-    rt.fit(X_train, y_train)
-
-    y_lim = np.min(y_train), np.max(y_train)
+    y_lim = np.min(y_data), np.max(y_data)
     y_range = y_lim[1] - y_lim[0]
     color_map = [rgb2hex(c.rgb, force_long=True) for c in
                  Color(colors['color_map_min']).range_to(Color(colors['color_map_max']),
                                                          n_colors_in_map)]
-
-    shadow_tree = ShadowDecTree(rt, X_train, y_train, feature_names=feature_names)
-
     tesselation = shadow_tree.tesselation()
 
     for node, bbox in tesselation:
@@ -225,26 +224,31 @@ def rtreeviz_bivar_heatmap(ax=None, X_train=None, y_train=None,
                                  edgecolor=colors['edge'], facecolor=color)
         ax.add_patch(rect)
 
-    color_map = [color_map[int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))] for y in y_train]
-    x, y, z = X_train[:, 0], X_train[:, 1], y_train
+    color_map = [color_map[int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))] for y in y_data]
+    x, y, z = x_data[:, 0], x_data[:, 1], y_data
     ax.scatter(x, y, marker='o', c=color_map, edgecolor=colors['scatter_edge'], lw=.3, s=markersize)
 
-    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_xlabel(f"{shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel(f"{shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
 
     if 'title' in show:
-        accur = rt.score(X_train, y_train)
-        title = f"Regression tree depth {max_depth}, training $R^2$={accur:.3f}"
+        accur = shadow_tree.get_score()
+        title = f"Regression tree depth {shadow_tree.get_max_depth()}, training $R^2$={accur:.3f}"
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     return None
 
 
-def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None,
-                      max_depth=10, min_samples_leaf=1,
-                      feature_names=None, target_name=None,
+def rtreeviz_bivar_3D(tree_model,
+                      x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                      y_data: (pd.Series, np.ndarray) = None,
+                      feature_names: List[str] = None,
+                      target_name: str = None,
+                      class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+                      tree_index: int = None,  # required in case of tree ensemble
+                      ax=None,
                       fontsize=14, ticks_fontsize=10, fontname="Arial",
                       azim=0, elev=0, dist=7,
                       show={'title'},
@@ -257,18 +261,14 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None,
     just the 2 variables used for training.
     """
 
+    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    x_data = shadow_tree.x_data
+    y_data = shadow_tree.y_data
+
     # ax as first arg is not good now that it's optional but left for compatibility reasons
     if ax is None:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-
-    if X_train is None or y_train is None:
-        raise ValueError(f"x_train and y_train must not be none")
-
-    if isinstance(X_train, pd.DataFrame):
-        X_train = X_train.values
-    if isinstance(y_train, pd.Series):
-        y_train = y_train.values
 
     colors = adjust_colors(colors)
 
@@ -290,36 +290,32 @@ def rtreeviz_bivar_3D(ax=None, X_train=None, y_train=None,
                         color=color_spectrum[y_to_color_index(node.prediction())],
                         edgecolor=colors['edge'], lw=.3)
 
-    rt = tree.DecisionTreeRegressor(max_depth=max_depth, min_samples_leaf=min_samples_leaf)
-    rt.fit(X_train, y_train)
-
-    y_lim = np.min(y_train), np.max(y_train)
+    y_lim = np.min(y_data), np.max(y_data)
     y_range = y_lim[1] - y_lim[0]
     color_spectrum = Color(colors['color_map_min']).range_to(Color(colors['color_map_max']), n_colors_in_map)
     color_spectrum = [rgb2hex(c.rgb, force_long=True) for c in color_spectrum]
-    y_colors = [color_spectrum[y_to_color_index(y)] for y in y_train]
+    y_colors = [color_spectrum[y_to_color_index(y)] for y in y_data]
     # print(color_indexes, color_map, len(color_map))
     # y_colors = [color_spectrum[ci] for ci in color_indexes]
 
-    shadow_tree = ShadowDecTree(rt, X_train, y_train, feature_names=feature_names)
     tesselation = shadow_tree.tesselation()
 
     for node, bbox in tesselation:
         plane(node, bbox, color_spectrum)
 
-    x, y, z = X_train[:, 0], X_train[:, 1], y_train
+    x, y, z = x_data[:, 0], x_data[:, 1], y_data
     ax.scatter(x, y, z, marker='o', alpha=colors['scatter_marker_alpha'], edgecolor=colors['scatter_edge'],
                lw=.3, c=y_colors, s=markersize)
 
-    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_xlabel(f"{shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel(f"{shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.set_zlabel(f"{target_name}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
 
     if 'title' in show:
-        accur = rt.score(X_train, y_train)
-        title = f"Regression tree depth {max_depth}, training $R^2$={accur:.3f}"
+        accur = shadow_tree.get_score()
+        title = f"Regression tree depth {shadow_tree.get_max_depth()}, training $R^2$={accur:.3f}"
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     return None
@@ -1674,7 +1670,8 @@ def viz_leaf_target(tree_model,
     #     ax.set_yticklabels(y_labels)
     ax.scatter(y, x, marker='o', alpha=colors['scatter_marker_alpha'] - 0.2, c=colors['scatter_marker'], s=markersize,
                edgecolor=colors['scatter_edge'], lw=.3)
-    ax.set_xlabel(shadow_tree.target_name.lower(), fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_xlabel(shadow_tree.target_name.lower(), fontsize=label_fontsize, fontname=fontname,
+                  color=colors['axis_label'])
     ax.set_ylabel("leaf", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(b=grid)
 
