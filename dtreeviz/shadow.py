@@ -40,7 +40,7 @@ class ShadowDecTree:
         self.class_names = class_names
         self.class_weight = tree_model.class_weight
 
-        if getattr(tree_model, 'tree_') is None: # make sure model is fit
+        if not hasattr(tree_model, 'tree_'): # make sure model is fit
             tree_model.fit(X_train, y_train)
 
         if tree_model.tree_.n_classes > 1:
