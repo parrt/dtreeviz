@@ -308,7 +308,7 @@ class ShadowDecTree3(ABC):
         if isinstance(tree_model, ShadowDecTree3):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
-            return dtreeviz.models.shadow_decision_tree.SKDTree(tree_model, x_data, y_data, feature_names, target_name, class_names)
+            return dtreeviz.models.sklearn_decision_trees.SKDTree(tree_model, x_data, y_data, feature_names, target_name, class_names)
         elif isinstance(tree_model, xgboost.core.Booster):
             return dtreeviz.models.xgb_decision_tree.XGBDTree(tree_model, tree_index, x_data, y_data, feature_names, target_name, class_names)
 

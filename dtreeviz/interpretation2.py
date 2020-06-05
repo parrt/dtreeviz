@@ -2,15 +2,15 @@
 Prediction path interpretation for decision tree models.
 In this moment, it contains "plain english" implementation, but others can be added in the future.
 """
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas
-from sklearn import tree
-import matplotlib.pyplot as plt
+
 from dtreeviz.colors import adjust_colors
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree3
 
 
-def explain_prediction_plain_english(shadow_tree : ShadowDecTree3 ,
+def explain_prediction_plain_english(shadow_tree: ShadowDecTree3,
                                      x: (pandas.core.series.Series, np.ndarray)):
     """
     Explains the prediction path using feature value's range.
@@ -38,8 +38,8 @@ def explain_prediction_plain_english(shadow_tree : ShadowDecTree3 ,
     node_threshold = shadow_tree.thresholds
     prediction_value, decision_node_path = shadow_tree.predict(x)
 
-    feature_min_range = {}
-    feature_max_range = {}
+    feature_smaller_values = {}
+    feature_bigger_values = {}
     for i, node in enumerate(decision_node_path):
         if i == len(decision_node_path) - 1:
             break  # stop at leaf node
@@ -49,20 +49,24 @@ def explain_prediction_plain_english(shadow_tree : ShadowDecTree3 ,
         feature_value = x[node_feature_index[node_id]]
         feature_split_value = round(node_threshold[node_id], 2)
 
-        if feature_min_range.get(feature_name, feature_value) >= feature_split_value:
-            feature_min_range[feature_name] = feature_split_value
-        elif feature_max_range.get(feature_name, feature_value) < feature_split_value:
-            feature_max_range[feature_name] = feature_split_value
+        if feature_value > feature_split_value:
+            if feature_smaller_values.get(feature_name) is None:
+                feature_smaller_values[feature_name] = []
+            feature_smaller_values.get(feature_name).append(feature_split_value)
+        elif feature_value <= feature_split_value:
+            if feature_bigger_values.get(feature_name) is None:
+                feature_bigger_values[feature_name] = []
+            feature_bigger_values.get(feature_name).append(feature_split_value)
 
     for feature_name in feature_names:
         feature_range = ""
-        if feature_name in feature_min_range:
-            feature_range = f"{feature_min_range[feature_name]} <= {feature_name}"
-        if feature_name in feature_max_range:
+        if feature_name in feature_smaller_values:
+            feature_range = f"{max(feature_smaller_values[feature_name])} <= {feature_name}"
+        if feature_name in feature_bigger_values:
             if feature_range == "":
-                feature_range = f"{feature_name} < {feature_max_range[feature_name]}"
+                feature_range = f"{feature_name} < {min(feature_bigger_values[feature_name])}"
             else:
-                feature_range += f" < {feature_max_range[feature_name]}"
+                feature_range += f" < {min(feature_bigger_values[feature_name])}"
 
         if feature_range != "":
             print(feature_range)
@@ -104,7 +108,8 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree3, x,
     decision_node_path = [node.id for node in decision_node_path]
 
     feature_path_importance = shadow_tree.get_feature_path_importance(decision_node_path)
-    return _get_feature_path_importance_sklearn_plot(shadow_tree.feature_names, feature_path_importance, figsize, colors, fontsize,
+    return _get_feature_path_importance_sklearn_plot(shadow_tree.feature_names, feature_path_importance, figsize,
+                                                     colors, fontsize,
                                                      fontname,
                                                      grid)
 
@@ -131,8 +136,6 @@ def _get_feature_path_importance_sklearn_plot(features, feature_path_importance,
     ax.grid(b=grid)
 
     return ax
-
-
 
 
 def get_prediction_explainer(explanation_type: str):
