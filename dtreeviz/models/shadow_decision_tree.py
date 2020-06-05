@@ -4,6 +4,11 @@ import numpy as np
 from numbers import Number
 from collections import Sequence
 import pandas as pd
+import sklearn
+import xgboost
+
+import dtreeviz
+
 
 
 class ShadowDecTree3(ABC):
@@ -297,6 +302,15 @@ class ShadowDecTree3(ABC):
         if isinstance(y_data, pd.Series):
             y_data = y_data.values
         return y_data
+
+    @staticmethod
+    def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
+        if isinstance(tree_model, ShadowDecTree3):
+            return tree_model
+        elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
+            return dtreeviz.models.shadow_decision_tree.SKDTree(tree_model, x_data, y_data, feature_names, target_name, class_names)
+        elif isinstance(tree_model, xgboost.core.Booster):
+            return dtreeviz.models.xgb_decision_tree.XGBDTree(tree_model, tree_index, x_data, y_data, feature_names, target_name, class_names)
 
 
 class ShadowDecTreeNode():

@@ -7,17 +7,14 @@ from typing import List
 import graphviz
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
-import sklearn
-import xgboost
 from colour import Color, rgb2hex
 from graphviz.backend import run, view
 from sklearn import tree
 
 from dtreeviz import interpretation2 as prediction_path
 from dtreeviz.colors import adjust_colors
-from dtreeviz.models.shadow_decision_tree import ShadowDecTree3, ShadowDecTreeNode
-from dtreeviz.models.sklearn_decision_trees import SKDTree
-from dtreeviz.models.xgb_decision_tree import XGBDTree
+from dtreeviz.models.shadow_decision_tree import ShadowDecTree3
+from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
 from dtreeviz.shadow import *
 from dtreeviz.utils import inline_svg_images, myround, scale_SVG
 
@@ -88,16 +85,7 @@ class DTreeViz:
                 f.write(svg)
 
 
-def _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
-    if isinstance(tree_model, ShadowDecTree3):
-        return tree_model
-    elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
-        return SKDTree(tree_model, x_data, y_data, feature_names, target_name, class_names)
-    elif isinstance(tree_model, xgboost.core.Booster):
-        return XGBDTree(tree_model, tree_index, x_data, y_data, feature_names, target_name, class_names)
-
-
-#TODO add checks about data sizes (ex. number of features)
+# TODO add checks about data sizes (ex. number of features)
 def rtreeviz_univar(tree_model,
                     x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
                     y_data: (pd.Series, np.ndarray) = None,
@@ -112,7 +100,8 @@ def rtreeviz_univar(tree_model,
                     mean_linewidth=2,
                     markersize=15,
                     colors=None):
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+                                                 tree_index)
     x_data = shadow_tree.x_data.reshape(-1, )
     y_data = shadow_tree.y_data
 
@@ -200,7 +189,8 @@ def rtreeviz_bivar_heatmap(tree_model,
     # if X_train.shape[1] != 2:
     #     raise ValueError(f"X_train must have exactly 2 columns")
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+                                                 tree_index)
     x_data = shadow_tree.x_data
     y_data = shadow_tree.y_data
 
@@ -261,7 +251,8 @@ def rtreeviz_bivar_3D(tree_model,
     just the 2 variables used for training.
     """
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+                                                 tree_index)
     x_data = shadow_tree.x_data
     y_data = shadow_tree.y_data
 
@@ -775,7 +766,8 @@ def dtreeviz(tree_model,
         else:
             return shadow_tree.leaves
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+                                                 tree_index)
     colors = adjust_colors(colors)
 
     if orientation == "TD":
@@ -1377,7 +1369,8 @@ def viz_leaf_samples(tree_model,
         Max number of samples for a leaf
     """
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+                                                 tree_index)
     leaf_id, leaf_samples = shadow_tree.get_leaf_sample_counts(min_samples, max_samples)
 
     if display_type == "plot":
@@ -1462,7 +1455,8 @@ def viz_leaf_criterion(tree_model,
     :return:
     """
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+                                                 tree_index)
     leaf_id, leaf_criteria = shadow_tree.get_leaf_criterion()
 
     if display_type == "plot":
@@ -1547,7 +1541,8 @@ def ctreeviz_leaf_samples(tree_model,
         Whether to show the grid lines
     """
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+                                                 tree_index)
     index, leaf_samples_0, leaf_samples_1 = shadow_tree.get_leaf_sample_counts_by_class()
 
     if display_type == "plot":
@@ -1653,7 +1648,8 @@ def viz_leaf_target(tree_model,
         The width of prediction line.
     """
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, None, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, None,
+                                                 tree_index)
     x, y, means, means_range, y_labels = _get_leaf_target_input(shadow_tree, precision)
     colors = adjust_colors(colors)
     figsize = (np.log(len(y_labels)), np.log(len(y_labels)) * 1.5) if figsize is None else figsize
@@ -1706,7 +1702,7 @@ def describe_node_sample(tree_model,
         Node training samples' description
     """
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, None, feature_names, None, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, None, feature_names, None, class_names, tree_index)
     node_samples = shadow_tree.get_node_samples()
     return pd.DataFrame(shadow_tree.x_data, columns=shadow_tree.feature_names).iloc[node_samples[node_id]].describe()
 
@@ -1723,6 +1719,10 @@ def explain_prediction_path(tree_model,
                             ):
     """Prediction path interpretation"""
 
-    shadow_tree = _get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+                                                 tree_index)
     explainer = prediction_path.get_prediction_explainer(explanation_type)
     return explainer(shadow_tree, x)
+
+# def add(x, y):
+#     return x+y
