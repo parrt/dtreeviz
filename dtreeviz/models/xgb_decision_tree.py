@@ -1,3 +1,4 @@
+import json
 import math
 from collections import defaultdict
 from typing import List, Mapping
@@ -157,7 +158,13 @@ class XGBDTree(ShadowDecTree3):
 
     # TODO - add implementation
     def is_classifier(self):
-        return True
+        config = json.loads(self.tree_model.save_config())
+        objective_name = config["learner"]["objective"]["name"].split(":")[0]
+        if objective_name == "binary":
+            return True
+        elif objective_name == "reg":
+            return False
+        return None
 
     def nnodes(self):
         return self.tree_to_dataframe.shape[0]

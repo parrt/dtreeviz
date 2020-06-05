@@ -91,4 +91,4 @@ def test_get_thresholds(xgb_tree):
 
 
 def test_is_classifier(xgb_tree):
-    assert xgb_tree.is_classifier() == True
+    assert xgb_tree.is_classifier() is True
