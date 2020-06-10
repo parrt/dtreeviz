@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 
-from dtreeviz.models.sklearn_decision_trees import SKDTree
+from dtreeviz.models.sklearn_decision_trees import ShadowSKDTree
 
 
 @pytest.fixture()
@@ -12,11 +12,11 @@ def dec_tree() -> (DecisionTreeClassifier, DecisionTreeRegressor):
 
 
 @pytest.fixture()
-def shadow_dec_tree(dec_tree, dataset) -> SKDTree:
+def shadow_dec_tree(dec_tree, dataset) -> ShadowSKDTree:
     features = ["Pclass", "Age", "Fare", "Sex_label", "Cabin_label", "Embarked_label"]
     target = "Survived"
     class_names = list(dec_tree.classes_)
-    return SKDTree(dec_tree, dataset[features], dataset[target], features, class_names)
+    return ShadowSKDTree(dec_tree, dataset[features], dataset[target], features, class_names)
 
 
 def test_x_dataset(x_dataset):

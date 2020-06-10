@@ -11,7 +11,7 @@ from dtreeviz.exceptions import VisualisationNotYetSupportedError
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree3
 
 
-class XGBDTree(ShadowDecTree3):
+class ShadowXGBDTree(ShadowDecTree3):
     LEFT_CHILDREN_COLUMN = "Yes"
     RIGHT_CHILDREN_COLUMN = "No"
     NO_CHILDREN = -1

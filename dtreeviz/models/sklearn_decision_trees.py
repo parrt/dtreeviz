@@ -9,7 +9,7 @@ from dtreeviz.models.shadow_decision_tree import ShadowDecTree3
 
 # TODO
 # add documentation
-class SKDTree(ShadowDecTree3):
+class ShadowSKDTree(ShadowDecTree3):
     def __init__(self, tree_model,
                  x_data,
                  y_data,

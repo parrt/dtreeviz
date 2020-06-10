@@ -61,7 +61,7 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree3,
     for feature_name in feature_names:
         feature_range = ""
         if feature_name in feature_smaller_values:
-            feature_range = f"{max(feature_smaller_values[feature_name])} <= {feature_name}"
+            feature_range = f"{max(feature_smaller_values[feature_name])} <= {feature_name} "
         if feature_name in feature_bigger_values:
             if feature_range == "":
                 feature_range = f"{feature_name} < {min(feature_bigger_values[feature_name])}"

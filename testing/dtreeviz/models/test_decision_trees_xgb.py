@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import xgboost as xgb
 
-from dtreeviz.models.xgb_decision_tree import XGBDTree
+from dtreeviz.models.xgb_decision_tree import ShadowXGBDTree
 
 
 # @pytest.fixture()
@@ -17,11 +17,11 @@ def xgb_booster() -> xgb.Booster:
 
 
 @pytest.fixture()
-def xgb_tree(xgb_booster, x_dataset, y_dataset) -> XGBDTree:
+def xgb_tree(xgb_booster, x_dataset, y_dataset) -> ShadowXGBDTree:
     features = ["Pclass", "Age", "Fare", "Sex_label", "Cabin_label", "Embarked_label"]
     target = "Survived"
     # class_names = list(dec_tree.classes_)
-    return XGBDTree(xgb_booster, 1, x_dataset, y_dataset, features, target)
+    return ShadowXGBDTree(xgb_booster, 1, x_dataset, y_dataset, features, target)
 
 
 def test_x_dataset(x_dataset):
