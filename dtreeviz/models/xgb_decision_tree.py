@@ -153,8 +153,12 @@ class ShadowXGBDTree(ShadowDecTree3):
     # - find a better name
     def get_value(self, id):
         all_nodes = self.internal + self.leaves
-        node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
-        return node_value[0][0], node_value[0][1]
+        if self.is_classifier():
+            node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
+            return node_value[0][0], node_value[0][1]
+        elif self.is_classifier() is False:
+            node_samples = [node.samples() for node in all_nodes if node.id == id][0]
+            return np.mean(self.y_data[node_samples])
 
     # TODO - add implementation
     def is_classifier(self):
@@ -170,7 +174,10 @@ class ShadowXGBDTree(ShadowDecTree3):
         return self.tree_to_dataframe.shape[0]
 
     def nclasses(self):
-        return len(np.unique(self.y_data))
+        if self.is_classifier() is False:
+            return 1
+        else:
+            return len(np.unique(self.y_data))
 
     def classes(self):
         return np.unique(self.y_data)

@@ -84,8 +84,12 @@ class ShadowSKDTree(ShadowDecTree3):
     def get_node_feature(self, id) -> int:
         return self.tree_model.tree_.feature[id]
 
+    # TODO find a better name ? it's used to calculate prediction from parent class
     def get_value(self, id):
-        return self.tree_model.tree_.value[id][0]
+        if self.is_classifier():
+            return self.tree_model.tree_.value[id][0]
+        elif self.is_classifier() is False:
+            return self.tree_model.tree_.value[id][0][0]
 
     def nnodes(self):
         return self.tree_model.tree_.node_count

@@ -49,11 +49,11 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree3,
         feature_value = x[node_feature_index[node_id]]
         feature_split_value = round(node_threshold[node_id], 2)
 
-        if feature_value > feature_split_value:
+        if feature_split_value <= feature_value:
             if feature_smaller_values.get(feature_name) is None:
                 feature_smaller_values[feature_name] = []
             feature_smaller_values.get(feature_name).append(feature_split_value)
-        elif feature_value <= feature_split_value:
+        elif feature_split_value > feature_value:
             if feature_bigger_values.get(feature_name) is None:
                 feature_bigger_values[feature_name] = []
             feature_bigger_values.get(feature_name).append(feature_split_value)
