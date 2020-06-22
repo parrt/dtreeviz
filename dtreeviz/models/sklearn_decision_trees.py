@@ -24,13 +24,10 @@ class ShadowSKDTree(ShadowDecTree3):
     def is_classifier(self):
         return self.nclasses() > 1
 
-    # TODO
-    # check results with original shadow.py
     def get_class_weights(self):
-        if self.tree_model.tree_.n_classes > 1:
+        if self.is_classifier():
             unique_target_values = np.unique(self.y_data)
             return compute_class_weight(self.tree_model.class_weight, unique_target_values, self.y_data)
-        return self.tree_model.class_weight
 
     def get_thresholds(self):
         return self.tree_model.tree_.threshold
@@ -48,19 +45,10 @@ class ShadowSKDTree(ShadowDecTree3):
         return self.tree_model.tree_.n_classes[0]
 
     def classes(self):
-        return self.tree_model.classes_
+        if self.is_classifier():
+            return self.tree_model.classes_
 
     def get_node_samples(self):
-        """
-        Return dictionary mapping node id to list of sample indexes considered by
-        the feature/split decision.
-        """
-        # Doc say: "Return a node indicator matrix where non zero elements
-        #           indicates that the samples goes through the nodes."
-
-        # print("-----")
-        # print(type(self.x_data))
-        # print(self.x_data)
         dec_paths = self.tree_model.decision_path(self.x_data)
 
         # each sample has path taken down tree
@@ -85,10 +73,10 @@ class ShadowSKDTree(ShadowDecTree3):
         return self.tree_model.tree_.feature[id]
 
     # TODO find a better name ? it's used to calculate prediction from parent class
-    def get_value(self, id):
+    def get_predicion_value(self, id):
         if self.is_classifier():
             return self.tree_model.tree_.value[id][0]
-        elif self.is_classifier() is False:
+        elif not self.is_classifier():
             return self.tree_model.tree_.value[id][0][0]
 
     def nnodes(self):

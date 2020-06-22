@@ -30,7 +30,7 @@ def test_feature_number(shadow_dec_tree):
 
 
 def test_is_fit(shadow_dec_tree):
-    assert shadow_dec_tree.is_fit() is True
+    assert shadow_dec_tree.is_fit() == True
 
 
 def test_is_classifier(shadow_dec_tree):

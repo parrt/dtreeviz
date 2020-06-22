@@ -730,6 +730,10 @@ def dtreeviz(tree_model,
         if X is None:
             return ""
         pred, path = shadow_tree.predict(X)
+        # print(f"path {[node.feature_name() for node in path]}")
+        # print(f"path id {[node.id() for node in path]}")
+        # print(f"path prediction {[node.prediction() for node in path]}")
+
         leaf = f"leaf{path[-1].id}"
         if shadow_tree.is_classifier():
             edge_label = f" &#160;Prediction<br/> {path[-1].prediction_name()}"
@@ -1683,6 +1687,7 @@ def viz_leaf_target(tree_model,
 def describe_node_sample(tree_model,
                          node_id: int,
                          x_data: (pd.DataFrame, np.ndarray) = None,
+                         y_data: (pd.Series, np.ndarray) = None,
                          feature_names: List[str] = None,
                          class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                          tree_index: int = None,  # required in case of tree ensemble
@@ -1702,7 +1707,7 @@ def describe_node_sample(tree_model,
         Node training samples' description
     """
 
-    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, None, feature_names, None, class_names, tree_index)
+    shadow_tree = ShadowDecTree3.get_shadow_tree(tree_model, x_data, y_data, feature_names, None, class_names, tree_index)
     node_samples = shadow_tree.get_node_samples()
     return pd.DataFrame(shadow_tree.x_data, columns=shadow_tree.feature_names).iloc[node_samples[node_id]].describe()
 

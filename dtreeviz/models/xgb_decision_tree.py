@@ -34,6 +34,7 @@ class ShadowXGBDTree(ShadowDecTree3):
         self.tree_to_dataframe = self._get_tree_dataframe()
         self.children_left = self._calculate_children(self.__class__.LEFT_CHILDREN_COLUMN)
         self.children_right = self._calculate_children(self.__class__.RIGHT_CHILDREN_COLUMN)
+        self.config = json.loads(self.booster.save_config())
 
         super().__init__(booster, x_data, y_data, feature_names, target_name, class_names)
 
@@ -151,19 +152,18 @@ class ShadowXGBDTree(ShadowDecTree3):
 
     # TODO
     # - find a better name
-    def get_value(self, id):
+    def get_predicion_value(self, id):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
             node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
             return node_value[0][0], node_value[0][1]
-        elif self.is_classifier() is False:
+        elif not self.is_classifier():
             node_samples = [node.samples() for node in all_nodes if node.id == id][0]
             return np.mean(self.y_data[node_samples])
 
     # TODO - add implementation
     def is_classifier(self):
-        config = json.loads(self.tree_model.save_config())
-        objective_name = config["learner"]["objective"]["name"].split(":")[0]
+        objective_name = self.config["learner"]["objective"]["name"].split(":")[0]
         if objective_name == "binary":
             return True
         elif objective_name == "reg":
@@ -174,16 +174,17 @@ class ShadowXGBDTree(ShadowDecTree3):
         return self.tree_to_dataframe.shape[0]
 
     def nclasses(self):
-        if self.is_classifier() is False:
+        if not self.is_classifier():
             return 1
         else:
             return len(np.unique(self.y_data))
 
     def classes(self):
-        return np.unique(self.y_data)
+        if self.is_classifier():
+            return np.unique(self.y_data)
 
     def get_max_depth(self):
-        raise VisualisationNotYetSupportedError("get_max_depth()", "XGBoost")
+        return int(self.config["learner"]["gradient_booster"]["updater"]["prune"]["train_param"]["max_depth"])
 
     def get_score(self):
         raise VisualisationNotYetSupportedError("get_score()", "XGBoost")
