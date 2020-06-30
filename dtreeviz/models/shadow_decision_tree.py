@@ -53,24 +53,17 @@ class ShadowDecTree3(ABC):
         """
 
         self.tree_model = tree_model
-        self.feature_names = feature_names
-        self.target_name = target_name
-        self.class_names = class_names
-        self.class_weight = self.get_class_weight()
-        self.thresholds = self.get_thresholds()
-        self.features = self.get_features()
-
         if not self.is_fit():
             raise Exception(f"Model {tree_model} is not fit.")
 
+        self.feature_names = feature_names
+        self.target_name = target_name
+        self.class_names = class_names
+        # self.class_weight = self.get_class_weight()
         self.x_data = ShadowDecTree3._get_x_data(x_data)
         self.y_data = ShadowDecTree3._get_y_data(y_data)
-        self.node_to_samples = self.get_node_samples()
-        if self.is_classifier():
-            self.class_weights = self.get_class_weights()
-            self.unique_target_values = np.unique(self.y_data)
+        # self.node_to_samples = self.get_node_samples()
         self.root, self.leaves, self.internal = self._get_tree_nodes()
-
         if class_names:
             self.class_names = self._get_class_names()
 
@@ -371,7 +364,7 @@ class ShadowDecTree3(ABC):
         return index, leaf_sample_0, leaf_samples_1
 
     def _get_class_names(self):
-        if self.nclasses() > 1:
+        if self.is_classifier():
             if isinstance(self.class_names, dict):
                 return self.class_names
             elif isinstance(self.class_names, Sequence):
@@ -459,7 +452,7 @@ class ShadowDecTreeNode():
     def samples(self) -> List[int]:
         """Returns samples indexes from this node"""
 
-        return self.shadow_tree.node_to_samples[self.id]
+        return self.shadow_tree.get_node_samples()[self.id]
 
     def nsamples(self) -> int:
         """
@@ -545,12 +538,12 @@ class ShadowDecTreeNode():
         """
 
         if self.isclassifier():
-            if self.shadow_tree.class_weight is None:
+            if self.shadow_tree.get_class_weight() is None:
                 # return np.array(np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]), dtype=int)
                 return np.array(np.round(self.shadow_tree.get_predicion_value(self.id)), dtype=int)
             else:
                 return np.round(
-                    self.shadow_tree.get_predicion_value(self.id) / self.shadow_tree.class_weights).astype(int)
+                    self.shadow_tree.get_predicion_value(self.id) / self.shadow_tree.get_class_weights()).astype(int)
         return None
 
     def __str__(self):

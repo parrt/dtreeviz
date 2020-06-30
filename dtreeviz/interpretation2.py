@@ -33,9 +33,9 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree3,
         Prediction path explanation in plain english.
     """
 
-    node_feature_index = shadow_tree.features
+    node_feature_index = shadow_tree.get_features()
     feature_names = shadow_tree.feature_names
-    node_threshold = shadow_tree.thresholds
+    node_threshold = shadow_tree.get_thresholds()
     prediction_value, decision_node_path = shadow_tree.predict(x)
 
     feature_smaller_values = {}

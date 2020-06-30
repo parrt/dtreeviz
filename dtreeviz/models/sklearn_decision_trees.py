@@ -16,6 +16,8 @@ class ShadowSKDTree(ShadowDecTree3):
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
+
+        self.node_to_samples = None
         super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
 
     def is_fit(self):
@@ -49,6 +51,9 @@ class ShadowSKDTree(ShadowDecTree3):
             return self.tree_model.classes_
 
     def get_node_samples(self):
+        if self.node_to_samples is not None:
+            return self.node_to_samples
+
         dec_paths = self.tree_model.decision_path(self.x_data)
 
         # each sample has path taken down tree
@@ -58,6 +63,7 @@ class ShadowSKDTree(ShadowDecTree3):
             for node_id in nz_nodes:
                 node_to_samples[node_id].append(sample_i)
 
+        self.node_to_samples = node_to_samples
         return node_to_samples
 
     def get_children_left(self):
@@ -76,7 +82,7 @@ class ShadowSKDTree(ShadowDecTree3):
     def get_predicion_value(self, id):
         if self.is_classifier():
             return self.tree_model.tree_.value[id][0]
-        elif not self.is_classifier():
+        else:
             return self.tree_model.tree_.value[id][0][0]
 
     def nnodes(self):

@@ -35,6 +35,8 @@ class ShadowXGBDTree(ShadowDecTree3):
         self.children_left = self._calculate_children(self.__class__.LEFT_CHILDREN_COLUMN)
         self.children_right = self._calculate_children(self.__class__.RIGHT_CHILDREN_COLUMN)
         self.config = json.loads(self.booster.save_config())
+        self.node_to_samples = None  # lazy initialized
+        self.features = None  # lazy initialized
 
         super().__init__(booster, x_data, y_data, feature_names, target_name, class_names)
 
@@ -74,8 +76,12 @@ class ShadowXGBDTree(ShadowDecTree3):
             return self.__class__.NO_FEATURE
 
     def get_features(self):
+        if self.features is not None:
+            return self.features
+
         feature_index = [self.get_node_feature(i) for i in range(0, self.nnodes())]
-        return np.array(feature_index)
+        self.features = np.array(feature_index)
+        return self.features
 
     def get_node_samples(self):
         """
@@ -85,6 +91,9 @@ class ShadowXGBDTree(ShadowDecTree3):
         # Doc say: "Return a node indicator matrix where non zero elements
         #           indicates that the samples goes through the nodes."
 
+        if self.node_to_samples is not None:
+            return self.node_to_samples
+
         prediction_leaves = self.booster.predict(xgb.DMatrix(self.x_data, feature_names=self.feature_names),
                                                  pred_leaf=True)[:, self.tree_index]
         node_to_samples = defaultdict(list)
@@ -93,6 +102,7 @@ class ShadowXGBDTree(ShadowDecTree3):
             for node_id in prediction_path:
                 node_to_samples[node_id].append(sample_i)
 
+        self.node_to_samples = node_to_samples
         return node_to_samples
 
     def _get_leaf_prediction_path(self, leaf):
