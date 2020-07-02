@@ -19,8 +19,6 @@ class ShadowXGBDTree(ShadowDecTree3):
     NO_FEATURE = -2
     ROOT_NODE = 0
 
-    # TODO
-    # do we need data as parameter ? should it be dataframe or dmetrics ?
     def __init__(self, booster: Booster,
                  tree_index: int,
                  x_data,
@@ -160,9 +158,7 @@ class ShadowXGBDTree(ShadowDecTree3):
         thresholds = [self.get_node_split(i) for i in range(0, self.nnodes())]
         return np.array(thresholds)
 
-    # TODO
-    # - find a better name
-    def get_predicion_value(self, id):
+    def get_prediction_value(self, id):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
             node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
@@ -171,7 +167,6 @@ class ShadowXGBDTree(ShadowDecTree3):
             node_samples = [node.samples() for node in all_nodes if node.id == id][0]
             return np.mean(self.y_data[node_samples])
 
-    # TODO - add implementation
     def is_classifier(self):
         objective_name = self.config["learner"]["objective"]["name"].split(":")[0]
         if objective_name == "binary":

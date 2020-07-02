@@ -7,8 +7,6 @@ from sklearn.utils import compute_class_weight
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree3
 
 
-# TODO
-# add documentation
 class ShadowSKDTree(ShadowDecTree3):
     def __init__(self, tree_model,
                  x_data,
@@ -78,8 +76,7 @@ class ShadowSKDTree(ShadowDecTree3):
     def get_node_feature(self, id) -> int:
         return self.tree_model.tree_.feature[id]
 
-    # TODO find a better name ? it's used to calculate prediction from parent class
-    def get_predicion_value(self, id):
+    def get_prediction_value(self, id):
         if self.is_classifier():
             return self.tree_model.tree_.value[id][0]
         else:
@@ -90,9 +87,6 @@ class ShadowSKDTree(ShadowDecTree3):
 
     def get_node_criterion(self, id):
         return self.tree_model.tree_.impurity[id]
-
-    def get_prediction_value(self, id):
-        return self.tree_model.tree_.value[id]
 
     def get_feature_path_importance(self, node_list):
         gini_importance = np.zeros(self.tree_model.tree_.n_features)

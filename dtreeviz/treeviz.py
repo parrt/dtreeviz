@@ -84,8 +84,6 @@ class DTreeViz:
             with open(filename, "w", encoding='UTF-8') as f:
                 f.write(svg)
 
-
-# TODO add checks about data sizes (ex. number of features)
 def rtreeviz_univar(tree_model,
                     x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
                     y_data: (pd.Series, np.ndarray) = None,

@@ -176,7 +176,7 @@ class ShadowDecTree3(ABC):
         pass
 
     @abstractmethod
-    def get_predicion_value(self, id):
+    def get_prediction_value(self, id):
         """Returns the constant prediction value for node id.
 
         Parameters
@@ -463,8 +463,6 @@ class ShadowDecTreeNode():
 
         return len(self.samples())
 
-    # TODO
-    # rename method name
     def n_sample_classes(self):
         """Used for binary classification only.
 
@@ -514,10 +512,10 @@ class ShadowDecTreeNode():
         if not self.isleaf():
             return None
         if self.isclassifier():
-            counts = self.shadow_tree.get_predicion_value(self.id)
+            counts = self.shadow_tree.get_prediction_value(self.id)
             return np.argmax(counts)
         else:
-            return self.shadow_tree.get_predicion_value(self.id)
+            return self.shadow_tree.get_prediction_value(self.id)
 
     def prediction_name(self) -> (str, None):
         """
@@ -540,10 +538,10 @@ class ShadowDecTreeNode():
         if self.isclassifier():
             if self.shadow_tree.get_class_weight() is None:
                 # return np.array(np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]), dtype=int)
-                return np.array(np.round(self.shadow_tree.get_predicion_value(self.id)), dtype=int)
+                return np.array(np.round(self.shadow_tree.get_prediction_value(self.id)), dtype=int)
             else:
                 return np.round(
-                    self.shadow_tree.get_predicion_value(self.id) / self.shadow_tree.get_class_weights()).astype(int)
+                    self.shadow_tree.get_prediction_value(self.id) / self.shadow_tree.get_class_weights()).astype(int)
         return None
 
     def __str__(self):
