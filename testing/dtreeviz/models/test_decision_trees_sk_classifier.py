@@ -95,3 +95,19 @@ def test_get_node_feature(shadow_dec_tree):
     assert shadow_dec_tree.get_node_feature(4) == -2
     assert shadow_dec_tree.get_node_feature(8) == 4
     assert shadow_dec_tree.get_node_feature(12) == 1
+
+
+def test_get_max_depth(shadow_dec_tree):
+    assert shadow_dec_tree.get_max_depth() == 3, "Max depth should be 3"
+
+
+def test_get_score(shadow_dec_tree):
+    assert shadow_dec_tree.get_score() == 0.75, "Score should be 0.75"
+
+
+def test_get_min_samples_leaf(shadow_dec_tree): \
+    assert shadow_dec_tree.get_min_samples_leaf() == 1, "min_samples_leaf should be 1"
+
+def test_nnodes(shadow_dec_tree):
+    assert shadow_dec_tree.nnodes() == 15, "number of nodes should be 15"
+

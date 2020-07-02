@@ -67,10 +67,10 @@ def test_get_node_samples(xgb_tree):
 
 
 def test_get_value(xgb_tree):
-    assert np.array_equal(xgb_tree.get_predicion_value(0), np.array([10, 10]))
-    assert np.array_equal(xgb_tree.get_predicion_value(1), np.array([2, 9]))
-    assert np.array_equal(xgb_tree.get_predicion_value(2), np.array([8, 1]))
-    assert np.array_equal(xgb_tree.get_predicion_value(5), np.array([7, 1]))
+    assert np.array_equal(xgb_tree.get_prediction_value(0), np.array([10, 10]))
+    assert np.array_equal(xgb_tree.get_prediction_value(1), np.array([2, 9]))
+    assert np.array_equal(xgb_tree.get_prediction_value(2), np.array([8, 1]))
+    assert np.array_equal(xgb_tree.get_prediction_value(5), np.array([7, 1]))
 
 
 def test_nclasses(xgb_tree):

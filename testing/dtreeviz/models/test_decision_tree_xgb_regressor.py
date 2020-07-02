@@ -35,13 +35,13 @@ def test_feature_names(xgb_booster):
 
 
 def test_get_value(xgb_tree):
-    assert xgb_tree.get_predicion_value(0) == 28.254867647058823
-    assert xgb_tree.get_predicion_value(1) == 29.531439628482975
-    assert xgb_tree.get_predicion_value(2) == 4.0
-    assert xgb_tree.get_predicion_value(3) == 40.52844537815126
-    assert xgb_tree.get_predicion_value(4) == 23.116519607843134
-    assert xgb_tree.get_predicion_value(5) == 26.04424836601307
-    assert xgb_tree.get_predicion_value(6) == 14.333333333333334
+    assert xgb_tree.get_prediction_value(0) == 28.254867647058823
+    assert xgb_tree.get_prediction_value(1) == 29.531439628482975
+    assert xgb_tree.get_prediction_value(2) == 4.0
+    assert xgb_tree.get_prediction_value(3) == 40.52844537815126
+    assert xgb_tree.get_prediction_value(4) == 23.116519607843134
+    assert xgb_tree.get_prediction_value(5) == 26.04424836601307
+    assert xgb_tree.get_prediction_value(6) == 14.333333333333334
 
 def test_get_max_depth(xgb_tree):
     assert xgb_tree.get_max_depth() == 3, "max_depth should be 3"
