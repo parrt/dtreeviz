@@ -4,10 +4,10 @@ from typing import List, Mapping
 import numpy as np
 from sklearn.utils import compute_class_weight
 
-from dtreeviz.models.shadow_decision_tree import ShadowDecTree3
+from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 
 
-class ShadowSKDTree(ShadowDecTree3):
+class ShadowSKDTree(ShadowDecTree):
     def __init__(self, tree_model,
                  x_data,
                  y_data,

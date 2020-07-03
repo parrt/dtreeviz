@@ -11,7 +11,7 @@ import xgboost
 import dtreeviz
 
 
-class ShadowDecTree3(ABC):
+class ShadowDecTree(ABC):
     """
     This tree shadows a decision tree as constructed by scikit-learn's and XGBoost's
     DecisionTree(Regressor|Classifier). As part of build process, the
@@ -60,8 +60,8 @@ class ShadowDecTree3(ABC):
         self.target_name = target_name
         self.class_names = class_names
         # self.class_weight = self.get_class_weight()
-        self.x_data = ShadowDecTree3._get_x_data(x_data)
-        self.y_data = ShadowDecTree3._get_y_data(y_data)
+        self.x_data = ShadowDecTree._get_x_data(x_data)
+        self.y_data = ShadowDecTree._get_y_data(y_data)
         # self.node_to_samples = self.get_node_samples()
         self.root, self.leaves, self.internal = self._get_tree_nodes()
         if class_names:
@@ -409,7 +409,7 @@ class ShadowDecTree3(ABC):
 
     @staticmethod
     def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
-        if isinstance(tree_model, ShadowDecTree3):
+        if isinstance(tree_model, ShadowDecTree):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
             return dtreeviz.models.sklearn_decision_trees.ShadowSKDTree(tree_model, x_data, y_data, feature_names,
@@ -426,7 +426,7 @@ class ShadowDecTreeNode():
     saved into field node_samples.
     """
 
-    def __init__(self, shadow_tree: ShadowDecTree3, id: int, left=None, right=None):
+    def __init__(self, shadow_tree: ShadowDecTree, id: int, left=None, right=None):
         self.shadow_tree = shadow_tree
         self.id = id
         self.left = left
