@@ -7,7 +7,7 @@ import numpy as np
 import xgboost as xgb
 from xgboost.core import Booster
 
-from dtreeviz.exceptions import VisualisationNotYetSupportedError
+from dtreeviz.models.shadow_decision_tree import VisualisationNotYetSupportedError
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 
 

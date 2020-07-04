@@ -552,3 +552,8 @@ class ShadowDecTreeNode():
                                                      s=round(self.split(), 1),
                                                      left=self.left if self.left is not None else '',
                                                      right=self.right if self.right is not None else '')
+
+
+class VisualisationNotYetSupportedError(Exception):
+    def __init__(self, method_name, model_name):
+        super().__init__(f"{method_name} is not implemented yet for {model_name}")
