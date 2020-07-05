@@ -555,6 +555,16 @@ def dtreeviz(tree_model,
     Given a decision tree regressor or classifier, create and return a tree visualization
     using the graphviz (DOT) language.
 
+    We can call this function in two ways :
+    1. by using shadow tree
+        ex. dtreeviz(shadow_dtree)
+        - we need to initialize shadow_tree before this call
+            - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target, [0, 1]))
+        - the main advantage is that we can use the shadow_tree for other visualisations methods as well
+    2. by using sklearn, xgboost tree
+        ex. dtreeviz(tree_model, dataset[features], dataset[target], features, target, class_names=[0, 1])
+        - maintain backward compatibility
+
     :param tree_model: A DecisionTreeRegressor or DecisionTreeClassifier that has been
                        fit to X_train, y_data.
     :param X_train: A data frame or 2-D matrix of feature vectors used to train the model.
@@ -1347,12 +1357,12 @@ def viz_leaf_samples(tree_model,
 
     We can call this function in two ways :
     1. by using shadow tree
-        ex. treeviz.viz_leaf_samples(shadow_dtree)
+        ex. viz_leaf_samples(shadow_dtree)
         - we need to initialize shadow_tree before this call
-            - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target, [0, 1])
+            - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], features)
         - the main advantage is that we can use the shadow_tree for other visualisations methods as well
     2. by using sklearn, xgboost tree
-        ex. treeviz.viz_leaf_samples(tree_model, dataset[features], dataset[target], features, target)
+        ex. viz_leaf_samples(tree_model, dataset[features], dataset[target], features, target)
         - maintain backward compatibility
 
     TODO : put a link with notebook examples (at each function docs)
@@ -1461,12 +1471,12 @@ def viz_leaf_criterion(tree_model,
 
     We can call this function in two ways :
     1. by using shadow tree
-        ex. treeviz.viz_leaf_criterion(shadow_dtree)
+        ex. viz_leaf_criterion(shadow_dtree)
         - we need to initialize shadow_tree before this call
             - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target, [0, 1])
         - the main advantage is that we can use the shadow_tree for other visualisations methods as well
     2. by using sklearn, xgboost tree
-        ex. treeviz.viz_leaf_criterion(tree_model, dataset[features], dataset[target], features, target)
+        ex. viz_leaf_criterion(tree_model)
         - maintain backward compatibility
 
     This method contains three types of visualizations:
@@ -1564,13 +1574,12 @@ def ctreeviz_leaf_samples(tree_model,
 
     We can call this function in two ways :
     1. by using shadow tree
-        ex. treeviz.ctreeviz_leaf_samples(shadow_dtree)
+        ex. ctreeviz_leaf_samples(shadow_dtree)
         - we need to initialize shadow_tree before this call
             - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target, [0, 1])
         - the main advantage is that we can use the shadow_tree for other visualisations methods as well
     2. by using sklearn, xgboost tree
-        ex. treeviz.ctreeviz_leaf_samples(tree_model, dataset[features], dataset[target], features, target,
-                                            class_names=[0, 1])
+        ex. ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target], features)
         - maintain backward compatibility
 
     :param tree_model: tree.DecisionTreeClassifier, xgboost.core.Booster,
@@ -1685,12 +1694,12 @@ def viz_leaf_target(tree_model,
 
     We can call this function in two ways :
     1. by using shadow tree
-        ex. treeviz.viz_leaf_target(shadow_dtree)
+        ex. viz_leaf_target(shadow_dtree)
         - we need to initialize shadow_tree before this call
             - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target)
         - the main advantage is that we can use the shadow_tree for other visualisations methods as well
     2. by using sklearn, xgboost tree
-        ex. treeviz.viz_leaf_target(tree_model, dataset[features], dataset[target], features, target)
+        ex. viz_leaf_target(tree_model, dataset[features], dataset[target], features, target)
         - maintain backward compatibility
 
 
@@ -1767,12 +1776,12 @@ def describe_node_sample(tree_model,
 
     We can call this function in two ways :
     1. by using shadow tree
-        ex. treeviz.describe_node_sample(shadow_dtree, 10)
+        ex. describe_node_sample(shadow_dtree, node_id=10)
         - we need to initialize shadow_tree before this call
             - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target)
         - the main advantage is that we can use the shadow_tree for other visualisations methods as well
     2. by using sklearn, xgboost tree
-        ex. treeviz.describe_node_sample(tree_model, 10, dataset[features], dataset[target], features, [0, 1])
+        ex. describe_node_sample(tree_classifier, node_id=1, x_data=dataset[features], feature_names=features)
         - maintain backward compatibility
 
     :param tree_model: tree.DecisionTreeRegressor, tree.DecisionTreeClassifier, xgboost.core.Booster,
@@ -1826,13 +1835,12 @@ def explain_prediction_path(tree_model,
 
     We can call this function in two ways :
     1. by using shadow tree
-        ex. treeviz.explain_prediction_path(shadow_dtree, x)
+        ex. explain_prediction_path(shadow_dtree, x)
         - we need to initialize shadow_tree before this call
             - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target)
         - the main advantage is that we can use the shadow_tree for other visualisations methods as well
     2. by using sklearn, xgboost tree
-        ex. treeviz.explain_prediction_path(tree_model, x, "plain_english", dataset[features], dataset[target],
-                                            features, target)
+        ex. explain_prediction_path(tree_model, x, feature_names=features, explanation_type="plain_english")
         - maintain backward compatibility
 
     :param tree_model: tree.DecisionTreeRegressor, tree.DecisionTreeClassifier, xgboost.core.Booster,
