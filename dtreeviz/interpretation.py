@@ -26,9 +26,8 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
         The model chose to make this prediction because instance's Pclass feature value is bigger or equal to 1.5, Age
         is between 3.5 and 44.5, Fare is between 7.91 and 54.25, and so on.
 
-    :param tree_model: tree used to make prediction
-    :param X: Instance example to make prediction
-    :param feature_names: feature name list
+    :param shadow_tree: tree used to make prediction
+    :param x: Instance example to make prediction
     :return: str
         Prediction path explanation in plain english.
     """
@@ -72,7 +71,8 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
             print(feature_range)
 
 
-def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree, x,
+def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
+                                       x: (pandas.core.series.Series, np.ndarray),
                                        figsize: tuple = (10, 5),
                                        colors: dict = None,
                                        fontsize: int = 14,
@@ -85,10 +85,8 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree, x,
     their number of categories.
     For more details, you can read this article : https://explained.ai/rf-importance/index.html
 
-    :param tree_model: tree used to make prediction
-    :param X: Instance example to make prediction
-    :param features: list
-        Feature name list
+    :param shadow_tree: tree used to make prediction
+    :param x: Instance example to make prediction
     :param figsize: tuple of int, optional
         The plot size
     :param colors: dict, optional
@@ -97,6 +95,8 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree, x,
         Plot labels fontsize
     :param fontname: str, optional
         Plot labels font name
+    :param grid: bool
+        True if we want to display the grid lines on the visualization
     :return:
         Prediction feature's importance plot
     """

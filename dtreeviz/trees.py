@@ -1399,7 +1399,7 @@ def viz_leaf_samples(tree_model,
     :param fontname: str
         Plot labels font name
     :param grid: bool
-        Whether to show the grid lines
+        True if we want to display the grid lines on the visualization
     :param bins: int
         Number of histogram bins
     :param min_samples: int
@@ -1501,7 +1501,7 @@ def viz_leaf_criterion(tree_model,
     :param fontname: str
         Plot labels font name
     :param grid: bool
-        Whether to show the grid lines
+        True if we want to display the grid lines on the visualization
     :param bins:  int
         Number of histogram bins
     :return:
@@ -1608,7 +1608,7 @@ def ctreeviz_leaf_samples(tree_model,
     :param fontname: str
         Plot labels font name
     :param grid: bool
-        Whether to show the grid lines
+        True if we want to display the grid lines on the visualization
     """
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, None, None,
@@ -1726,7 +1726,7 @@ def viz_leaf_target(tree_model,
     :param figsize: tuple
         Sets the (width, height) of the plot.
     :param grid: bool
-        Whether to show the grid lines
+        True if we want to display the grid lines on the visualization
     :param prediction_line_width: int
         The width of prediction line.
     """
