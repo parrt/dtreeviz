@@ -3,7 +3,11 @@
 ## Description
 A python library for decision tree visualization and model interpretation.
 
-By [Terence Parr](http://parrt.cs.usfca.edu), a professor in the [University of San Francisco's data science program](https://www.usfca.edu/arts-sciences/graduate-programs/data-science), and [Prince Grover](https://www.linkedin.com/in/groverpr). Recently [Tudor Lapusan](https://github.com/tlapusan) has been making nice contributions.
+Authors:
+
+* [Terence Parr](http://parrt.cs.usfca.edu), a professor in the [University of San Francisco's data science program](https://www.usfca.edu/arts-sciences/graduate-programs/data-science)
+* [Tudor Lapusan](https://github.com/tlapusan)
+* [Prince Grover](https://www.linkedin.com/in/groverpr)
 
 See [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made. 
 
