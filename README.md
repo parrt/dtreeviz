@@ -1,7 +1,7 @@
 # dtreeviz : Decision Tree Visualization
 
 ## Description
-A python library for decision tree visualization and model interpretation.
+A python library for decision tree visualization and model interpretation.  Currently supports sklearn and XGBoost trees.
 
 Authors:
 
@@ -17,9 +17,9 @@ We welcome info from users on how they use dtreeviz, what features they'd like, 
 
 ## Quick start
 
-Jump right into the examples using this Colab notebook
+Jump right into the examples using this [Colab notebook](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/examples.ipynb)
 
-https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/examples.ipynb
+We still need to clean up / reorganize all of the [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks).
 
 ## Discussion
 
