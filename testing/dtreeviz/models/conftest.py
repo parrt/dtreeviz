@@ -6,10 +6,10 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 print(f"ROOT_DIR {ROOT_DIR}")
 
+
 @pytest.fixture(autouse=True)
 def dataset() -> pd.DataFrame:
     return pd.read_csv("fixtures/dataset.csv")
-
 
 @pytest.fixture(autouse=True)
 def x_dataset_classifier() -> pd.DataFrame:
@@ -31,3 +31,7 @@ def x_dataset_regressor() -> pd.DataFrame:
 @pytest.fixture()
 def y_dataset_regressor(dataset) -> pd.Series:
     return dataset["Age"]
+
+@pytest.fixture()
+def dataset_spark() -> pd.DataFrame:
+    return pd.read_csv("fixtures/dataset_spark.csv")

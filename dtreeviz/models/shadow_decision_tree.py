@@ -144,7 +144,7 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
-    def get_children_right(self):
+    def get_children_right(self) -> np.ndarray:
         """Returns the node ids of the right child node.
 
         Ex. children_right[i] holds the node id of the right child of node i.
@@ -320,7 +320,7 @@ class ShadowDecTree(ABC):
         """
         Get the number of samples for each leaf.
 
-        There is the option to filter the leaves with less than min_samples or more than max_samples.
+        There is the option to filter the leaves with samples between min_samples and max_samples.
 
         Parameters
         ----------

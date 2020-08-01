@@ -1298,13 +1298,14 @@ def viz_leaf_samples(tree_model,
     Interpreting leaf samples can help us to see how the data is spread over the tree:
     - if we have a leaf with many samples and a good impurity, it means that we can be pretty confident
     on its prediction.
-    - if we have a leaf with few samples and a poor impurity, it could be a sign of overfitting.
-    - by visualizing leaf samples, we can easily discover 'different' leaves. Using describe_node_sample() function we
+    - if we have a leaf with few samples and a good impurity, we cannot be very confident on its predicion and
+    it could be a sign of overfitting.
+    - by visualizing leaf samples, we can easily discover important leaves . Using describe_node_sample() function we
     can take all its samples and discover common patterns between leaf samples.
     - if the tree contains a lot of leaves and we want a general overview about leaves samples, we can use the
     parameter display_type='hist' to display the histogram of leaf samples.
 
-    There is the option to filter the leaves with less than min_samples or more than max_samples. This is helpful
+    There is the option to filter the leaves with samples between 'min_samples' and 'max_samples'. This is helpful
     especially when you want to investigate leaves with number of samples from a specific range.
 
 
