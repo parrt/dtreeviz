@@ -103,6 +103,9 @@ class ShadowXGBDTree(ShadowDecTree):
         self.node_to_samples = node_to_samples
         return node_to_samples
 
+    def get_node_nsamples(self, id):
+        return len(self.get_node_samples()[id])
+
     def _get_leaf_prediction_path(self, leaf):
         prediction_path = [leaf]
 

@@ -136,6 +136,11 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
+    def get_node_nsamples(self, id):
+        """Returns number of samples for a specific node id."""
+        pass
+
+    @abstractmethod
     def get_children_left(self) -> np.ndarray:
         """Returns the node ids of the left child node.
 
@@ -461,7 +466,7 @@ class ShadowDecTreeNode():
         to compute the split point.
         """
 
-        return len(self.samples())
+        return self.shadow_tree.get_node_nsamples(self.id)
 
     def n_sample_classes(self):
         """Used for binary classification only.

@@ -87,3 +87,9 @@ def test_get_thresholds(xgb_tree):
 
 def test_is_classifier(xgb_tree):
     assert xgb_tree.is_classifier() == True
+
+
+def test_get_leaf_sample_counts(xgb_tree):
+    leaf_ids, leaf_samples = xgb_tree.get_leaf_sample_counts()
+    assert np.array_equal(leaf_ids, np.array([3, 4, 5, 6])), "Leaf ids should be [3, 4, 5, 6]"
+    assert np.array_equal(leaf_samples, np.array([5, 6, 8, 1])), "Leaf samples should be [5, 6, 8, 1]"

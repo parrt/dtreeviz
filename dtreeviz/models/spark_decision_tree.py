@@ -17,12 +17,12 @@ class ShadowSparkTree(ShadowDecTree):
                  class_names: (List[str], Mapping[int, str]) = None):
 
         self.tree_model = tree_model
-        self.tree_nodes, self.children_left, self.children_right = self._get_node_info()
+        self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
         super().__init__(tree_model, x_data, y_data)
 
         pass
 
-    def _get_node_info(self):
+    def _get_nodes_info(self):
         tree_nodes = [None] * self.tree_model.numNodes
         children_left = [-1] * self.tree_model.numNodes
         children_right = [-1] * self.tree_model.numNodes
@@ -36,12 +36,10 @@ class ShadowSparkTree(ShadowDecTree):
             else:
                 node_index += 1
                 children_left[node_id] = node_index
-                # print(f"node, node_left {node_id, node_index}")
                 recur(node.leftChild(), node_index)
 
                 node_index += 1
                 children_right[node_id] = node_index
-                # print(f"node, node_right {node_id, node_index}")
                 recur(node.rightChild(), node_index)
 
         recur(self.tree_model._call_java('rootNode'), 0)
@@ -53,7 +51,9 @@ class ShadowSparkTree(ShadowDecTree):
         return False
 
     def is_classifier(self) -> bool:
-        pass
+        if isinstance(self.tree_model, DecisionTreeClassificationModel):
+            return True
+        return False
 
     def get_class_weights(self):
         pass
@@ -78,6 +78,9 @@ class ShadowSparkTree(ShadowDecTree):
 
     def get_node_samples(self):
         pass
+
+    def get_node_nsamples(self, id):
+        return self.tree_nodes[id].impurityStats().rawCount()
 
     def get_children_left(self) -> np.ndarray:
         return np.array(self.children_left, dtype=int)

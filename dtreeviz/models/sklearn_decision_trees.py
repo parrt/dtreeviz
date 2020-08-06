@@ -64,6 +64,9 @@ class ShadowSKDTree(ShadowDecTree):
         self.node_to_samples = node_to_samples
         return node_to_samples
 
+    def get_node_nsamples(self, id):
+        return len(self.get_node_samples()[id])
+
     def get_children_left(self):
         return self.tree_model.tree_.children_left
 

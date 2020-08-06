@@ -106,8 +106,21 @@ def test_get_score(shadow_dec_tree):
 
 
 def test_get_min_samples_leaf(shadow_dec_tree): \
-    assert shadow_dec_tree.get_min_samples_leaf() == 1, "min_samples_leaf should be 1"
+        assert shadow_dec_tree.get_min_samples_leaf() == 1, "min_samples_leaf should be 1"
+
 
 def test_nnodes(shadow_dec_tree):
     assert shadow_dec_tree.nnodes() == 15, "number of nodes should be 15"
 
+
+def test_get_leaf_sample_counts(shadow_dec_tree):
+    leaf_ids, leaf_samples = shadow_dec_tree.get_leaf_sample_counts()
+    assert np.array_equal(leaf_ids,
+                          np.array([3, 4, 6, 7, 10, 11, 13, 14])), "Leaf ids should be [3, 4, 6, 7, 10, 11, 13, 14]"
+    assert np.array_equal(leaf_samples,
+                          np.array([0, 5, 6, 0, 2, 6, 0, 1])), "Leaf samples should be [0, 5, 6, 0, 2, 6, 0, 1]"
+
+
+def test_get_thresholds(shadow_dec_tree):
+    assert list(shadow_dec_tree.get_thresholds()) == [0.5, 2.5, 2.5, -2.0, -2.0, 23.350000381469727, -2.0, -2.0, 3.5,
+                                                      3.5, -2.0, -2.0, 17.5, -2.0, -2.0]

@@ -43,6 +43,12 @@ def test_get_value(xgb_tree):
     assert xgb_tree.get_prediction_value(5) == 26.04424836601307
     assert xgb_tree.get_prediction_value(6) == 14.333333333333334
 
+
 def test_get_max_depth(xgb_tree):
     assert xgb_tree.get_max_depth() == 3, "max_depth should be 3"
 
+
+def test_get_leaf_sample_counts(xgb_tree):
+    leaf_ids, leaf_samples = xgb_tree.get_leaf_sample_counts()
+    assert np.array_equal(leaf_ids, np.array([3, 5, 6, 2])), "Leaf ids should be [3, 5, 6, 2]"
+    assert np.array_equal(leaf_samples, np.array([7, 9, 3, 1])), "Leaf samples should be [7, 9, 3, 1]"
