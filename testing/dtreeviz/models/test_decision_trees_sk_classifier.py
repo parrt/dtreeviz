@@ -124,3 +124,25 @@ def test_get_leaf_sample_counts(shadow_dec_tree):
 def test_get_thresholds(shadow_dec_tree):
     assert list(shadow_dec_tree.get_thresholds()) == [0.5, 2.5, 2.5, -2.0, -2.0, 23.350000381469727, -2.0, -2.0, 3.5,
                                                       3.5, -2.0, -2.0, 17.5, -2.0, -2.0]
+
+
+def test_predict(shadow_dec_tree, x_dataset_classifier):
+    def get_node_ids(nodes):
+        return [node.id for node in nodes]
+
+    leaf_pred_0, leaf_pred_path_0 = shadow_dec_tree.predict(x_dataset_classifier.iloc[0])
+    assert leaf_pred_0 == 0
+    assert get_node_ids(leaf_pred_path_0) == [0, 8, 9, 11]
+
+    leaf_pred_2, leaf_pred_path_2 = shadow_dec_tree.predict(x_dataset_classifier.iloc[2])
+    assert leaf_pred_2 == 1
+    assert get_node_ids(leaf_pred_path_2) == [0, 1, 5, 6]
+
+    leaf_pred_6, leaf_pred_path_6  = shadow_dec_tree.predict(x_dataset_classifier.iloc[6])
+    assert leaf_pred_6 == 0
+    assert get_node_ids(leaf_pred_path_6) == [0, 8, 12, 14]
+
+    leaf_pred_9, leaf_pred_path_9 = shadow_dec_tree.predict(x_dataset_classifier.iloc[9])
+    assert leaf_pred_9 == 1
+    assert get_node_ids(leaf_pred_path_9) == [0, 1, 2, 4]
+

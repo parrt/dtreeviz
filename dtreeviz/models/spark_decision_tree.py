@@ -19,6 +19,7 @@ class ShadowSparkTree(ShadowDecTree):
         self.tree_model = tree_model
         self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
         self.features = None  # lazy initialization
+        self.thresholds = None  # lazy initialization
         super().__init__(tree_model, x_data, y_data)
 
     def _get_nodes_info(self):
@@ -56,7 +57,20 @@ class ShadowSparkTree(ShadowDecTree):
         pass
 
     def get_thresholds(self) -> np.ndarray:
-        pass
+        if self.thresholds is not None:
+            return self.thresholds
+
+        node_thresholds = [-1] * self.nnodes()
+        for i in range(self.nnodes()):
+            node = self.tree_nodes[i]
+            if "InternalNode" in node.toString():
+                if "CategoricalSplit" in node.split().toString():
+                    node_thresholds[i] = list(node.split().leftCategories())
+                elif "ContinuousSplit" in node.split().toString():
+                    node_thresholds[i] = node.split().threshold()
+
+        self.features = np.array(node_thresholds)
+        return self.features
 
     def get_features(self) -> np.ndarray:
         if self.features is not None:
@@ -93,8 +107,8 @@ class ShadowSparkTree(ShadowDecTree):
     def get_children_right(self):
         return np.array(self.children_right, dtype=int)
 
-    def get_node_split(self, id) -> (int, float):
-        pass
+    def get_node_split(self, id) -> (int, float, list):
+        return self.thresholds[id]
 
     def get_node_feature(self, id) -> int:
         return self.get_features()[id]
@@ -112,10 +126,10 @@ class ShadowSparkTree(ShadowDecTree):
         pass
 
     def get_max_depth(self) -> int:
-        pass
+        return self.tree_model.getMaxDepth()
 
     def get_score(self) -> float:
         pass
 
     def get_min_samples_leaf(self) -> (int, float):
-        pass
+        return self.tree_model.getMinInstancesPerNode()
