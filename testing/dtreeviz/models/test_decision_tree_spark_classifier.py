@@ -67,3 +67,18 @@ def test_get_node_feature(spark_dtree):
     assert spark_dtree.get_node_feature(8) == 0, "Feature index for node 8 should be 0"
     assert spark_dtree.get_node_feature(12) == 6, "Feature index for node 12 should be 6"
     assert spark_dtree.get_node_feature(16) == -1, "Feature index for node 16 should be -1"
+
+
+def test_get_prediction_value(spark_dtree):
+    assert spark_dtree.get_prediction_value(0) == 0, "Prediction value for node 0 should be 0"
+    assert spark_dtree.get_prediction_value(1) == 0, "Prediction value for node 1 should be 0"
+    assert spark_dtree.get_prediction_value(4) == 0, "Prediction value for node 4 should be 0"
+    assert spark_dtree.get_prediction_value(6) == 1, "Prediction value for node 6 should be 1"
+    assert spark_dtree.get_prediction_value(8) == 1, "Prediction value for node 8 should be 1"
+    assert spark_dtree.get_prediction_value(10) == 1, "Prediction value for node 10 should be 1"
+    assert spark_dtree.get_prediction_value(12) == 0, "Prediction value for node 12 should be 0"
+    assert spark_dtree.get_prediction_value(15) == 0, "Prediction value for node 15 should be 0"
+
+
+def test_nnodes(spark_dtree):
+    assert spark_dtree.nnodes() == 17, "Number of nodes from tree should be 17"

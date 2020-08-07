@@ -100,10 +100,10 @@ class ShadowSparkTree(ShadowDecTree):
         return self.get_features()[id]
 
     def get_prediction_value(self, id):
-        pass
+        return self.tree_nodes[id].prediction()
 
     def nnodes(self) -> int:
-        pass
+        return self.tree_model.numNodes
 
     def get_node_criterion(self, id):
         return self.tree_nodes[id].impurity()
