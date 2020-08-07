@@ -18,9 +18,8 @@ class ShadowSparkTree(ShadowDecTree):
 
         self.tree_model = tree_model
         self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
+        self.features = None  # lazy initialization
         super().__init__(tree_model, x_data, y_data)
-
-        pass
 
     def _get_nodes_info(self):
         tree_nodes = [None] * self.tree_model.numNodes
@@ -51,9 +50,7 @@ class ShadowSparkTree(ShadowDecTree):
         return False
 
     def is_classifier(self) -> bool:
-        if isinstance(self.tree_model, DecisionTreeClassificationModel):
-            return True
-        return False
+        return self.nclasses() > 1
 
     def get_class_weights(self):
         pass
@@ -62,7 +59,15 @@ class ShadowSparkTree(ShadowDecTree):
         pass
 
     def get_features(self) -> np.ndarray:
-        pass
+        if self.features is not None:
+            return self.features
+
+        feature_index = [-1] * self.tree_model.numNodes
+        for i in range(self.tree_model.numNodes):
+            if "InternalNode" in self.tree_nodes[i].toString():
+                feature_index[i] = self.tree_nodes[i].split().featureIndex()
+        self.features = np.array(feature_index)
+        return self.features
 
     def criterion(self) -> str:
         return self.tree_model.getImpurity().upper()
@@ -71,7 +76,7 @@ class ShadowSparkTree(ShadowDecTree):
         pass
 
     def nclasses(self) -> int:
-        pass
+        return self.tree_model.numClasses
 
     def classes(self) -> np.ndarray:
         pass
@@ -92,7 +97,7 @@ class ShadowSparkTree(ShadowDecTree):
         pass
 
     def get_node_feature(self, id) -> int:
-        pass
+        return self.get_features()[id]
 
     def get_prediction_value(self, id):
         pass

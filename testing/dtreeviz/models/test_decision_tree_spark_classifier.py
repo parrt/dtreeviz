@@ -15,35 +15,55 @@ def tree_model() -> (DecisionTreeClassificationModel):
 
 
 @pytest.fixture()
-def shadow_dec_tree(tree_model, dataset_spark) -> ShadowSparkTree:
+def spark_dtree(tree_model, dataset_spark) -> ShadowSparkTree:
     features = ["Pclass", "Sex_label", "Embarked_label", "Age_mean", "SibSp", "Parch", "Fare"]
     target = "Survived"
     return ShadowSparkTree(tree_model, dataset_spark[features], dataset_spark[target], features, target)
 
 
-def test_is_fit(shadow_dec_tree):
-    assert shadow_dec_tree.is_fit() is True
+def test_is_fit(spark_dtree):
+    assert spark_dtree.is_fit() is True
 
 
-def test_is_classifier(shadow_dec_tree):
-    assert shadow_dec_tree.is_classifier() == True, "Spark decision tree should be classifier"
+def test_is_classifier(spark_dtree):
+    assert spark_dtree.is_classifier() == True, "Spark decision tree should be classifier"
 
 
-def test_get_children_left(shadow_dec_tree):
-    assert np.array_equal(shadow_dec_tree.get_children_left(),
+def test_get_children_left(spark_dtree):
+    assert np.array_equal(spark_dtree.get_children_left(),
                           np.array([1, 2, 3, -1, -1, -1, 7, 8, 9, -1, -1, -1, 13, 14, -1, -1, -1]))
 
 
-def test_get_children_right(shadow_dec_tree):
-    assert np.array_equal(shadow_dec_tree.get_children_right(),
+def test_get_children_right(spark_dtree):
+    assert np.array_equal(spark_dtree.get_children_right(),
                           np.array([6, 5, 4, -1, -1, -1, 12, 11, 10, -1, -1, -1, 16, 15, -1, -1, -1]))
 
 
-def test_get_node_nsamples(shadow_dec_tree):
-    assert shadow_dec_tree.get_node_nsamples(0) == 891, "Node samples for node 0 should be 891"
-    assert shadow_dec_tree.get_node_nsamples(1) == 577, "Node samples for node 1 should be 577"
-    assert shadow_dec_tree.get_node_nsamples(5) == 559, "Node samples for node 5 should be 559"
-    assert shadow_dec_tree.get_node_nsamples(8) == 3, "Node samples for node 3 should be 3"
-    assert shadow_dec_tree.get_node_nsamples(12) == 144, "Node samples for node 12 should be 144"
-    assert shadow_dec_tree.get_node_nsamples(10) == 2, "Node samples node node 10 should be 2"
-    assert shadow_dec_tree.get_node_nsamples(16) == 23, "Node samples for node 16 should be 23"
+def test_get_node_nsamples(spark_dtree):
+    assert spark_dtree.get_node_nsamples(0) == 891, "Node samples for node 0 should be 891"
+    assert spark_dtree.get_node_nsamples(1) == 577, "Node samples for node 1 should be 577"
+    assert spark_dtree.get_node_nsamples(5) == 559, "Node samples for node 5 should be 559"
+    assert spark_dtree.get_node_nsamples(8) == 3, "Node samples for node 3 should be 3"
+    assert spark_dtree.get_node_nsamples(12) == 144, "Node samples for node 12 should be 144"
+    assert spark_dtree.get_node_nsamples(10) == 2, "Node samples node node 10 should be 2"
+    assert spark_dtree.get_node_nsamples(16) == 23, "Node samples for node 16 should be 23"
+
+
+def test_get_features(spark_dtree):
+    assert np.array_equal(spark_dtree.get_features(),
+                          np.array([1, 3, 4, -1, -1, -1, 0, 3, 0, -1, -1, -1, 6, 2, -1, -1,
+                                    -1])), "Feature indexes should be [1, 3, 4, -1, -1, -1, 0, 3, 0, -1, -1, -1, 6, 2, -1, -1, -1]"
+
+
+def test_nclasses(spark_dtree):
+    assert spark_dtree.nclasses() == 2, "n classes should be 2"
+
+
+def test_get_node_feature(spark_dtree):
+    assert spark_dtree.get_node_feature(0) == 1, "Feature index for node 0 should be 1"
+    assert spark_dtree.get_node_feature(1) == 3, "Feature index for node 1 should be 3"
+    assert spark_dtree.get_node_feature(3) == -1, "Feature index for node 3 should be -1"
+    assert spark_dtree.get_node_feature(7) == 3, "Feature index for node 7 should be 3"
+    assert spark_dtree.get_node_feature(8) == 0, "Feature index for node 8 should be 0"
+    assert spark_dtree.get_node_feature(12) == 6, "Feature index for node 12 should be 6"
+    assert spark_dtree.get_node_feature(16) == -1, "Feature index for node 16 should be -1"
