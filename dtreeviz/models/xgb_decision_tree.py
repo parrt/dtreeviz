@@ -161,11 +161,17 @@ class ShadowXGBDTree(ShadowDecTree):
         thresholds = [self.get_node_split(i) for i in range(0, self.nnodes())]
         return np.array(thresholds)
 
-    def get_prediction_value(self, id):
+    def get_node_nsamples_by_class(self, id):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
             node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
             return node_value[0][0], node_value[0][1]
+
+    def get_prediction(self, id):
+        all_nodes = self.internal + self.leaves
+        if self.is_classifier():
+            node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
+            return np.argmax((node_value[0][0], node_value[0][1]))
         elif not self.is_classifier():
             node_samples = [node.samples() for node in all_nodes if node.id == id][0]
             return np.mean(self.y_data[node_samples])
@@ -199,3 +205,6 @@ class ShadowXGBDTree(ShadowDecTree):
 
     def get_min_samples_leaf(self):
         raise VisualisationNotYetSupportedError("get_min_samples_leaf()", "XGBoost")
+
+    def shouldGoLeftAtSplit(self, id, x):
+        return x < self.get_node_split(id)

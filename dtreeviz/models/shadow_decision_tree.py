@@ -179,7 +179,18 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
-    def get_prediction_value(self, id):
+    def get_node_nsamples_by_class(self, id):
+        """For a classification decision tree, returns the number of samples for each class from a specified node.
+
+        Parameters
+        ----------
+        id : int
+            The node id.
+        """
+        pass
+
+    @abstractmethod
+    def get_prediction(self, id):
         """Returns the constant prediction value for node id.
 
         Parameters
@@ -236,6 +247,11 @@ class ShadowDecTree(ABC):
         """Returns the minimum number of samples required to be at a leaf node."""
         pass
 
+    @abstractmethod
+    def shouldGoLeftAtSplit(self, id, x):
+        """Return true if it should go to the left node child based on node split criterion and x value"""
+        pass
+
     def get_split_node_heights(self, X_train, y_train, nbins) -> Mapping[int, int]:
         class_values = np.unique(y_train)
         node_heights = {}
@@ -282,7 +298,9 @@ class ShadowDecTree(ABC):
             path.append(t)
             if t.isleaf():
                 return t
-            if x[t.feature()] < t.split():
+            # if x[t.feature()] < t.split():
+            # print(f"shadow node id, x {t.id} , {t.feature()}")
+            if self.shouldGoLeftAtSplit(t.id, x[t.feature()]):
                 return walk(t.left, x, path)
             return walk(t.right, x, path)
 
@@ -516,11 +534,12 @@ class ShadowDecTreeNode():
 
         if not self.isleaf():
             return None
-        if self.isclassifier():
-            counts = self.shadow_tree.get_prediction_value(self.id)
-            return np.argmax(counts)
-        else:
-            return self.shadow_tree.get_prediction_value(self.id)
+        # if self.isclassifier():
+        #     counts = self.shadow_tree.get_prediction_value(self.id)
+        #     return np.argmax(counts)
+        # else:
+        #     return self.shadow_tree.get_prediction_value(self.id)
+        return self.shadow_tree.get_prediction(self.id)
 
     def prediction_name(self) -> (str, None):
         """
@@ -543,10 +562,11 @@ class ShadowDecTreeNode():
         if self.isclassifier():
             if self.shadow_tree.get_class_weight() is None:
                 # return np.array(np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]), dtype=int)
-                return np.array(np.round(self.shadow_tree.get_prediction_value(self.id)), dtype=int)
+                return np.array(np.round(self.shadow_tree.get_node_nsamples_by_class(self.id)), dtype=int)
             else:
                 return np.round(
-                    self.shadow_tree.get_prediction_value(self.id) / self.shadow_tree.get_class_weights()).astype(int)
+                    self.shadow_tree.get_node_nsamples_by_class(self.id) / self.shadow_tree.get_class_weights()).astype(
+                    int)
         return None
 
     def __str__(self):

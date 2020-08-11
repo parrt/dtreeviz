@@ -138,7 +138,7 @@ def test_predict(shadow_dec_tree, x_dataset_classifier):
     assert leaf_pred_2 == 1
     assert get_node_ids(leaf_pred_path_2) == [0, 1, 5, 6]
 
-    leaf_pred_6, leaf_pred_path_6  = shadow_dec_tree.predict(x_dataset_classifier.iloc[6])
+    leaf_pred_6, leaf_pred_path_6 = shadow_dec_tree.predict(x_dataset_classifier.iloc[6])
     assert leaf_pred_6 == 0
     assert get_node_ids(leaf_pred_path_6) == [0, 8, 12, 14]
 
@@ -146,3 +146,26 @@ def test_predict(shadow_dec_tree, x_dataset_classifier):
     assert leaf_pred_9 == 1
     assert get_node_ids(leaf_pred_path_9) == [0, 1, 2, 4]
 
+    leaf_pred_7, leaf_pred_path_7 = shadow_dec_tree.predict(x_dataset_classifier.iloc[7])
+    assert leaf_pred_7 == 1
+    assert get_node_ids(leaf_pred_path_7) == [0, 8, 9, 10]
+
+
+def test_get_prediction(shadow_dec_tree):
+    assert shadow_dec_tree.get_prediction(3) == 0, "Prediction for leaf=3 should be 0"
+    assert shadow_dec_tree.get_prediction(4) == 1, "Prediction for leaf=4 should be 1"
+    assert shadow_dec_tree.get_prediction(6) == 1, "Prediction for leaf=6 should be 1"
+    assert shadow_dec_tree.get_prediction(7) == 0, "Prediction for leaf=7 should be 0"
+    assert shadow_dec_tree.get_prediction(10) == 1, "Prediction for leaf=10 should be 1"
+    assert shadow_dec_tree.get_prediction(11) == 0, "Prediction for leaf=11 should be 0"
+    assert shadow_dec_tree.get_prediction(13) == 1, "Prediction for leaf=13 should be 1"
+    assert shadow_dec_tree.get_prediction(14) == 0, "Prediction for leaf=14 should be 0"
+
+
+def test_get_node_nsamples_by_class(shadow_dec_tree):
+    assert np.array_equal(shadow_dec_tree.get_node_nsamples_by_class(0), np.array([549, 342]))
+    assert np.array_equal(shadow_dec_tree.get_node_nsamples_by_class(1), np.array([81, 233]))
+    assert np.array_equal(shadow_dec_tree.get_node_nsamples_by_class(3), np.array([1, 1]))
+    assert np.array_equal(shadow_dec_tree.get_node_nsamples_by_class(5), np.array([72, 72]))
+    assert np.array_equal(shadow_dec_tree.get_node_nsamples_by_class(10), np.array([5, 9]))
+    assert np.array_equal(shadow_dec_tree.get_node_nsamples_by_class(11), np.array([404, 55]))

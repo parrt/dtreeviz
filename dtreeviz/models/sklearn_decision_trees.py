@@ -79,9 +79,14 @@ class ShadowSKDTree(ShadowDecTree):
     def get_node_feature(self, id) -> int:
         return self.tree_model.tree_.feature[id]
 
-    def get_prediction_value(self, id):
+    def get_node_nsamples_by_class(self, id):
         if self.is_classifier():
             return self.tree_model.tree_.value[id][0]
+
+    def get_prediction(self, id):
+        if self.is_classifier():
+            counts = self.tree_model.tree_.value[id][0]
+            return np.argmax(counts)
         else:
             return self.tree_model.tree_.value[id][0][0]
 
@@ -121,3 +126,6 @@ class ShadowSKDTree(ShadowDecTree):
 
     def get_min_samples_leaf(self):
         return self.tree_model.min_samples_leaf
+
+    def shouldGoLeftAtSplit(self, id, x):
+        return x < self.get_node_split(id)

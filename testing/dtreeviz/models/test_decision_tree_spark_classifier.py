@@ -70,14 +70,15 @@ def test_get_node_feature(spark_dtree):
 
 
 def test_get_prediction_value(spark_dtree):
-    assert spark_dtree.get_prediction_value(0) == 0, "Prediction value for node 0 should be 0"
-    assert spark_dtree.get_prediction_value(1) == 0, "Prediction value for node 1 should be 0"
-    assert spark_dtree.get_prediction_value(4) == 0, "Prediction value for node 4 should be 0"
-    assert spark_dtree.get_prediction_value(6) == 1, "Prediction value for node 6 should be 1"
-    assert spark_dtree.get_prediction_value(8) == 1, "Prediction value for node 8 should be 1"
-    assert spark_dtree.get_prediction_value(10) == 1, "Prediction value for node 10 should be 1"
-    assert spark_dtree.get_prediction_value(12) == 0, "Prediction value for node 12 should be 0"
-    assert spark_dtree.get_prediction_value(15) == 0, "Prediction value for node 15 should be 0"
+    assert spark_dtree.get_node_nsamples_by_class(0) == 0, "Prediction value for node 0 should be 0"
+    assert spark_dtree.get_node_nsamples_by_class(1) == 0, "Prediction value for node 1 should be 0"
+    assert spark_dtree.get_node_nsamples_by_class(4) == 0, "Prediction value for node 4 should be 0"
+    assert spark_dtree.get_node_nsamples_by_class(6) == 1, "Prediction value for node 6 should be 1"
+    assert spark_dtree.get_node_nsamples_by_class(8) == 1, "Prediction value for node 8 should be 1"
+    assert spark_dtree.get_node_nsamples_by_class(10) == 1, "Prediction value for node 10 should be 1"
+    assert spark_dtree.get_node_nsamples_by_class(12) == 0, "Prediction value for node 12 should be 0"
+    assert spark_dtree.get_node_nsamples_by_class(14) == 1, "Prediction value for node 14 should be 1"
+    assert spark_dtree.get_node_nsamples_by_class(15) == 0, "Prediction value for node 15 should be 0"
 
 
 def test_nnodes(spark_dtree):
@@ -96,3 +97,23 @@ def test_get_thresholds(spark_dtree):
     assert np.array_equal(spark_dtree.get_thresholds(),
                           np.array([list([0.0]), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1, 24.808349999999997,
                                     list([1.0, 2.0]), -1, -1, -1]))
+
+def test_prediction(spark_dtree, dataset_spark):
+    def get_node_ids(nodes):
+        return [node.id for node in nodes]
+
+    leaf_pred_0, leaf_pred_path_0 = spark_dtree.predict(dataset_spark.iloc[0])
+    assert leaf_pred_0 == 0
+    assert get_node_ids(leaf_pred_path_0) == [0, 1, 5]
+
+    leaf_pred_10, leaf_pred_path_10 = spark_dtree.predict(dataset_spark.iloc[10])
+    assert leaf_pred_10 == 0
+    assert get_node_ids(leaf_pred_path_10) == [0, 6, 12, 13, 15]
+
+    leaf_pred_109, leaf_pred_path_109 = spark_dtree.predict(dataset_spark.iloc[109])
+    assert leaf_pred_109 == 0
+    assert get_node_ids(leaf_pred_path_109) == [0, 6, 12, 13, 14]
+
+    leaf_pred_119, leaf_pred_path_119 = spark_dtree.predict(dataset_spark.iloc[119])
+    assert leaf_pred_119 == 0
+    assert get_node_ids(leaf_pred_path_119) == [0, 6, 12, 16]

@@ -69,8 +69,8 @@ class ShadowSparkTree(ShadowDecTree):
                 elif "ContinuousSplit" in node.split().toString():
                     node_thresholds[i] = node.split().threshold()
 
-        self.features = np.array(node_thresholds)
-        return self.features
+        self.thresholds = np.array(node_thresholds)
+        return self.thresholds
 
     def get_features(self) -> np.ndarray:
         if self.features is not None:
@@ -108,12 +108,13 @@ class ShadowSparkTree(ShadowDecTree):
         return np.array(self.children_right, dtype=int)
 
     def get_node_split(self, id) -> (int, float, list):
-        return self.thresholds[id]
+        return self.get_thresholds()[id]
 
     def get_node_feature(self, id) -> int:
         return self.get_features()[id]
 
-    def get_prediction_value(self, id):
+    def get_node_nsamples_by_class(self, id):
+        print(id, self.tree_nodes[id].prediction())
         return self.tree_nodes[id].prediction()
 
     def nnodes(self) -> int:
@@ -133,3 +134,9 @@ class ShadowSparkTree(ShadowDecTree):
 
     def get_min_samples_leaf(self) -> (int, float):
         return self.tree_model.getMinInstancesPerNode()
+
+    def shouldGoLeftAtSplit(self, id, x):
+        # print(f"node id, x {id, x}")
+        if isinstance(self.get_node_split(id), list):
+            return x in self.get_node_split(id)
+        return x < self.get_node_split(id)
