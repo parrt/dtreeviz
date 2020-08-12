@@ -757,7 +757,9 @@ def dtreeviz(tree_model,
     # Fix the mapping from target value to color for entire tree
     if shadow_tree.is_classifier():
         class_values = shadow_tree.classes()
+        print(f"class_values {class_values}")
         color_map = {v: color_values[i] for i, v in enumerate(class_values)}
+        print(f"color_map {color_map}")
         draw_legend(shadow_tree, shadow_tree.target_name, f"{tmp}/legend_{os.getpid()}.svg", colors=colors)
 
     X_data = shadow_tree.x_data
@@ -797,7 +799,6 @@ def dtreeviz(tree_model,
                                 fontname=fontname,
                                 highlight_node=node.id in highlight_path)
             else:
-
                 regr_split_viz(node, X_data, y_data,
                                filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
                                target_name=shadow_tree.target_name,
@@ -811,7 +812,8 @@ def dtreeviz(tree_model,
                                colors=colors)
 
         nname = node_name(node)
-        gr_node = split_node(node.feature_name(), nname, split=myround(node.split(), precision))
+        # gr_node = split_node(node.feature_name(), nname, split=myround(node.split(), precision))
+        gr_node = split_node(node.feature_name(), nname, split=node.split())
         internal.append(gr_node)
 
     leaves = []
@@ -1010,7 +1012,9 @@ def class_split_viz(node: ShadowDecTreeNode,
                 fontname=fontname,
                 color=colors['text_wedge'])
 
-    wedge(ax, node.split(), color=colors['wedge'])
+    print(f"node split {node.split()}")
+    if not isinstance(node.split(), list):
+        wedge(ax, node.split(), color=colors['wedge'])
     if highlight_node:
         wedge(ax, X[node.feature()], color=colors['highlight'])
 

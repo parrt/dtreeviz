@@ -22,7 +22,7 @@ class ShadowSparkTree(ShadowDecTree):
         self.features = None  # lazy initialization
         self.thresholds = None  # lazy initialization
         self.node_to_samples = None  # lazy initialization
-        super().__init__(tree_model, x_data, y_data)
+        super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
 
     def _get_nodes_info(self):
         tree_nodes = [None] * self.tree_model.numNodes
