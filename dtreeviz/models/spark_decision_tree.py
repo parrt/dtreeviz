@@ -1,4 +1,5 @@
 from abc import ABC
+from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
@@ -20,6 +21,7 @@ class ShadowSparkTree(ShadowDecTree):
         self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
         self.features = None  # lazy initialization
         self.thresholds = None  # lazy initialization
+        self.node_to_samples = None  # lazy initialization
         super().__init__(tree_model, x_data, y_data)
 
     def _get_nodes_info(self):
@@ -56,6 +58,9 @@ class ShadowSparkTree(ShadowDecTree):
     def get_class_weights(self):
         pass
 
+    def get_class_weight(self):
+        pass
+
     def get_thresholds(self) -> np.ndarray:
         if self.thresholds is not None:
             return self.thresholds
@@ -86,17 +91,27 @@ class ShadowSparkTree(ShadowDecTree):
     def criterion(self) -> str:
         return self.tree_model.getImpurity().upper()
 
-    def get_class_weight(self):
-        pass
-
     def nclasses(self) -> int:
         return self.tree_model.numClasses
 
+    # TODO
+    # for this we need y_dataset to be specified, think how to solve it without specifing the y_data
     def classes(self) -> np.ndarray:
-        pass
+        if self.is_classifier():
+            return np.unique(self.y_data)
 
     def get_node_samples(self):
-        pass
+        if self.node_to_samples is not None:
+            return self.node_to_samples
+
+        node_to_samples = defaultdict(list)
+        for i in range(self.x_data.shape[0]):
+            prediction, path = self.predict(self.x_data[i])
+            for node in path:
+                node_to_samples[node.id].append(i)
+
+        self.node_to_samples = node_to_samples
+        return self.node_to_samples
 
     def get_node_nsamples(self, id):
         return self.tree_nodes[id].impurityStats().rawCount()
@@ -114,7 +129,10 @@ class ShadowSparkTree(ShadowDecTree):
         return self.get_features()[id]
 
     def get_node_nsamples_by_class(self, id):
-        print(id, self.tree_nodes[id].prediction())
+        if self.is_classifier():
+            return np.array(self.tree_nodes[id].impurityStats().stats())
+
+    def get_prediction(self, id):
         return self.tree_nodes[id].prediction()
 
     def nnodes(self) -> int:

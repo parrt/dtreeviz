@@ -486,6 +486,9 @@ class ShadowDecTreeNode():
 
         return self.shadow_tree.get_node_nsamples(self.id)
 
+    # TODO
+    # implementation should happen in shadow tree implementations, we already have methods for this
+    # this implementation will work also for validation dataset.... think how to separate model interpretation using training vs validation dataset.
     def n_sample_classes(self):
         """Used for binary classification only.
 

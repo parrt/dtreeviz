@@ -69,16 +69,26 @@ def test_get_node_feature(spark_dtree):
     assert spark_dtree.get_node_feature(16) == -1, "Feature index for node 16 should be -1"
 
 
-def test_get_prediction_value(spark_dtree):
-    assert spark_dtree.get_node_nsamples_by_class(0) == 0, "Prediction value for node 0 should be 0"
-    assert spark_dtree.get_node_nsamples_by_class(1) == 0, "Prediction value for node 1 should be 0"
-    assert spark_dtree.get_node_nsamples_by_class(4) == 0, "Prediction value for node 4 should be 0"
-    assert spark_dtree.get_node_nsamples_by_class(6) == 1, "Prediction value for node 6 should be 1"
-    assert spark_dtree.get_node_nsamples_by_class(8) == 1, "Prediction value for node 8 should be 1"
-    assert spark_dtree.get_node_nsamples_by_class(10) == 1, "Prediction value for node 10 should be 1"
-    assert spark_dtree.get_node_nsamples_by_class(12) == 0, "Prediction value for node 12 should be 0"
-    assert spark_dtree.get_node_nsamples_by_class(14) == 1, "Prediction value for node 14 should be 1"
-    assert spark_dtree.get_node_nsamples_by_class(15) == 0, "Prediction value for node 15 should be 0"
+def test_get_node_nsamples_by_class(spark_dtree):
+    assert np.array_equal(spark_dtree.get_node_nsamples_by_class(0), np.array([549.0, 342.0]))
+    assert np.array_equal(spark_dtree.get_node_nsamples_by_class(1), np.array([468.0, 109.0]))
+    assert np.array_equal(spark_dtree.get_node_nsamples_by_class(5), np.array([463.0, 96.0]))
+    assert np.array_equal(spark_dtree.get_node_nsamples_by_class(8), np.array([1.0, 2.0]))
+    assert np.array_equal(spark_dtree.get_node_nsamples_by_class(11), np.array([8.0, 159.0]))
+    assert np.array_equal(spark_dtree.get_node_nsamples_by_class(13), np.array([51.0, 70.0]))
+    assert np.array_equal(spark_dtree.get_node_nsamples_by_class(16), np.array([21.0, 2.0]))
+
+
+def test_get_prediction(spark_dtree):
+    assert spark_dtree.get_prediction(0) == 0, "Prediction value for node 0 should be 0"
+    assert spark_dtree.get_prediction(1) == 0, "Prediction value for node 1 should be 0"
+    assert spark_dtree.get_prediction(4) == 0, "Prediction value for node 4 should be 0"
+    assert spark_dtree.get_prediction(6) == 1, "Prediction value for node 6 should be 1"
+    assert spark_dtree.get_prediction(8) == 1, "Prediction value for node 8 should be 1"
+    assert spark_dtree.get_prediction(10) == 1, "Prediction value for node 10 should be 1"
+    assert spark_dtree.get_prediction(12) == 0, "Prediction value for node 12 should be 0"
+    assert spark_dtree.get_prediction(14) == 1, "Prediction value for node 14 should be 1"
+    assert spark_dtree.get_prediction(15) == 0, "Prediction value for node 15 should be 0"
 
 
 def test_nnodes(spark_dtree):
@@ -97,6 +107,7 @@ def test_get_thresholds(spark_dtree):
     assert np.array_equal(spark_dtree.get_thresholds(),
                           np.array([list([0.0]), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1, 24.808349999999997,
                                     list([1.0, 2.0]), -1, -1, -1]))
+
 
 def test_prediction(spark_dtree, dataset_spark):
     def get_node_ids(nodes):
@@ -117,3 +128,12 @@ def test_prediction(spark_dtree, dataset_spark):
     leaf_pred_119, leaf_pred_path_119 = spark_dtree.predict(dataset_spark.iloc[119])
     assert leaf_pred_119 == 0
     assert get_node_ids(leaf_pred_path_119) == [0, 6, 12, 16]
+
+
+def test_get_node_samples(spark_dtree):
+    assert len(spark_dtree.get_node_samples()[0]) == 891
+    assert len(spark_dtree.get_node_samples()[2]) == 18
+    assert len(spark_dtree.get_node_samples()[5]) == 559
+    assert len(spark_dtree.get_node_samples()[11]) == 167
+    assert len(spark_dtree.get_node_samples()[13]) == 121
+    assert len(spark_dtree.get_node_samples()[16]) == 23
