@@ -757,9 +757,7 @@ def dtreeviz(tree_model,
     # Fix the mapping from target value to color for entire tree
     if shadow_tree.is_classifier():
         class_values = shadow_tree.classes()
-        print(f"class_values {class_values}")
         color_map = {v: color_values[i] for i, v in enumerate(class_values)}
-        print(f"color_map {color_map}")
         draw_legend(shadow_tree, shadow_tree.target_name, f"{tmp}/legend_{os.getpid()}.svg", colors=colors)
 
     X_data = shadow_tree.x_data
@@ -812,8 +810,10 @@ def dtreeviz(tree_model,
                                colors=colors)
 
         nname = node_name(node)
-        # gr_node = split_node(node.feature_name(), nname, split=myround(node.split(), precision))
-        gr_node = split_node(node.feature_name(), nname, split=node.split())
+        if not isinstance(node.split(), list):
+            gr_node = split_node(node.feature_name(), nname, split=myround(node.split(), precision))
+        else:
+            gr_node = split_node(node.feature_name(), nname, split=node.split())
         internal.append(gr_node)
 
     leaves = []
@@ -1000,21 +1000,28 @@ def class_split_viz(node: ShadowDecTreeNode,
         th = yr * .15 * 1 / hr  # convert to graph coordinates (ugh)
         tw = xr * .018
         tipy = -0.1 * yr * .15 * 1 / hr
-        tria = np.array(
-            [[x, tipy], [x - tw, -th], [x + tw, -th]])
-        t = patches.Polygon(tria, facecolor=color)
-        t.set_clip_on(False)
-        ax.add_patch(t)
-        ax.text(node.split(), -2 * th,
-                f"{myround(node.split(), precision)}",
-                horizontalalignment='center',
-                fontsize=ticks_fontsize,
-                fontname=fontname,
-                color=colors['text_wedge'])
 
-    print(f"node split {node.split()}")
-    if not isinstance(node.split(), list):
-        wedge(ax, node.split(), color=colors['wedge'])
+        if not isinstance(node.split(), list):
+            tria = np.array(
+                [[x, tipy], [x - tw, -th], [x + tw, -th]])
+            t = patches.Polygon(tria, facecolor=color)
+            t.set_clip_on(False)
+            ax.add_patch(t)
+            ax.text(node.split(), -2 * th,
+                    f"{myround(node.split(), precision)}",
+                    horizontalalignment='center',
+                    fontsize=ticks_fontsize,
+                    fontname=fontname,
+                    color=colors['text_wedge'])
+        else:
+            ax.text(xr/2, -2 * th,
+                    f"{node.split()}",
+                    horizontalalignment='center',
+                    fontsize=ticks_fontsize,
+                    fontname=fontname,
+                    color=colors['text_wedge'])
+
+    wedge(ax, node.split(), color=colors['wedge'])
     if highlight_node:
         wedge(ax, X[node.feature()], color=colors['highlight'])
 
