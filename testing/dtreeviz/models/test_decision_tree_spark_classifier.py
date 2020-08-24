@@ -137,3 +137,12 @@ def test_get_node_samples(spark_dtree):
     assert len(spark_dtree.get_node_samples()[11]) == 167
     assert len(spark_dtree.get_node_samples()[13]) == 121
     assert len(spark_dtree.get_node_samples()[16]) == 23
+
+
+def test_is_categorical_split(spark_dtree):
+    assert spark_dtree.is_categorical_split(1) is False
+    assert spark_dtree.is_categorical_split(0) is True
+    assert spark_dtree.is_categorical_split(5) is False
+    assert spark_dtree.is_categorical_split(12) is False
+    assert spark_dtree.is_categorical_split(13) is True
+

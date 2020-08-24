@@ -76,6 +76,11 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
+    def is_categorical_split(self, id) -> bool:
+        """Checks if the node split is a categorical one. Categorical splits are implemented in Spark decision trees"""
+        pass
+
+    @abstractmethod
     def get_class_weights(self):
         """Returns the tree model's class weights."""
         pass
@@ -528,6 +533,9 @@ class ShadowDecTreeNode():
 
     def isclassifier(self) -> bool:
         return self.shadow_tree.is_classifier()
+
+    def is_categorical_split(self) -> bool:
+        return self.shadow_tree.is_categorical_split(self.id)
 
     def prediction(self) -> (Number, None):
         """Returns leaf prediction.

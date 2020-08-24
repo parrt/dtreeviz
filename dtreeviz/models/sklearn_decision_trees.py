@@ -24,6 +24,9 @@ class ShadowSKDTree(ShadowDecTree):
     def is_classifier(self):
         return self.nclasses() > 1
 
+    def is_categorical_split(self, id) -> bool:
+        return False
+
     def get_class_weights(self):
         if self.is_classifier():
             unique_target_values = np.unique(self.y_data)

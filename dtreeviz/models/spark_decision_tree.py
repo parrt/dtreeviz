@@ -53,7 +53,14 @@ class ShadowSparkTree(ShadowDecTree):
         return False
 
     def is_classifier(self) -> bool:
-        return self.nclasses() > 1
+        return isinstance(self.tree_model, DecisionTreeClassificationModel)
+
+    def is_categorical_split(self, id) -> bool:
+        node = self.tree_nodes[id]
+        if "InternalNode" in node.toString():
+            if "CategoricalSplit" in node.split().toString():
+                return True
+        return False
 
     def get_class_weights(self):
         pass
@@ -92,6 +99,8 @@ class ShadowSparkTree(ShadowDecTree):
         return self.tree_model.getImpurity().upper()
 
     def nclasses(self) -> int:
+        if not self.is_classifier():
+            return 1
         return self.tree_model.numClasses
 
     # TODO
@@ -158,3 +167,4 @@ class ShadowSparkTree(ShadowDecTree):
         if isinstance(self.get_node_split(id), list):
             return x in self.get_node_split(id)
         return x < self.get_node_split(id)
+
