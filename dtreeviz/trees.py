@@ -1001,7 +1001,7 @@ def class_split_viz(node: ShadowDecTreeNode,
         tw = xr * .018
         tipy = -0.1 * yr * .15 * 1 / hr
 
-        if not isinstance(node.split(), list):
+        if not node.is_categorical_split():
             tria = np.array(
                 [[x, tipy], [x - tw, -th], [x + tw, -th]])
             t = patches.Polygon(tria, facecolor=color)
@@ -1092,25 +1092,8 @@ def regr_split_viz(node: ShadowDecTreeNode,
 
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
     ax.set_xlim(*overall_feature_range)
-
     xmin, xmax = overall_feature_range
     xr = xmax - xmin
-
-    xticks = list(overall_feature_range)
-    if node.split() > xmin + .10 * xr and node.split() < xmax - .1 * xr:  # don't show split if too close to axis ends
-        xticks += [node.split()]
-    ax.set_xticks(xticks)
-
-    ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
-    left, right = node.split_samples()
-    left = y_train[left]
-    right = y_train[right]
-    split = node.split()
-    ax.plot([overall_feature_range[0], split], [np.mean(left), np.mean(left)], '--', color=colors['split_line'],
-            linewidth=1)
-    ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=1)
-    ax.plot([split, overall_feature_range[1]], [np.mean(right), np.mean(right)], '--', color=colors['split_line'],
-            linewidth=1)
 
     def wedge(ax, x, color):
         ymin, ymax = ax.get_ylim()
@@ -1124,10 +1107,39 @@ def regr_split_viz(node: ShadowDecTreeNode,
         t.set_clip_on(False)
         ax.add_patch(t)
 
-    wedge(ax, node.split(), color=colors['wedge'])
+    if node.is_categorical_split() is False:
 
-    if highlight_node:
-        wedge(ax, X[node.feature()], color=colors['highlight'])
+        xticks = list(overall_feature_range)
+        if node.split() > xmin + .10 * xr and node.split() < xmax - .1 * xr: # don't show split if too close to axis ends
+            xticks += [node.split()]
+        ax.set_xticks(xticks)
+
+        ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
+        left, right = node.split_samples()
+        left = y_train[left]
+        right = y_train[right]
+        split = node.split()
+
+        ax.plot([overall_feature_range[0], split], [np.mean(left), np.mean(left)], '--', color=colors['split_line'],
+                linewidth=1)
+        ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=1)
+        ax.plot([split, overall_feature_range[1]], [np.mean(right), np.mean(right)], '--', color=colors['split_line'],
+                linewidth=1)
+        wedge(ax, node.split(), color=colors['wedge'])
+
+        if highlight_node:
+            wedge(ax, X[node.feature()], color=colors['highlight'])
+    else:
+        # TODO -125 is hard coded...
+        ax.text(xr / 2, -125,
+                f"{node.split()}",
+                horizontalalignment='center',
+                fontsize=ticks_fontsize,
+                fontname=fontname,
+                color=colors['text_wedge'])
+        ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
+        if highlight_node:
+            wedge(ax, X[node.feature()], color=colors['highlight'])
 
     # plt.tight_layout()
     if filename is not None:
