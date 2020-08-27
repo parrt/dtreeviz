@@ -184,9 +184,6 @@ class ShadowXGBDTree(ShadowDecTree):
             return False
         return None
 
-    def is_categorical_split(self, id) -> bool:
-        return False
-
     def nnodes(self):
         return self.tree_to_dataframe.shape[0]
 

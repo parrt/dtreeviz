@@ -76,11 +76,6 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
-    def is_categorical_split(self, id) -> bool:
-        """Checks if the node split is a categorical one. Categorical splits are implemented in Spark decision trees"""
-        pass
-
-    @abstractmethod
     def get_class_weights(self):
         """Returns the tree model's class weights."""
         pass
@@ -256,6 +251,14 @@ class ShadowDecTree(ABC):
     def shouldGoLeftAtSplit(self, id, x):
         """Return true if it should go to the left node child based on node split criterion and x value"""
         pass
+
+    def is_categorical_split(self, id) -> bool:
+        """Checks if the node split is a categorical one.
+
+        This method needs to be overloaded only for shadow tree implementation which contain categorical splits,
+        like Spark.
+        """
+        return False
 
     def get_split_node_heights(self, X_train, y_train, nbins) -> Mapping[int, int]:
         class_values = np.unique(y_train)
