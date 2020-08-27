@@ -57,6 +57,7 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
                 feature_bigger_values[feature_name] = []
             feature_bigger_values.get(feature_name).append(feature_split_value)
 
+    prediction_path_output = ""
     for feature_name in feature_names:
         feature_range = ""
         if feature_name in feature_smaller_values:
@@ -68,7 +69,9 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
                 feature_range += f" < {min(feature_bigger_values[feature_name])}"
 
         if feature_range != "":
-            print(feature_range)
+            prediction_path_output += feature_range + "\n"
+
+    return prediction_path_output
 
 
 def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
