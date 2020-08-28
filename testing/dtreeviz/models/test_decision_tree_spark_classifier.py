@@ -105,8 +105,11 @@ def test_get_min_samples_leaf(spark_dtree):
 
 def test_get_thresholds(spark_dtree):
     assert np.array_equal(spark_dtree.get_thresholds(),
-                          np.array([list([0.0]), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1, 24.808349999999997,
-                                    list([1.0, 2.0]), -1, -1, -1]))
+                          np.array([(list([0.0]), list([1.0, 2.0])), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1, 24.808349999999997,
+                                    (list([1.0, 2.0]), list([0.0, 3.0])), -1, -1, -1]))
+    # assert np.array_equal(spark_dtree.get_thresholds(),
+    #                       np.array([list([0.0]), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1, 24.808349999999997,
+    #                                 list([1.0, 2.0]), -1, -1, -1]))
 
 
 def test_prediction(spark_dtree, dataset_spark):
@@ -122,7 +125,7 @@ def test_prediction(spark_dtree, dataset_spark):
     assert get_node_ids(leaf_pred_path_10) == [0, 6, 12, 13, 15]
 
     leaf_pred_109, leaf_pred_path_109 = spark_dtree.predict(dataset_spark.iloc[109])
-    assert leaf_pred_109 == 0
+    assert leaf_pred_109 == 1
     assert get_node_ids(leaf_pred_path_109) == [0, 6, 12, 13, 14]
 
     leaf_pred_119, leaf_pred_path_119 = spark_dtree.predict(dataset_spark.iloc[119])

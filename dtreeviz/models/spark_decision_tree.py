@@ -77,7 +77,7 @@ class ShadowSparkTree(ShadowDecTree):
             node = self.tree_nodes[i]
             if "InternalNode" in node.toString():
                 if "CategoricalSplit" in node.split().toString():
-                    node_thresholds[i] = list(node.split().leftCategories())
+                    node_thresholds[i] = (list(node.split().leftCategories()), list(node.split().rightCategories()))
                 elif "ContinuousSplit" in node.split().toString():
                     node_thresholds[i] = node.split().threshold()
 
@@ -163,8 +163,6 @@ class ShadowSparkTree(ShadowDecTree):
         return self.tree_model.getMinInstancesPerNode()
 
     def shouldGoLeftAtSplit(self, id, x):
-        # print(f"node id, x {id, x}")
-        if isinstance(self.get_node_split(id), list):
-            return x in self.get_node_split(id)
+        if self.is_categorical_split(id):
+            return x in self.get_node_split(id)[0]
         return x < self.get_node_split(id)
-

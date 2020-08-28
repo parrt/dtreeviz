@@ -464,7 +464,7 @@ class ShadowDecTreeNode():
         self.right = right
 
     def split(self) -> (int, float):
-        """Returns the split/threshold value used at this node"""
+        """Returns the split/threshold value used at this node."""
 
         return self.shadow_tree.get_node_split(self.id)
 

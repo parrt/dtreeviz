@@ -810,10 +810,10 @@ def dtreeviz(tree_model,
                                colors=colors)
 
         nname = node_name(node)
-        if not isinstance(node.split(), list):
+        if not node.is_categorical_split():
             gr_node = split_node(node.feature_name(), nname, split=myround(node.split(), precision))
         else:
-            gr_node = split_node(node.feature_name(), nname, split=node.split())
+            gr_node = split_node(node.feature_name(), nname, split=node.split()[0])
         internal.append(gr_node)
 
     leaves = []
@@ -1015,7 +1015,7 @@ def class_split_viz(node: ShadowDecTreeNode,
                     color=colors['text_wedge'])
         else:
             ax.text(xr/2, -2 * th,
-                    f"{node.split()}",
+                    f"{node.split()[0]}",
                     horizontalalignment='center',
                     fontsize=ticks_fontsize,
                     fontname=fontname,
@@ -1132,7 +1132,7 @@ def regr_split_viz(node: ShadowDecTreeNode,
     else:
         # TODO -125 is hard coded...
         ax.text(xr / 2, -125,
-                f"{node.split()}",
+                f"{node.split()[0]}",
                 horizontalalignment='center',
                 fontsize=ticks_fontsize,
                 fontname=fontname,
