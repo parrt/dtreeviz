@@ -136,6 +136,11 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
+    def get_node_nsamples(self, id):
+        """Returns number of samples for a specific node id."""
+        pass
+
+    @abstractmethod
     def get_children_left(self) -> np.ndarray:
         """Returns the node ids of the left child node.
 
@@ -144,7 +149,7 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
-    def get_children_right(self):
+    def get_children_right(self) -> np.ndarray:
         """Returns the node ids of the right child node.
 
         Ex. children_right[i] holds the node id of the right child of node i.
@@ -174,7 +179,18 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
-    def get_prediction_value(self, id):
+    def get_node_nsamples_by_class(self, id):
+        """For a classification decision tree, returns the number of samples for each class from a specified node.
+
+        Parameters
+        ----------
+        id : int
+            The node id.
+        """
+        pass
+
+    @abstractmethod
+    def get_prediction(self, id):
         """Returns the constant prediction value for node id.
 
         Parameters
@@ -231,6 +247,19 @@ class ShadowDecTree(ABC):
         """Returns the minimum number of samples required to be at a leaf node."""
         pass
 
+    @abstractmethod
+    def shouldGoLeftAtSplit(self, id, x):
+        """Return true if it should go to the left node child based on node split criterion and x value"""
+        pass
+
+    def is_categorical_split(self, id) -> bool:
+        """Checks if the node split is a categorical one.
+
+        This method needs to be overloaded only for shadow tree implementation which contain categorical splits,
+        like Spark.
+        """
+        return False
+
     def get_split_node_heights(self, X_train, y_train, nbins) -> Mapping[int, int]:
         class_values = np.unique(y_train)
         node_heights = {}
@@ -277,7 +306,9 @@ class ShadowDecTree(ABC):
             path.append(t)
             if t.isleaf():
                 return t
-            if x[t.feature()] < t.split():
+            # if x[t.feature()] < t.split():
+            # print(f"shadow node id, x {t.id} , {t.feature()}")
+            if self.shouldGoLeftAtSplit(t.id, x[t.feature()]):
                 return walk(t.left, x, path)
             return walk(t.right, x, path)
 
@@ -320,7 +351,7 @@ class ShadowDecTree(ABC):
         """
         Get the number of samples for each leaf.
 
-        There is the option to filter the leaves with less than min_samples or more than max_samples.
+        There is the option to filter the leaves with samples between min_samples and max_samples.
 
         Parameters
         ----------
@@ -434,7 +465,7 @@ class ShadowDecTreeNode():
         self.right = right
 
     def split(self) -> (int, float):
-        """Returns the split/threshold value used at this node"""
+        """Returns the split/threshold value used at this node."""
 
         return self.shadow_tree.get_node_split(self.id)
 
@@ -462,8 +493,11 @@ class ShadowDecTreeNode():
         to compute the split point.
         """
 
-        return len(self.samples())
+        return self.shadow_tree.get_node_nsamples(self.id)
 
+    # TODO
+    # implementation should happen in shadow tree implementations, we already have methods for this
+    # this implementation will work also for validation dataset.... think how to separate model interpretation using training vs validation dataset.
     def n_sample_classes(self):
         """Used for binary classification only.
 
@@ -504,6 +538,9 @@ class ShadowDecTreeNode():
     def isclassifier(self) -> bool:
         return self.shadow_tree.is_classifier()
 
+    def is_categorical_split(self) -> bool:
+        return self.shadow_tree.is_categorical_split(self.id)
+
     def prediction(self) -> (Number, None):
         """Returns leaf prediction.
 
@@ -512,11 +549,12 @@ class ShadowDecTreeNode():
 
         if not self.isleaf():
             return None
-        if self.isclassifier():
-            counts = self.shadow_tree.get_prediction_value(self.id)
-            return np.argmax(counts)
-        else:
-            return self.shadow_tree.get_prediction_value(self.id)
+        # if self.isclassifier():
+        #     counts = self.shadow_tree.get_prediction_value(self.id)
+        #     return np.argmax(counts)
+        # else:
+        #     return self.shadow_tree.get_prediction_value(self.id)
+        return self.shadow_tree.get_prediction(self.id)
 
     def prediction_name(self) -> (str, None):
         """
@@ -539,10 +577,11 @@ class ShadowDecTreeNode():
         if self.isclassifier():
             if self.shadow_tree.get_class_weight() is None:
                 # return np.array(np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]), dtype=int)
-                return np.array(np.round(self.shadow_tree.get_prediction_value(self.id)), dtype=int)
+                return np.array(np.round(self.shadow_tree.get_node_nsamples_by_class(self.id)), dtype=int)
             else:
                 return np.round(
-                    self.shadow_tree.get_prediction_value(self.id) / self.shadow_tree.get_class_weights()).astype(int)
+                    self.shadow_tree.get_node_nsamples_by_class(self.id) / self.shadow_tree.get_class_weights()).astype(
+                    int)
         return None
 
     def __str__(self):

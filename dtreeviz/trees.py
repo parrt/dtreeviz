@@ -797,7 +797,6 @@ def dtreeviz(tree_model,
                                 fontname=fontname,
                                 highlight_node=node.id in highlight_path)
             else:
-
                 regr_split_viz(node, X_data, y_data,
                                filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
                                target_name=shadow_tree.target_name,
@@ -811,7 +810,10 @@ def dtreeviz(tree_model,
                                colors=colors)
 
         nname = node_name(node)
-        gr_node = split_node(node.feature_name(), nname, split=myround(node.split(), precision))
+        if not node.is_categorical_split():
+            gr_node = split_node(node.feature_name(), nname, split=myround(node.split(), precision))
+        else:
+            gr_node = split_node(node.feature_name(), nname, split=node.split()[0])
         internal.append(gr_node)
 
     leaves = []
@@ -998,17 +1000,26 @@ def class_split_viz(node: ShadowDecTreeNode,
         th = yr * .15 * 1 / hr  # convert to graph coordinates (ugh)
         tw = xr * .018
         tipy = -0.1 * yr * .15 * 1 / hr
-        tria = np.array(
-            [[x, tipy], [x - tw, -th], [x + tw, -th]])
-        t = patches.Polygon(tria, facecolor=color)
-        t.set_clip_on(False)
-        ax.add_patch(t)
-        ax.text(node.split(), -2 * th,
-                f"{myround(node.split(), precision)}",
-                horizontalalignment='center',
-                fontsize=ticks_fontsize,
-                fontname=fontname,
-                color=colors['text_wedge'])
+
+        if not node.is_categorical_split():
+            tria = np.array(
+                [[x, tipy], [x - tw, -th], [x + tw, -th]])
+            t = patches.Polygon(tria, facecolor=color)
+            t.set_clip_on(False)
+            ax.add_patch(t)
+            ax.text(node.split(), -2 * th,
+                    f"{myround(node.split(), precision)}",
+                    horizontalalignment='center',
+                    fontsize=ticks_fontsize,
+                    fontname=fontname,
+                    color=colors['text_wedge'])
+        else:
+            ax.text(xr/2, -2 * th,
+                    f"{node.split()[0]}",
+                    horizontalalignment='center',
+                    fontsize=ticks_fontsize,
+                    fontname=fontname,
+                    color=colors['text_wedge'])
 
     wedge(ax, node.split(), color=colors['wedge'])
     if highlight_node:
@@ -1081,25 +1092,8 @@ def regr_split_viz(node: ShadowDecTreeNode,
 
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
     ax.set_xlim(*overall_feature_range)
-
     xmin, xmax = overall_feature_range
     xr = xmax - xmin
-
-    xticks = list(overall_feature_range)
-    if node.split() > xmin + .10 * xr and node.split() < xmax - .1 * xr:  # don't show split if too close to axis ends
-        xticks += [node.split()]
-    ax.set_xticks(xticks)
-
-    ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
-    left, right = node.split_samples()
-    left = y_train[left]
-    right = y_train[right]
-    split = node.split()
-    ax.plot([overall_feature_range[0], split], [np.mean(left), np.mean(left)], '--', color=colors['split_line'],
-            linewidth=1)
-    ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=1)
-    ax.plot([split, overall_feature_range[1]], [np.mean(right), np.mean(right)], '--', color=colors['split_line'],
-            linewidth=1)
 
     def wedge(ax, x, color):
         ymin, ymax = ax.get_ylim()
@@ -1113,10 +1107,39 @@ def regr_split_viz(node: ShadowDecTreeNode,
         t.set_clip_on(False)
         ax.add_patch(t)
 
-    wedge(ax, node.split(), color=colors['wedge'])
+    if node.is_categorical_split() is False:
 
-    if highlight_node:
-        wedge(ax, X[node.feature()], color=colors['highlight'])
+        xticks = list(overall_feature_range)
+        if node.split() > xmin + .10 * xr and node.split() < xmax - .1 * xr: # don't show split if too close to axis ends
+            xticks += [node.split()]
+        ax.set_xticks(xticks)
+
+        ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
+        left, right = node.split_samples()
+        left = y_train[left]
+        right = y_train[right]
+        split = node.split()
+
+        ax.plot([overall_feature_range[0], split], [np.mean(left), np.mean(left)], '--', color=colors['split_line'],
+                linewidth=1)
+        ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=1)
+        ax.plot([split, overall_feature_range[1]], [np.mean(right), np.mean(right)], '--', color=colors['split_line'],
+                linewidth=1)
+        wedge(ax, node.split(), color=colors['wedge'])
+
+        if highlight_node:
+            wedge(ax, X[node.feature()], color=colors['highlight'])
+    else:
+        # TODO -125 is hard coded...
+        ax.text(xr / 2, -125,
+                f"{node.split()[0]}",
+                horizontalalignment='center',
+                fontsize=ticks_fontsize,
+                fontname=fontname,
+                color=colors['text_wedge'])
+        ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
+        if highlight_node:
+            wedge(ax, X[node.feature()], color=colors['highlight'])
 
     # plt.tight_layout()
     if filename is not None:
@@ -1298,13 +1321,14 @@ def viz_leaf_samples(tree_model,
     Interpreting leaf samples can help us to see how the data is spread over the tree:
     - if we have a leaf with many samples and a good impurity, it means that we can be pretty confident
     on its prediction.
-    - if we have a leaf with few samples and a poor impurity, it could be a sign of overfitting.
-    - by visualizing leaf samples, we can easily discover 'different' leaves. Using describe_node_sample() function we
+    - if we have a leaf with few samples and a good impurity, we cannot be very confident on its predicion and
+    it could be a sign of overfitting.
+    - by visualizing leaf samples, we can easily discover important leaves . Using describe_node_sample() function we
     can take all its samples and discover common patterns between leaf samples.
     - if the tree contains a lot of leaves and we want a general overview about leaves samples, we can use the
     parameter display_type='hist' to display the histogram of leaf samples.
 
-    There is the option to filter the leaves with less than min_samples or more than max_samples. This is helpful
+    There is the option to filter the leaves with samples between 'min_samples' and 'max_samples'. This is helpful
     especially when you want to investigate leaves with number of samples from a specific range.
 
 

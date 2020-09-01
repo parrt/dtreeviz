@@ -37,8 +37,10 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
     node_threshold = shadow_tree.get_thresholds()
     prediction_value, decision_node_path = shadow_tree.predict(x)
 
+    # TODO - refactor this logic and find a way to make it simpler
     feature_smaller_values = {}
     feature_bigger_values = {}
+    feature_categorical_value = {}
     for i, node in enumerate(decision_node_path):
         if i == len(decision_node_path) - 1:
             break  # stop at leaf node
@@ -46,17 +48,25 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
 
         feature_name = feature_names[node_feature_index[node_id]]
         feature_value = x[node_feature_index[node_id]]
-        feature_split_value = round(node_threshold[node_id], 2)
 
-        if feature_split_value <= feature_value:
-            if feature_smaller_values.get(feature_name) is None:
-                feature_smaller_values[feature_name] = []
-            feature_smaller_values.get(feature_name).append(feature_split_value)
-        elif feature_split_value > feature_value:
-            if feature_bigger_values.get(feature_name) is None:
-                feature_bigger_values[feature_name] = []
-            feature_bigger_values.get(feature_name).append(feature_split_value)
+        if not shadow_tree.is_categorical_split(node_id):
+            feature_split_value = round(node_threshold[node_id], 2)
 
+            if feature_split_value <= feature_value:
+                if feature_smaller_values.get(feature_name) is None:
+                    feature_smaller_values[feature_name] = []
+                feature_smaller_values.get(feature_name).append(feature_split_value)
+            elif feature_split_value > feature_value:
+                if feature_bigger_values.get(feature_name) is None:
+                    feature_bigger_values[feature_name] = []
+                feature_bigger_values.get(feature_name).append(feature_split_value)
+        else:
+            if feature_value in node_threshold[node_id][0]:
+                feature_categorical_value[feature_name] = node_threshold[node_id][0]
+            else:
+                feature_categorical_value[feature_name] = node_threshold[node_id][1]
+
+    prediction_path_output = ""
     for feature_name in feature_names:
         feature_range = ""
         if feature_name in feature_smaller_values:
@@ -68,7 +78,12 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
                 feature_range += f" < {min(feature_bigger_values[feature_name])}"
 
         if feature_range != "":
-            print(feature_range)
+            prediction_path_output += feature_range + "\n"
+
+    for feature_name in feature_categorical_value:
+        prediction_path_output += f"{feature_name} in {feature_categorical_value[feature_name]} \n"
+
+    return prediction_path_output
 
 
 def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
