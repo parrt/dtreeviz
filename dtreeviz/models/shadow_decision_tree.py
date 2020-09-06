@@ -5,8 +5,6 @@ from typing import List, Tuple, Mapping
 
 import numpy as np
 import pandas as pd
-import sklearn
-import xgboost
 
 
 class ShadowDecTree(ABC):
@@ -440,15 +438,19 @@ class ShadowDecTree(ABC):
     def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
         if isinstance(tree_model, ShadowDecTree):
             return tree_model
-        elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
+        
+        import sklearn.tree
+        if isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
             from dtreeviz.models import sklearn_decision_trees
             return sklearn_decision_trees.ShadowSKDTree(tree_model, x_data, y_data, feature_names,
                                                         target_name, class_names)
-        elif isinstance(tree_model, xgboost.core.Booster):
+        import xgboost
+        if isinstance(tree_model, xgboost.core.Booster):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
-        else: raise ValueError(f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
+        
+        raise ValueError(f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
 
 
 class ShadowDecTreeNode():
