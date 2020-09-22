@@ -1,11 +1,11 @@
-from abc import ABC
 from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
+from pyspark.ml.classification import DecisionTreeClassificationModel
+from pyspark.ml.regression import DecisionTreeRegressionModel
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
-from pyspark.ml.classification import DecisionTreeClassificationModel, DecisionTreeRegressionModel
 
 
 class ShadowSparkTree(ShadowDecTree):
