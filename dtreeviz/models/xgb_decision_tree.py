@@ -93,7 +93,11 @@ class ShadowXGBDTree(ShadowDecTree):
             return self.node_to_samples
 
         prediction_leaves = self.booster.predict(xgb.DMatrix(self.x_data, feature_names=self.feature_names),
-                                                 pred_leaf=True)[:, self.tree_index]
+                                                 pred_leaf=True)
+
+        if len(prediction_leaves.shape) > 1:
+            prediction_leaves = prediction_leaves[:, self.tree_index]
+
         node_to_samples = defaultdict(list)
         for sample_i, prediction_leaf in enumerate(prediction_leaves):
             prediction_path = self._get_leaf_prediction_path(prediction_leaf)
