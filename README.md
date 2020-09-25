@@ -1,12 +1,12 @@
 # dtreeviz : Decision Tree Visualization
 
 ## Description
-A python library for decision tree visualization and model interpretation.  Currently supports sklearn and XGBoost trees.
+A python library for decision tree visualization and model interpretation.  Currently supports [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest) and [Spark MLlib](https://spark.apache.org/mllib/) trees.
 
 Authors:
 
 * [Terence Parr](http://parrt.cs.usfca.edu), a professor in the [University of San Francisco's data science program](https://www.usfca.edu/arts-sciences/graduate-programs/data-science)
-* [Tudor Lapusan](https://github.com/tlapusan)
+* [Tudor Lapusan](https://www.linkedin.com/in/tudor-lapusan-5902593b/)
 * [Prince Grover](https://www.linkedin.com/in/groverpr)
 
 See [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made. 
@@ -19,15 +19,15 @@ We welcome info from users on how they use dtreeviz, what features they'd like, 
 
 Jump right into the examples using this [Colab notebook](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/examples.ipynb)
 
-We still need to clean up / reorganize all of the [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks).
+Take a look in [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks)! Here we have a specific notebook for all supported ML libraries and more.
 
 ## Discussion
 
 Decision trees are the fundamental building block of [gradient boosting machines](http://explained.ai/gradient-boosting/index.html) and [Random Forests](https://en.wikipedia.org/wiki/Random_forest)(tm), probably the two most popular machine learning models for structured data.  Visualizing decision trees is a tremendous aid when learning how these models work and when interpreting models.  Unfortunately, current visualization packages are rudimentary and not immediately helpful to the novice. For example, we couldn't find a library that visualizes how decision nodes split up the feature space. It is also uncommon for libraries to support visualizing a specific feature vector as it weaves down through a tree's decision nodes; we could only find one image showing this.
 
-So, we've created a general package for [scikit-learn](https://github.com/scikit-learn/scikit-learn) decision tree visualization and model interpretation, which we'll be using heavily in an upcoming [machine learning book](https://mlbook.explained.ai/) (written with [Jeremy Howard](http://www.fast.ai/about/#jeremy)).
+So, we've created a general package for decision tree visualization and model interpretation, which we'll be using heavily in an upcoming [machine learning book](https://mlbook.explained.ai/) (written with [Jeremy Howard](http://www.fast.ai/about/#jeremy)).
 
-The visualizations are inspired by an educational animation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `dtreeviz`, you can visualize how the feature space is split up at decision nodes, how the training samples get distributed in leaf nodes and how the tree makes predictions for a specific observation. These operations are critical to for  understanding how classification or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml).
+The visualizations are inspired by an educational animation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `dtreeviz`, you can visualize how the feature space is split up at decision nodes, how the training samples get distributed in leaf nodes, how the tree makes predictions for a specific observation and more. These operations are critical to for  understanding how classification or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml).
 
 ## Install
 
@@ -230,6 +230,21 @@ viz = dtreeviz(regr,
 viz.view()  
 ```
 <img src=testing/samples/diabetes-LR-2-X.svg width=100% height=50%>
+
+If you want to visualize just the prediction path, you need to set parameter _show_just_path=True_
+```bash
+dtreeviz(regr,
+        diabetes.data, 
+        diabetes.target, 
+        target_name='value', 
+        orientation ='TD',  # top-down orientation
+        feature_names=diabetes.feature_names,
+        X=X, # need to give single observation for prediction
+        show_just_path=True     
+        )
+```
+<img src=testing/samples/diabetes-LR-show-just-prediction-path.png width=100% height=50%>
+
   
 ### Decision tree without scatterplot or histograms for decision nodes
 Simple tree without histograms or scatterplots for decision nodes. 
