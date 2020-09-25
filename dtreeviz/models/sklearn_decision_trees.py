@@ -15,6 +15,7 @@ class ShadowSKDTree(ShadowDecTree):
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
 
+        self.tree_model = tree_model
         self.node_to_samples = None
         super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
 
@@ -105,13 +106,13 @@ class ShadowSKDTree(ShadowDecTree):
 
                 gini_importance[self.tree_model.tree_.feature[node]] += self.tree_model.tree_.weighted_n_node_samples[
                                                                             node] * \
-                                                                        self.tree_model.tree_.impurity[node] \
-                                                                        - self.tree_model.tree_.weighted_n_node_samples[
+                                                                     self.tree_model.tree_.impurity[node] \
+                                                                     - self.tree_model.tree_.weighted_n_node_samples[
                                                                             node_left] * \
-                                                                        self.tree_model.tree_.impurity[node_left] \
-                                                                        - self.tree_model.tree_.weighted_n_node_samples[
+                                                                     self.tree_model.tree_.impurity[node_left] \
+                                                                     - self.tree_model.tree_.weighted_n_node_samples[
                                                                             node_right] * \
-                                                                        self.tree_model.tree_.impurity[node_right]
+                                                                     self.tree_model.tree_.impurity[node_right]
         normalizer = np.sum(gini_importance)
         if normalizer > 0.0:
             gini_importance /= normalizer

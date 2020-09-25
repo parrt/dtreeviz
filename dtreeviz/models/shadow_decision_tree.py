@@ -47,9 +47,9 @@ class ShadowDecTree(ABC):
             Target's name
         :param class_names: List[str], Mapping[int, str]
             Class' names (in case of a classifier)
-
         """
 
+        # TODO check if we need the self.tree_model
         self.tree_model = tree_model
         if not self.is_fit():
             raise Exception(f"Model {tree_model} is not fit.")
@@ -57,10 +57,8 @@ class ShadowDecTree(ABC):
         self.feature_names = feature_names
         self.target_name = target_name
         self.class_names = class_names
-        # self.class_weight = self.get_class_weight()
         self.x_data = ShadowDecTree._get_x_data(x_data)
         self.y_data = ShadowDecTree._get_y_data(y_data)
-        # self.node_to_samples = self.get_node_samples()
         self.root, self.leaves, self.internal = self._get_tree_nodes()
         if class_names:
             self.class_names = self._get_class_names()
@@ -448,7 +446,9 @@ class ShadowDecTree(ABC):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
-        else: raise ValueError(f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
+        else:
+            raise ValueError(
+                f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
 
 
 class ShadowDecTreeNode():

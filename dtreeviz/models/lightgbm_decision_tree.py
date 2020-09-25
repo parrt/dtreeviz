@@ -10,18 +10,18 @@ from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 class ShadowLightGBMTree(ShadowDecTree):
 
     def __init__(self,
-                 tree_model: Booster,
+                 booster: Booster,
                  tree_index: int,
                  x_data: (pd.DataFrame, np.ndarray),
                  y_data: (pd.Series, np.ndarray),
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
-        self.tree_model = tree_model
+        self.booster = booster
         self.tree_index = tree_index
         self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
 
-        super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
+        super().__init__(booster, x_data, y_data, feature_names, target_name, class_names)
 
     def _get_nodes_info(self):
         tree_nodes = {}
@@ -51,7 +51,7 @@ class ShadowLightGBMTree(ShadowDecTree):
                 my_list[key] = value
             return my_list
 
-        tree_dump = self.tree_model.dump_model()["tree_info"][self.tree_index]
+        tree_dump = self.booster.dump_model()["tree_info"][self.tree_index]
         _walk_tree(tree_dump["tree_structure"], node_index)
 
         for node in tree_nodes.values():
@@ -65,10 +65,16 @@ class ShadowLightGBMTree(ShadowDecTree):
         return tree_node_list, children_left_list, children_right_list
 
     def is_fit(self) -> bool:
-        return True
+        return isinstance(self.booster, Booster)
 
     def is_classifier(self) -> bool:
-        pass
+        objective = self.booster.dump_model(num_iteration=1)["objective"]
+        if "binary" in objective:
+            return True
+        elif objective in ["regression", "regression_l1", "huber", "fair", "poisson", "quantile", "mape", "gamma",
+                           "tweedie"]:
+            return False
+        raise Exception(f"objective {objective} is not yet supported by dtreeviz's lightgbm implementation")
 
     def get_class_weights(self):
         pass
