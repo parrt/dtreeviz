@@ -243,7 +243,7 @@ dtreeviz(regr,
         show_just_path=True     
         )
 ```
-<img src=testing/samples/diabetes-LR-show-just-prediction-path.png width=100% height=50%>
+<img src=testing/samples/diabetes-LR-show-just-prediction-path.png width=50% height=50%>
 
   
 ### Decision tree without scatterplot or histograms for decision nodes
