@@ -201,7 +201,7 @@ viz = dtreeviz(classifier,
                iris.data, 
                iris.target,
                target_name='variety',
-              feature_names=iris.feature_names, 
+               feature_names=iris.feature_names, 
                class_names=["setosa", "versicolor", "virginica"]  # need class_names for classifier
               )  
               
@@ -243,7 +243,7 @@ dtreeviz(regr,
         show_just_path=True     
         )
 ```
-<img src=testing/samples/diabetes-LR-show-just-prediction-path.png width=50% height=50%>
+<img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="60%">
 
   
 ### Decision tree without scatterplot or histograms for decision nodes
@@ -396,6 +396,33 @@ ctreeviz_bivar(ax, X_train, y_train, max_depth=3,
 plt.tight_layout()
 plt.show()
 ```
+### Leaf node purity
+Leaf purity affects prediction confidence. Leaves with low variance among the target values (regression) or an overwhelming majority target class (classification) are much more reliable predictors.
+When we have a decision tree with a high depth, it can be difficult to get an overview about all leaves purities. <br> 
+That's why we created specialized visualizations only for leaves purities.
+
+*display_type* can take values 'plot' (default), 'hist' or 'text'
+```
+viz_leaf_criterion(tree_classifier, display_type = "plot")
+```
+<img src="https://user-images.githubusercontent.com/12815158/94367215-f271ff00-00e5-11eb-802c-d5f486c45ab4.png" width="60%"/>
+
+### Leaf node samples
+It's also important to take a look at the number of samples from leaves. For example, we can have a leaf with a good purity but very few samples, which is a sign of overfitting.
+The ideal scenario would be to have a leaf with good purity which is based on a significant number of samples.
+
+*display_type* can take values 'plot' (default), 'hist' or 'text'
+```
+viz_leaf_samples(tree_classifier, dataset[features], display_type='plot')
+``` 
+<img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='60%'/>
+
+#### Leaf node samples for classification
+This is a specialized visualization for classification. It helps also to see the distribution of target values from leaf samples.
+```
+ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target])
+```
+<img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="60%"/>
 
 ### Leaf plots
 
