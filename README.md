@@ -245,7 +245,36 @@ dtreeviz(regr,
 ```
 <img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="60%">
 
-  
+#### Explain prediction path
+These visualizations are useful to explain to somebody, without machine learning skills, why your model made that specific prediction. <br/>
+In case of _explanation_type=plain_english_, it searches in prediction path and find feature value ranges.  
+```
+X = dataset[features].iloc[10]
+print(X)
+Pclass              3.0
+Age                 4.0
+Fare               16.7
+Sex_label           0.0
+Cabin_label       145.0
+Embarked_label      2.0
+
+print(explain_prediction_path(tree_classifier, X, feature_names=features, explanation_type="plain_english"))
+2.5 <= Pclass 
+Age < 36.5
+Fare < 23.35
+Sex_label < 0.5
+``` 
+
+In case of _explanation_type=sklearn_default_ (available only for scikit-learn), we can visualize the features' importance involved in prediction path only. 
+Features' importance is calculated based on mean decrease in impurity. <br> 
+Check [Beware Default Random Forest Importances](https://explained.ai/rf-importance/index.html) article for a comparison between features' importance based on mean decrease in impurity vs permutation importance.
+```
+explain_prediction_path(tree_classifier, X, feature_names=features, explanation_type="sklearn_default")
+```
+<img src="https://user-images.githubusercontent.com/12815158/94448483-9d042380-01b3-11eb-95f6-a973f1b7092a.png" width="60%"/>
+
+
+
 ### Decision tree without scatterplot or histograms for decision nodes
 Simple tree without histograms or scatterplots for decision nodes. 
 Use argument `fancy=False`  
@@ -425,11 +454,13 @@ ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target])
 <img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="60%"/>
 
 ### Leaf plots
+Visualize leaf target distribution for regression decision trees.
+```
+viz_leaf_target(tree_regressor, dataset[features_reg], dataset[target_reg], features_reg, target_reg)
+```
+<img src="https://user-images.githubusercontent.com/12815158/94445430-19950300-01b0-11eb-9a5a-8f1672f11d94.png" width="35%"> 
 
-Thanks to [Tudor Lapusan](https://github.com/tlapusan), we now have leaf plots that show the size of leaves, the histogram of classes in leaves, or split plots for the regressor leaves:
-
-<img src="testing/samples/regr-leaf.png" width="30%"> 
-
+TODO
 See [notebooks/tree_structure_example.ipynb](https://github.com/parrt/dtreeviz/blob/master/notebooks/tree_structure_example.ipynb) for more details and examples.
 
 ## Install dtreeviz locally
