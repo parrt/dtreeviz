@@ -1666,9 +1666,6 @@ def viz_leaf_target(tree_model,
                     prediction_line_width: int = 2):
     """Visualize leaf target distribution for regression decision trees.
 
-    In case there is a big tree with a lot of leaves, the visualisations can become hard to interpret. In these
-    scenarios, you can use the plot_leaf_count parameter to adjust the number of leaves per plot.
-
     We can call this function in two ways :
     1. by using shadow tree
         ex. viz_leaf_target(shadow_dtree)
@@ -1723,7 +1720,6 @@ def viz_leaf_target(tree_model,
     ax.set_ylim(-1, len(y_labels))
     ax.set_yticks(np.arange(0, len(y_labels), 1))
     ax.set_yticklabels([])
-    #     ax.set_yticklabels(y_labels)
     ax.scatter(y, x, marker='o', alpha=colors['scatter_marker_alpha'] - 0.2, c=colors['scatter_marker'], s=markersize,
                edgecolor=colors['scatter_edge'], lw=.3)
     ax.set_xlabel(shadow_tree.target_name.lower(), fontsize=label_fontsize, fontname=fontname,
@@ -1793,7 +1789,7 @@ def explain_prediction_path(tree_model,
                             class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                             tree_index: int = None,  # required in case of tree ensemble
                             ):
-    """prediction path interpretation for a data instance.
+    """Prediction path interpretation for a data instance.
 
     In case explanation_type = 'plain_english', there will be created a range of values for each feature, based on data
     instance values and its tree prediction path.
