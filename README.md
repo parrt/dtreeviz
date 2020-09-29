@@ -426,9 +426,10 @@ plt.tight_layout()
 plt.show()
 ```
 ### Leaf node purity
-Leaf purity affects prediction confidence. Leaves with low variance among the target values (regression) or an overwhelming majority target class (classification) are much more reliable predictors.
-When we have a decision tree with a high depth, it can be difficult to get an overview about all leaves purities. <br> 
-That's why we created specialized visualizations only for leaves purities.
+Leaf purity affects prediction confidence. <br>
+For classification leaf purity is calculated based on majority target class (gini, entropy) and for regression is calculated based on target variance values. <br> 
+Leaves with low variance among the target values (regression) or an overwhelming majority target class (classification) are much more reliable predictors.
+When we have a decision tree with a high depth, it can be difficult to get an overview about all leaves purities. That's why we created a specialized visualization only for leaves purities.
 
 *display_type* can take values 'plot' (default), 'hist' or 'text'
 ```
@@ -447,7 +448,7 @@ viz_leaf_samples(tree_classifier, dataset[features], display_type='plot')
 <img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='60%'/>
 
 #### Leaf node samples for classification
-This is a specialized visualization for classification. It helps also to see the distribution of target values from leaf samples.
+This is a specialized visualization for classification. It helps also to see the distribution of target class values from leaf samples.
 ```
 ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target])
 ```
@@ -460,9 +461,27 @@ viz_leaf_target(tree_regressor, dataset[features_reg], dataset[target_reg], feat
 ```
 <img src="https://user-images.githubusercontent.com/12815158/94445430-19950300-01b0-11eb-9a5a-8f1672f11d94.png" width="35%"> 
 
-TODO
-See [notebooks/tree_structure_example.ipynb](https://github.com/parrt/dtreeviz/blob/master/notebooks/tree_structure_example.ipynb) for more details and examples.
 
+## Visualization methods setup
+Starting with dtreeviz 1.0 version, we refactored the concept of ShadowDecTree. If we want to add a new ML library in dtreeviz, we just need to add a new implementation of ShadowDecTree API, like ShadowSKDTree, ShadowXGBDTree or ShadowSparkTree. 
+   
+Initializing a ShadowSKDTree object:
+```
+sk_dtree = ShadowSKDTree(tree_classifier, dataset[features], dataset[target], features, target, [0, 1])
+```
+Once we have the object initialized, we can used it to create all the visualizations, like : 
+```
+dtreeviz(sk_dtree)
+```
+```
+viz_leaf_samples(sk_dtree)
+```
+```
+viz_leaf_criterion(sk_dtree)
+```
+In this way, we reduced substantially the list of parameters required for each visualization and it's also more efficient in terms of computing power.
+
+You can check the [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks) section for more examples of using ShadowSKDTree, ShadowXGBDTree or ShadowSparkTree.
 ## Install dtreeviz locally
 
 Make sure to follow the install guidelines above.
@@ -543,6 +562,7 @@ for depicting hierarchical structures](https://www.cc.gatech.edu/~john.stasko/pa
 ## Authors
 
 * [**Terence Parr**](http://parrt.cs.usfca.edu/) 
+* [Tudor Lapusan](https://www.linkedin.com/in/tudor-lapusan-5902593b/)
 * [**Prince Grover**](https://www.linkedin.com/in/groverpr/)
 
 See also the list of [contributors](https://github.com/parrt/dtreeviz/graphs/contributors) who participated in this project.
