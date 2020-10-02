@@ -3,11 +3,11 @@ from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
+import pyspark
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from pyspark.ml.classification import DecisionTreeClassificationModel
 from pyspark.ml.regression import DecisionTreeRegressionModel
-
 
 
 class ShadowSparkTree(ShadowDecTree):
@@ -98,7 +98,7 @@ class ShadowSparkTree(ShadowDecTree):
         return self.features
 
     def criterion(self) -> str:
-        return self.tree_model.getImpurity().upper()
+        return self._get_tree_model_parameter_value("impurity")
 
     def nclasses(self) -> int:
         if not self.is_classifier():
@@ -125,7 +125,15 @@ class ShadowSparkTree(ShadowDecTree):
         return self.node_to_samples
 
     def get_node_nsamples(self, id):
-        return self.tree_nodes[id].impurityStats().rawCount()
+        def _get_nsamples(spark_version):
+            if spark_version >= 3:
+                return self.tree_nodes[id].impurityStats().rawCount()
+            elif spark_version >= 2:
+                return self.tree_nodes[id].impurityStats().count()
+            else:
+                raise Exception("dtreeviz supports spark versions >= 2")
+
+        return _get_nsamples(ShadowSparkTree._get_pyspark_major_version())
 
     def get_children_left(self) -> np.ndarray:
         return np.array(self.children_left, dtype=int)
@@ -140,8 +148,16 @@ class ShadowSparkTree(ShadowDecTree):
         return self.get_features()[id]
 
     def get_node_nsamples_by_class(self, id):
+        def _get_value(spark_version):
+            if spark_version >= 3:
+                return np.array(self.tree_nodes[id].impurityStats().stats())
+            elif spark_version >= 2:
+                return np.array(list(self.tree_nodes[id].impurityStats().stats()))
+            else:
+                raise Exception("dtreeviz supports spark versions >= 2")
+
         if self.is_classifier():
-            return np.array(self.tree_nodes[id].impurityStats().stats())
+            return _get_value(ShadowSparkTree._get_pyspark_major_version())
 
     def get_prediction(self, id):
         return self.tree_nodes[id].prediction()
@@ -156,15 +172,37 @@ class ShadowSparkTree(ShadowDecTree):
         pass
 
     def get_max_depth(self) -> int:
-        return self.tree_model.getMaxDepth()
+        return self._get_tree_model_parameter_value("maxDepth")
 
     def get_score(self) -> float:
         pass
 
     def get_min_samples_leaf(self) -> (int, float):
-        return self.tree_model.getMinInstancesPerNode()
+        return self._get_tree_model_parameter_value("minInstancesPerNode")
 
     def shouldGoLeftAtSplit(self, id, x):
         if self.is_categorical_split(id):
             return x in self.get_node_split(id)[0]
         return x < self.get_node_split(id)
+
+    @staticmethod
+    def _get_pyspark_major_version():
+        return int(pyspark.__version__.split(".")[0])
+
+    def _get_tree_model_parameter_value(self, name):
+        if ShadowSparkTree._get_pyspark_major_version() >= 3:
+            if name == "minInstancesPerNode":
+                return self.tree_model.getMinInstancesPerNode()
+            elif name == "maxDepth":
+                return self.tree_model.getMaxDepth()
+            elif name == "impurity":
+                return self.tree_model.getImpurity().upper()
+        elif ShadowSparkTree._get_pyspark_major_version() >= 2:
+            if name == "minInstancesPerNode":
+                return self.tree_model.getOrDefault("minInstancesPerNode")
+            elif name == "maxDepth":
+                return self.tree_model.getOrDefault("maxDepth")
+            elif name == "impurity":
+                return self.tree_model.getOrDefault("impurity").upper()
+        else:
+            raise Exception("dtreeviz supports spark versions >= 2")

@@ -3,6 +3,7 @@ from pyspark.ml.classification import DecisionTreeClassificationModel
 from dtreeviz.models.spark_decision_tree import ShadowSparkTree
 from pyspark.sql import SparkSession
 import numpy as np
+import pyspark
 
 
 @pytest.fixture()
@@ -11,7 +12,12 @@ def tree_model() -> (DecisionTreeClassificationModel):
         .master("local[2]") \
         .appName("dtreeviz_sparkml") \
         .getOrCreate()
-    return DecisionTreeClassificationModel.load("fixtures/spark_decision_tree_classifier.model")
+
+    spark_major_version = int(pyspark.__version__.split(".")[0])
+    if spark_major_version >= 3:
+        return DecisionTreeClassificationModel.load("fixtures/spark_3_0_decision_tree_classifier.model")
+    elif spark_major_version >= 2:
+        return DecisionTreeClassificationModel.load("fixtures/spark_2_decision_tree_classifier.model")
 
 
 @pytest.fixture()
@@ -26,7 +32,7 @@ def test_is_fit(spark_dtree):
 
 
 def test_is_classifier(spark_dtree):
-    assert spark_dtree.is_classifier() == True, "Spark decision tree should be classifier"
+    assert spark_dtree.is_classifier() is True, "Spark decision tree should be classifier"
 
 
 def test_get_children_left(spark_dtree):
@@ -105,7 +111,8 @@ def test_get_min_samples_leaf(spark_dtree):
 
 def test_get_thresholds(spark_dtree):
     assert np.array_equal(spark_dtree.get_thresholds(),
-                          np.array([(list([0.0]), list([1.0, 2.0])), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1, 24.808349999999997,
+                          np.array([(list([0.0]), list([1.0, 2.0])), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1,
+                                    24.808349999999997,
                                     (list([1.0, 2.0]), list([0.0, 3.0])), -1, -1, -1]))
     # assert np.array_equal(spark_dtree.get_thresholds(),
     #                       np.array([list([0.0]), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1, 24.808349999999997,
@@ -148,4 +155,3 @@ def test_is_categorical_split(spark_dtree):
     assert spark_dtree.is_categorical_split(5) is False
     assert spark_dtree.is_categorical_split(12) is False
     assert spark_dtree.is_categorical_split(13) is True
-
