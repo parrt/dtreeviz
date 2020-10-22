@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from lightgbm.basic import Booster
 
-from dtreeviz.models.shadow_decision_tree import ShadowDecTree
+from dtreeviz.models.shadow_decision_tree import ShadowDecTree, VisualisationNotYetSupportedError
 
 
 class ShadowLightGBMTree(ShadowDecTree):
@@ -86,7 +86,7 @@ class ShadowLightGBMTree(ShadowDecTree):
         pass
 
     def criterion(self) -> str:
-        pass
+        raise VisualisationNotYetSupportedError("criterion()", "LightGBM")
 
     def get_class_weight(self):
         pass
@@ -101,7 +101,10 @@ class ShadowLightGBMTree(ShadowDecTree):
         pass
 
     def get_node_nsamples(self, id):
-        pass
+        if self.children_right[id] == -1 and self.children_left[id] == -1:
+            return self.tree_nodes[id]["leaf_count"]
+        else:
+            return self.tree_nodes[id]["internal_count"]
 
     def get_children_left(self) -> np.ndarray:
         return np.array(self.children_left, dtype=int)
@@ -125,7 +128,7 @@ class ShadowLightGBMTree(ShadowDecTree):
         pass
 
     def get_node_criterion(self, id):
-        pass
+        raise VisualisationNotYetSupportedError("get_node_criterion()", "LightGBM")
 
     def get_feature_path_importance(self, node_list):
         pass

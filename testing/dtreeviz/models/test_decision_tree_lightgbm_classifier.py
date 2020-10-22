@@ -32,3 +32,12 @@ def test_get_children_left(shadow_dec_tree: ShadowLightGBMTree):
 def test_get_children_right(shadow_dec_tree):
     assert np.array_equal(shadow_dec_tree.get_children_right(), np.array(
         [12, 7, 6, 5, -1, -1, -1, 11, 10, -1, -1, -1, 20, 17, 16, -1, -1, 19, -1, -1, 24, 23, -1, -1, -1]))
+
+def test_get_node_nsamples(shadow_dec_tree):
+    assert shadow_dec_tree.get_node_nsamples(0) == 712
+    assert shadow_dec_tree.get_node_nsamples(3) == 110
+    assert shadow_dec_tree.get_node_nsamples(4) == 56
+    assert shadow_dec_tree.get_node_nsamples(7) == 115
+    assert shadow_dec_tree.get_node_nsamples(13) == 340
+    assert shadow_dec_tree.get_node_nsamples(19) == 175
+    assert shadow_dec_tree.get_node_nsamples(21) == 86

@@ -446,6 +446,7 @@ class ShadowDecTree(ABC):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
+        # TODO - add logic for LightGBM
         else:
             raise ValueError(
                 f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
@@ -596,4 +597,4 @@ class ShadowDecTreeNode():
 
 class VisualisationNotYetSupportedError(Exception):
     def __init__(self, method_name, model_name):
-        super().__init__(f"{method_name} is not implemented yet for {model_name}")
+        super().__init__(f"{method_name} is not implemented for {model_name} yet")
