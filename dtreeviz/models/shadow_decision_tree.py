@@ -242,7 +242,7 @@ class ShadowDecTree(ABC):
 
     @abstractmethod
     def get_min_samples_leaf(self) -> (int, float):
-        """Returns the minimum number of samples required to be at a leaf node."""
+        """Returns the minimum number of samples required to be at a leaf node, during node splitting"""
         pass
 
     @abstractmethod
@@ -286,7 +286,7 @@ class ShadowDecTree(ABC):
             # print(f"\tmax={np.max(height_of_bins):2.0f}, heights={list(height_of_bins)}, {len(height_of_bins)} bins")
         return node_heights
 
-    def predict(self, x: np.ndarray) -> Tuple[Number, List]:
+    def predict(self, x: np.ndarray, path_only: bool = False) -> Tuple[Number, List]:
         """
         Given an x - vector of features, return predicted class or value based upon this tree.
         Also return path from root to leaf as 2nd value in return tuple.
@@ -312,6 +312,8 @@ class ShadowDecTree(ABC):
 
         path = []
         leaf = walk(self.root, x, path)
+        if path_only :
+            return path
         return leaf.prediction(), path
 
     def tesselation(self):

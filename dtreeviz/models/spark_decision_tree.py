@@ -101,6 +101,9 @@ class ShadowSparkTree(ShadowDecTree):
     def nclasses(self) -> int:
         if not self.is_classifier():
             return 1
+
+        # TODO for multiclass decision tree, the numClasses is the max of classe values + 1
+        # ex. [15, 25, 35, 40, 45, 55, 65, 70] -> numClasses = 71
         return self.tree_model.numClasses
 
     # TODO
@@ -110,6 +113,8 @@ class ShadowSparkTree(ShadowDecTree):
             return np.unique(self.y_data)
 
     def get_node_samples(self):
+        # TODO in case dataset is large, it will take a while to compute all node samples
+        # maybe to include a message for waiting... or loading bar
         if self.node_to_samples is not None:
             return self.node_to_samples
 

@@ -33,6 +33,7 @@ def test_get_children_right(shadow_dec_tree):
     assert np.array_equal(shadow_dec_tree.get_children_right(), np.array(
         [12, 7, 6, 5, -1, -1, -1, 11, 10, -1, -1, -1, 20, 17, 16, -1, -1, 19, -1, -1, 24, 23, -1, -1, -1]))
 
+
 def test_get_node_nsamples(shadow_dec_tree):
     assert shadow_dec_tree.get_node_nsamples(0) == 712
     assert shadow_dec_tree.get_node_nsamples(3) == 110
@@ -41,3 +42,42 @@ def test_get_node_nsamples(shadow_dec_tree):
     assert shadow_dec_tree.get_node_nsamples(13) == 340
     assert shadow_dec_tree.get_node_nsamples(19) == 175
     assert shadow_dec_tree.get_node_nsamples(21) == 86
+
+
+def test_get_thresholds(shadow_dec_tree: ShadowLightGBMTree):
+    thresholds = shadow_dec_tree.get_thresholds()
+    assert thresholds[0] == 0
+    assert thresholds[1] == 2.5
+    assert thresholds[6] == -1
+    assert thresholds[8] == 1.5
+    assert thresholds[13] == 7.91
+    assert thresholds[17] == 1.5
+    assert thresholds[22] == -1
+
+
+def test_nnodes(shadow_dec_tree):
+    assert shadow_dec_tree.nnodes() == 25
+
+
+def test_get_features(shadow_dec_tree: ShadowLightGBMTree):
+    assert np.array_equal(shadow_dec_tree.get_features(), np.array(
+        [3, 0, 2, 2, -1, -1, -1, 2, 5, -1, -1, -1, 2, 2, 2, -1, -1, 5, -1, -1, 0, 2, -1, -1, -1]))
+
+
+def test_nclasses(shadow_dec_tree: ShadowLightGBMTree):
+    assert shadow_dec_tree.nclasses() == 2
+
+
+def test_classes(shadow_dec_tree: ShadowLightGBMTree):
+    assert np.array_equal(shadow_dec_tree.classes(), np.array([0, 1]))
+
+
+def test_get_node_samples(shadow_dec_tree: ShadowLightGBMTree):
+    node_samples = shadow_dec_tree.get_node_samples();
+    assert len(node_samples[0]) == 712
+    assert len(node_samples[1]) == 245
+    assert len(node_samples[8]) == 95
+    assert len(node_samples[3]) == 110
+    assert len(node_samples[13]) == 340
+    assert len(node_samples[17]) == 196
+    assert len(node_samples[21]) == 86

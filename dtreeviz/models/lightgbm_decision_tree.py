@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
@@ -20,6 +21,9 @@ class ShadowLightGBMTree(ShadowDecTree):
         self.booster = booster
         self.tree_index = tree_index
         self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
+        self.thresholds = None  # lazy evaluation
+        self.features = None  # lazy evaluation
+        self.node_to_samples = None
 
         super().__init__(booster, x_data, y_data, feature_names, target_name, class_names)
 
@@ -80,25 +84,56 @@ class ShadowLightGBMTree(ShadowDecTree):
         pass
 
     def get_thresholds(self) -> np.ndarray:
-        pass
+        if self.thresholds is not None:
+            return self.thresholds
+
+        node_thresholds = [-1] * self.nnodes()
+        for i in range(self.nnodes()):
+            if self.children_left[i] != -1 and self.children_right[i] != -1:
+                node_thresholds[i] = round(self.tree_nodes[i]["threshold"], 2)
+
+        self.thresholds = np.array(node_thresholds)
+        return self.thresholds
 
     def get_features(self) -> np.ndarray:
-        pass
+        if self.features is not None:
+            return self.features
+
+        self.features = [-1] * self.nnodes()
+        for i, node in enumerate(self.tree_nodes):
+            self.features[i] = node.get("split_feature", -1)
+
+        self.features = np.array(self.features)
+        return self.features
 
     def criterion(self) -> str:
         raise VisualisationNotYetSupportedError("criterion()", "LightGBM")
 
     def get_class_weight(self):
-        pass
+        return None
 
     def nclasses(self) -> int:
-        pass
+        if self.booster._Booster__num_class == 1:
+            return 2
+        else:
+            return self.booster._Booster__num_class
 
     def classes(self) -> np.ndarray:
-        pass
+        if self.is_classifier():
+            return np.unique(self.y_data)
 
     def get_node_samples(self):
-        pass
+        if self.node_to_samples is not None:
+            return self.node_to_samples
+
+        node_to_samples = defaultdict(list)
+        for i in range(self.x_data.shape[0]):
+            path = self.predict(self.x_data[i], path_only=True)
+            for node in path:
+                node_to_samples[node.id].append(i)
+
+        self.node_to_samples = node_to_samples
+        return self.node_to_samples
 
     def get_node_nsamples(self, id):
         if self.children_right[id] == -1 and self.children_left[id] == -1:
@@ -113,19 +148,28 @@ class ShadowLightGBMTree(ShadowDecTree):
         return np.array(self.children_right, dtype=int)
 
     def get_node_split(self, id) -> (int, float):
-        pass
+        return self.get_thresholds()[id]
 
     def get_node_feature(self, id) -> int:
-        pass
+        return self.get_features()[id]
 
     def get_node_nsamples_by_class(self, id):
-        pass
+        all_nodes = self.internal + self.leaves
+        if self.is_classifier():
+            node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
+            return node_value[0][0], node_value[0][1]
 
     def get_prediction(self, id):
-        pass
+        all_nodes = self.internal + self.leaves
+        if self.is_classifier():
+            node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
+            return np.argmax((node_value[0][0], node_value[0][1]))
+        elif not self.is_classifier():
+            node_samples = [node.samples() for node in all_nodes if node.id == id][0]
+            return np.mean(self.y_data[node_samples])
 
     def nnodes(self) -> int:
-        pass
+        return len(self.tree_nodes)
 
     def get_node_criterion(self, id):
         raise VisualisationNotYetSupportedError("get_node_criterion()", "LightGBM")
@@ -134,6 +178,8 @@ class ShadowLightGBMTree(ShadowDecTree):
         pass
 
     def get_max_depth(self) -> int:
+        # max_depth can be found in lgbm_model.params, but only if the max_depth is specified
+        # otherwise the max depth is -1, from lgbm_model.model_to_string() (to double check)
         pass
 
     def get_score(self) -> float:
@@ -143,4 +189,4 @@ class ShadowLightGBMTree(ShadowDecTree):
         pass
 
     def shouldGoLeftAtSplit(self, id, x):
-        pass
+        return x <= self.get_node_split(id)
