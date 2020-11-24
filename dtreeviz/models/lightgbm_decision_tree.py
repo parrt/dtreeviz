@@ -175,18 +175,19 @@ class ShadowLightGBMTree(ShadowDecTree):
         raise VisualisationNotYetSupportedError("get_node_criterion()", "LightGBM")
 
     def get_feature_path_importance(self, node_list):
-        pass
+        raise VisualisationNotYetSupportedError("get_feature_path_importance()", "LightGBM")
 
     def get_max_depth(self) -> int:
         # max_depth can be found in lgbm_model.params, but only if the max_depth is specified
         # otherwise the max depth is -1, from lgbm_model.model_to_string() (to double check)
-        pass
+        raise VisualisationNotYetSupportedError("get_max_depth()", "LightGBM")
 
     def get_score(self) -> float:
-        pass
+        raise VisualisationNotYetSupportedError("get_score()", "LightGBM")
 
     def get_min_samples_leaf(self) -> (int, float):
-        pass
+        default_value = 20
+        return self.booster.params.get("min_data_in_leaf", default_value)
 
     def shouldGoLeftAtSplit(self, id, x):
         return x <= self.get_node_split(id)

@@ -81,3 +81,6 @@ def test_get_node_samples(shadow_dec_tree: ShadowLightGBMTree):
     assert len(node_samples[13]) == 340
     assert len(node_samples[17]) == 196
     assert len(node_samples[21]) == 86
+
+def test_get_min_samples_leaf(shadow_dec_tree: ShadowLightGBMTree):
+    assert shadow_dec_tree.get_min_samples_leaf() == 20
