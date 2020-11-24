@@ -3,6 +3,7 @@ from pyspark.ml.classification import DecisionTreeClassificationModel
 from dtreeviz.models.spark_decision_tree import ShadowSparkTree
 from pyspark.sql import SparkSession
 import numpy as np
+import pyspark
 
 
 @pytest.fixture()
@@ -11,7 +12,12 @@ def tree_model() -> (DecisionTreeClassificationModel):
         .master("local[2]") \
         .appName("dtreeviz_sparkml") \
         .getOrCreate()
-    return DecisionTreeClassificationModel.load("fixtures/spark_decision_tree_classifier.model")
+
+    spark_major_version = int(pyspark.__version__.split(".")[0])
+    if spark_major_version >= 3:
+        return DecisionTreeClassificationModel.load("fixtures/spark_3_0_decision_tree_classifier.model")
+    elif spark_major_version >= 2:
+        return DecisionTreeClassificationModel.load("fixtures/spark_2_decision_tree_classifier.model")
 
 
 @pytest.fixture()
@@ -26,7 +32,7 @@ def test_is_fit(spark_dtree):
 
 
 def test_is_classifier(spark_dtree):
-    assert spark_dtree.is_classifier() == True, "Spark decision tree should be classifier"
+    assert spark_dtree.is_classifier() is True, "Spark decision tree should be classifier"
 
 
 def test_get_children_left(spark_dtree):

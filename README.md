@@ -1,12 +1,12 @@
 # dtreeviz : Decision Tree Visualization
 
 ## Description
-A python library for decision tree visualization and model interpretation.  Currently supports sklearn and XGBoost trees.
+A python library for decision tree visualization and model interpretation.  Currently supports [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest) and [Spark MLlib](https://spark.apache.org/mllib/) trees.
 
 Authors:
 
 * [Terence Parr](http://parrt.cs.usfca.edu), a professor in the [University of San Francisco's data science program](https://www.usfca.edu/arts-sciences/graduate-programs/data-science)
-* [Tudor Lapusan](https://github.com/tlapusan)
+* [Tudor Lapusan](https://www.linkedin.com/in/tudor-lapusan-5902593b/)
 * [Prince Grover](https://www.linkedin.com/in/groverpr)
 
 See [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made. 
@@ -19,15 +19,15 @@ We welcome info from users on how they use dtreeviz, what features they'd like, 
 
 Jump right into the examples using this [Colab notebook](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/examples.ipynb)
 
-We still need to clean up / reorganize all of the [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks).
+Take a look in [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks)! Here we have a specific notebook for all supported ML libraries and more.
 
 ## Discussion
 
 Decision trees are the fundamental building block of [gradient boosting machines](http://explained.ai/gradient-boosting/index.html) and [Random Forests](https://en.wikipedia.org/wiki/Random_forest)(tm), probably the two most popular machine learning models for structured data.  Visualizing decision trees is a tremendous aid when learning how these models work and when interpreting models.  Unfortunately, current visualization packages are rudimentary and not immediately helpful to the novice. For example, we couldn't find a library that visualizes how decision nodes split up the feature space. It is also uncommon for libraries to support visualizing a specific feature vector as it weaves down through a tree's decision nodes; we could only find one image showing this.
 
-So, we've created a general package for [scikit-learn](https://github.com/scikit-learn/scikit-learn) decision tree visualization and model interpretation, which we'll be using heavily in an upcoming [machine learning book](https://mlbook.explained.ai/) (written with [Jeremy Howard](http://www.fast.ai/about/#jeremy)).
+So, we've created a general package for decision tree visualization and model interpretation, which we'll be using heavily in an upcoming [machine learning book](https://mlbook.explained.ai/) (written with [Jeremy Howard](http://www.fast.ai/about/#jeremy)).
 
-The visualizations are inspired by an educational animation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `dtreeviz`, you can visualize how the feature space is split up at decision nodes, how the training samples get distributed in leaf nodes and how the tree makes predictions for a specific observation. These operations are critical to for  understanding how classification or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml).
+The visualizations are inspired by an educational animation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `dtreeviz`, you can visualize how the feature space is split up at decision nodes, how the training samples get distributed in leaf nodes, how the tree makes predictions for a specific observation and more. These operations are critical to for  understanding how classification or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](http://course.fast.ai/ml).
 
 ## Install
 
@@ -201,7 +201,7 @@ viz = dtreeviz(classifier,
                iris.data, 
                iris.target,
                target_name='variety',
-              feature_names=iris.feature_names, 
+               feature_names=iris.feature_names, 
                class_names=["setosa", "versicolor", "virginica"]  # need class_names for classifier
               )  
               
@@ -230,7 +230,51 @@ viz = dtreeviz(regr,
 viz.view()  
 ```
 <img src=testing/samples/diabetes-LR-2-X.svg width=100% height=50%>
-  
+
+If you want to visualize just the prediction path, you need to set parameter _show_just_path=True_
+```bash
+dtreeviz(regr,
+        diabetes.data, 
+        diabetes.target, 
+        target_name='value', 
+        orientation ='TD',  # top-down orientation
+        feature_names=diabetes.feature_names,
+        X=X, # need to give single observation for prediction
+        show_just_path=True     
+        )
+```
+<img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="60%">
+
+#### Explain prediction path
+These visualizations are useful to explain to somebody, without machine learning skills, why your model made that specific prediction. <br/>
+In case of _explanation_type=plain_english_, it searches in prediction path and find feature value ranges.  
+```
+X = dataset[features].iloc[10]
+print(X)
+Pclass              3.0
+Age                 4.0
+Fare               16.7
+Sex_label           0.0
+Cabin_label       145.0
+Embarked_label      2.0
+
+print(explain_prediction_path(tree_classifier, X, feature_names=features, explanation_type="plain_english"))
+2.5 <= Pclass 
+Age < 36.5
+Fare < 23.35
+Sex_label < 0.5
+``` 
+
+In case of _explanation_type=sklearn_default_ (available only for scikit-learn), we can visualize the features' importance involved in prediction path only. 
+Features' importance is calculated based on mean decrease in impurity. <br> 
+Check [Beware Default Random Forest Importances](https://explained.ai/rf-importance/index.html) article for a comparison between features' importance based on mean decrease in impurity vs permutation importance.
+```
+explain_prediction_path(tree_classifier, X, feature_names=features, explanation_type="sklearn_default")
+```
+<img src="https://user-images.githubusercontent.com/12815158/94448483-9d042380-01b3-11eb-95f6-a973f1b7092a.png" width="60%"/>
+
+
+
 ### Decision tree without scatterplot or histograms for decision nodes
 Simple tree without histograms or scatterplots for decision nodes. 
 Use argument `fancy=False`  
@@ -381,15 +425,63 @@ ctreeviz_bivar(ax, X_train, y_train, max_depth=3,
 plt.tight_layout()
 plt.show()
 ```
+### Leaf node purity
+Leaf purity affects prediction confidence. <br>
+For classification leaf purity is calculated based on majority target class (gini, entropy) and for regression is calculated based on target variance values. <br> 
+Leaves with low variance among the target values (regression) or an overwhelming majority target class (classification) are much more reliable predictors.
+When we have a decision tree with a high depth, it can be difficult to get an overview about all leaves purities. That's why we created a specialized visualization only for leaves purities.
+
+*display_type* can take values 'plot' (default), 'hist' or 'text'
+```
+viz_leaf_criterion(tree_classifier, display_type = "plot")
+```
+<img src="https://user-images.githubusercontent.com/12815158/94367215-f271ff00-00e5-11eb-802c-d5f486c45ab4.png" width="60%"/>
+
+### Leaf node samples
+It's also important to take a look at the number of samples from leaves. For example, we can have a leaf with a good purity but very few samples, which is a sign of overfitting.
+The ideal scenario would be to have a leaf with good purity which is based on a significant number of samples.
+
+*display_type* can take values 'plot' (default), 'hist' or 'text'
+```
+viz_leaf_samples(tree_classifier, dataset[features], display_type='plot')
+``` 
+<img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='60%'/>
+
+#### Leaf node samples for classification
+This is a specialized visualization for classification. It helps also to see the distribution of target class values from leaf samples.
+```
+ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target])
+```
+<img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="60%"/>
 
 ### Leaf plots
+Visualize leaf target distribution for regression decision trees.
+```
+viz_leaf_target(tree_regressor, dataset[features_reg], dataset[target_reg], features_reg, target_reg)
+```
+<img src="https://user-images.githubusercontent.com/12815158/94445430-19950300-01b0-11eb-9a5a-8f1672f11d94.png" width="35%"> 
 
-Thanks to [Tudor Lapusan](https://github.com/tlapusan), we now have leaf plots that show the size of leaves, the histogram of classes in leaves, or split plots for the regressor leaves:
 
-<img src="testing/samples/regr-leaf.png" width="30%"> 
+## Visualization methods setup
+Starting with dtreeviz 1.0 version, we refactored the concept of ShadowDecTree. If we want to add a new ML library in dtreeviz, we just need to add a new implementation of ShadowDecTree API, like ShadowSKDTree, ShadowXGBDTree or ShadowSparkTree. 
+   
+Initializing a ShadowSKDTree object:
+```
+sk_dtree = ShadowSKDTree(tree_classifier, dataset[features], dataset[target], features, target, [0, 1])
+```
+Once we have the object initialized, we can used it to create all the visualizations, like : 
+```
+dtreeviz(sk_dtree)
+```
+```
+viz_leaf_samples(sk_dtree)
+```
+```
+viz_leaf_criterion(sk_dtree)
+```
+In this way, we reduced substantially the list of parameters required for each visualization and it's also more efficient in terms of computing power.
 
-See [notebooks/tree_structure_example.ipynb](https://github.com/parrt/dtreeviz/blob/master/notebooks/tree_structure_example.ipynb) for more details and examples.
-
+You can check the [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks) section for more examples of using ShadowSKDTree, ShadowXGBDTree or ShadowSparkTree.
 ## Install dtreeviz locally
 
 Make sure to follow the install guidelines above.
@@ -470,6 +562,7 @@ for depicting hierarchical structures](https://www.cc.gatech.edu/~john.stasko/pa
 ## Authors
 
 * [**Terence Parr**](http://parrt.cs.usfca.edu/) 
+* [Tudor Lapusan](https://www.linkedin.com/in/tudor-lapusan-5902593b/)
 * [**Prince Grover**](https://www.linkedin.com/in/groverpr/)
 
 See also the list of [contributors](https://github.com/parrt/dtreeviz/graphs/contributors) who participated in this project.
