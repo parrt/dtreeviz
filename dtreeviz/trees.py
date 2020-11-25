@@ -500,6 +500,8 @@ def dtreeviz(tree_model,
              label_fontsize: int = 12,
              ticks_fontsize: int = 8,
              fontname: str = "Arial",
+             title: str = None,
+             title_fontsize: int = 14,
              colors: dict = None,
              scale=1.0
              ) \
@@ -890,6 +892,10 @@ def dtreeviz(tree_model,
             """)
 
     newline = "\n\t"
+    if title:
+        title_element = f'graph [label="{title}", labelloc=t, fontname="{fontname}" fontsize={title_fontsize} fontcolor="{colors["title"]}"];'
+    else:
+        title_element = ""
     dot = f"""
 digraph G {{
     splines=line;
@@ -897,6 +903,7 @@ digraph G {{
     ranksep={ranksep};
     rankdir={orientation};
     margin=0.0;
+    {title_element}
     node [margin="0.03" penwidth="0.5" width=.1, height=.1];
     edge [arrowsize=.4 penwidth="0.3"]
 
