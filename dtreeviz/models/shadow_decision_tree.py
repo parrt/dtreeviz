@@ -3,8 +3,10 @@ from collections import Sequence
 from numbers import Number
 from typing import List, Tuple, Mapping
 
+import lightgbm
 import numpy as np
 import pandas as pd
+import pyspark.ml
 import sklearn
 import xgboost
 
@@ -312,7 +314,7 @@ class ShadowDecTree(ABC):
 
         path = []
         leaf = walk(self.root, x, path)
-        if path_only :
+        if path_only:
             return path
         return leaf.prediction(), path
 
@@ -448,10 +450,20 @@ class ShadowDecTree(ABC):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
-        # TODO - add logic for LightGBM
+        elif isinstance(tree_model, lightgbm.basic.Booster):
+            from dtreeviz.models import lightgbm_decision_tree
+            return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, x_data, y_data, feature_names,
+                                                             target_name, class_names)
+
+        elif isinstance(tree_model, pyspark.ml.classification.DecisionTreeClassificationModel):
+            from dtreeviz.models import spark_decision_tree
+            return spark_decision_tree.ShadowSparkTree(tree_model, x_data, y_data, feature_names, target_name,
+                                                       class_names)
         else:
             raise ValueError(
-                f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
+                f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, "
+                f"lightgbm.basic.Booster, pyspark.ml.classification.DecisionTreeClassificationModel but was "
+                f"{tree_model.__class__.__name__}")
 
 
 class ShadowDecTreeNode():

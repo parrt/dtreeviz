@@ -1014,12 +1014,13 @@ def class_split_viz(node: ShadowDecTreeNode,
                     fontname=fontname,
                     color=colors['text_wedge'])
         else:
-            ax.text(xr/2, -2 * th,
-                    f"{node.split()[0]}",
-                    horizontalalignment='center',
-                    fontsize=ticks_fontsize,
-                    fontname=fontname,
-                    color=colors['text_wedge'])
+            left_split_values = node.split()[0]
+            for split_value in left_split_values:
+                tria = np.array(
+                    [[split_value, tipy], [split_value - tw, -th], [split_value + tw, -th]])
+                t = patches.Polygon(tria, facecolor=color)
+                t.set_clip_on(False)
+                ax.add_patch(t)
 
     wedge(ax, node.split(), color=colors['wedge'])
     if highlight_node:
@@ -1130,14 +1131,14 @@ def regr_split_viz(node: ShadowDecTreeNode,
         if highlight_node:
             wedge(ax, X[node.feature()], color=colors['highlight'])
     else:
-        # TODO -125 is hard coded...
-        ax.text(xr / 2, -125,
-                f"{node.split()[0]}",
-                horizontalalignment='center',
-                fontsize=ticks_fontsize,
-                fontname=fontname,
-                color=colors['text_wedge'])
+        xticks = list(overall_feature_range) + node.split()[0]
+        ax.set_xticks(xticks)
         ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
+
+        left_split_values = node.split()[0]
+        for split_value in left_split_values:
+            wedge(ax, split_value, color=colors['wedge'])
+
         if highlight_node:
             wedge(ax, X[node.feature()], color=colors['highlight'])
 

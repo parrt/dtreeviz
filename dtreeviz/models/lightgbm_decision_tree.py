@@ -80,6 +80,13 @@ class ShadowLightGBMTree(ShadowDecTree):
             return False
         raise Exception(f"objective {objective} is not yet supported by dtreeviz's lightgbm implementation")
 
+    def is_categorical_split(self, id) -> bool:
+        node = self.tree_nodes[id]
+        if 'split_index' in node:
+            if node["decision_type"] == "==":
+                return True
+        return False
+
     def get_class_weights(self):
         pass
 
@@ -90,7 +97,10 @@ class ShadowLightGBMTree(ShadowDecTree):
         node_thresholds = [-1] * self.nnodes()
         for i in range(self.nnodes()):
             if self.children_left[i] != -1 and self.children_right[i] != -1:
-                node_thresholds[i] = round(self.tree_nodes[i]["threshold"], 2)
+                if self.is_categorical_split(i):
+                    node_thresholds[i] = (list(map(int, self.tree_nodes[i]["threshold"].split("||"))), [])
+                else:
+                    node_thresholds[i] = round(self.tree_nodes[i]["threshold"], 2)
 
         self.thresholds = np.array(node_thresholds)
         return self.thresholds
@@ -190,4 +200,6 @@ class ShadowLightGBMTree(ShadowDecTree):
         return self.booster.params.get("min_data_in_leaf", default_value)
 
     def shouldGoLeftAtSplit(self, id, x):
+        if self.is_categorical_split(id):
+            return x in self.get_node_split(id)[0]
         return x <= self.get_node_split(id)
