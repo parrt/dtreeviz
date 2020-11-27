@@ -500,6 +500,8 @@ def dtreeviz(tree_model,
              label_fontsize: int = 12,
              ticks_fontsize: int = 8,
              fontname: str = "Arial",
+             title: str = None,
+             title_fontsize: int = 14,
              colors: dict = None,
              scale=1.0
              ) \
@@ -556,6 +558,8 @@ def dtreeviz(tree_model,
                             display only those features
                            used to guide X vector down tree. Helps when len(X) is large.
                            Default is 25.
+    :param title: An optional title placed at the top of the tree.
+    :param title_fontsize: Size of the text for the title.
     :param scale: Default is 1.0. Scale the width, height of the overall SVG preserving aspect ratio
     :return: A string in graphviz DOT language that describes the decision tree.
     """
@@ -890,6 +894,10 @@ def dtreeviz(tree_model,
             """)
 
     newline = "\n\t"
+    if title:
+        title_element = f'graph [label="{title}", labelloc=t, fontname="{fontname}" fontsize={title_fontsize} fontcolor="{colors["title"]}"];'
+    else:
+        title_element = ""
     dot = f"""
 digraph G {{
     splines=line;
@@ -897,6 +905,7 @@ digraph G {{
     ranksep={ranksep};
     rankdir={orientation};
     margin=0.0;
+    {title_element}
     node [margin="0.03" penwidth="0.5" width=.1, height=.1];
     edge [arrowsize=.4 penwidth="0.3"]
 

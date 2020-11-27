@@ -129,7 +129,7 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
 def _get_feature_path_importance_sklearn_plot(features, feature_path_importance, figsize, colors, fontsize, fontname,
                                               grid):
     colors = adjust_colors(colors)
-    fig, ax = plt.subplots(figsize=figsize);
+    fig, ax = plt.subplots(figsize=figsize)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_linewidth(.3)

@@ -100,7 +100,9 @@ sudo apt install graphviz
 
 ### Windows 10
 
-[Download graphviz-2.38.msi](https://graphviz.gitlab.io/_pages/Download/Download_windows.html) and update your `Path` environment variable. It's windows so you might need a reboot after updating that environment variable.  You should see this from the Anaconda Prompt:
+(Make sure to `pip install graphviz`, which is common to all platforms, and make sure to do this from Anaconda Prompt on Windows!)
+
+[Download graphviz-2.38.msi](https://graphviz.gitlab.io/_pages/Download/Download_windows.html) and update your `Path` environment variable.  Add `C:\Program Files (x86)\Graphviz2.38\bin` to User path and `C:\Program Files (x86)\Graphviz2.38\bin\dot.exe` to System Path. It's windows so you might need a reboot after updating that environment variable.  You should see this from the Anaconda Prompt:
 
 ```
 (base) C:\Users\Terence Parr>where dot
