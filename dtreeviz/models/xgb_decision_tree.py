@@ -4,12 +4,16 @@ from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
-import xgboost as xgb
-from xgboost.core import Booster
 
 from dtreeviz.models.shadow_decision_tree import VisualisationNotYetSupportedError
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 
+try:
+    import xgboost as xgb
+    import xgboost.core.Booster as Booster
+except:
+    xgb = None
+    Booster = None
 
 class ShadowXGBDTree(ShadowDecTree):
     LEFT_CHILDREN_COLUMN = "Yes"
@@ -39,6 +43,12 @@ class ShadowXGBDTree(ShadowDecTree):
         super().__init__(booster, x_data, y_data, feature_names, target_name, class_names)
 
     def is_fit(self):
+        try:
+            from xgboost.core import Booster
+        except Exception as e:
+            raise ImportError("Failed to import xgboost. Make sure it is"
+                    "installed properly. You can install it as an optional"
+                    "dependency with pip install dtreeviz[xgboost]")
         return isinstance(self.booster, Booster)
 
     # TODO - add implementation
@@ -88,7 +98,12 @@ class ShadowXGBDTree(ShadowDecTree):
         """
         # Doc say: "Return a node indicator matrix where non zero elements
         #           indicates that the samples goes through the nodes."
-
+        try:
+            import xgboost as xgb
+        except Exception as e:
+            raise ImportError("Failed to import xgboost. Make sure it is"
+                    "installed properly. You can install it as an optional"
+                    "dependency with pip install dtreeviz[xgboost]")
         if self.node_to_samples is not None:
             return self.node_to_samples
 

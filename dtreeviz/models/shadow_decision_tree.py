@@ -6,8 +6,13 @@ from typing import List, Tuple, Mapping
 import numpy as np
 import pandas as pd
 import sklearn
-import xgboost
 
+try:
+    import xgboost as xgb
+    import xgboost.core.Booster as Booster
+except:
+    xgb = None
+    Booster = None
 
 class ShadowDecTree(ABC):
     """
@@ -444,7 +449,7 @@ class ShadowDecTree(ABC):
             from dtreeviz.models import sklearn_decision_trees
             return sklearn_decision_trees.ShadowSKDTree(tree_model, x_data, y_data, feature_names,
                                                         target_name, class_names)
-        elif isinstance(tree_model, xgboost.core.Booster):
+        elif str(type(tree_model)).endswith("xgboost.core.Booster'>"):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
