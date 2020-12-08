@@ -9,10 +9,11 @@ import sklearn
 
 try:
     import xgboost as xgb
-    import xgboost.core.Booster as Booster
+    from xgboost.core import Booster
 except:
     xgb = None
     Booster = None
+
 
 class ShadowDecTree(ABC):
     """
@@ -453,7 +454,9 @@ class ShadowDecTree(ABC):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
-        else: raise ValueError(f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
+        else:
+            raise ValueError(
+                f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
 
 
 class ShadowDecTreeNode():
