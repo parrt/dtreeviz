@@ -543,8 +543,13 @@ class ShadowDecTreeNode():
         samples = np.array(self.samples())
         node_X_data = self.shadow_tree.x_data[samples, self.feature()]
         split = self.split()
-        left = np.nonzero(node_X_data < split)[0]
-        right = np.nonzero(node_X_data >= split)[0]
+        if self.is_categorical_split():
+            indices = np.sum([node_X_data == split_value for split_value in self.split()[0]], axis=0)
+            left = np.nonzero(indices == 1)[0]
+            right = np.nonzero(indices == 0)[0]
+        else:
+            left = np.nonzero(node_X_data < split)[0]
+            right = np.nonzero(node_X_data >= split)[0]
         return left, right
 
     def isleaf(self) -> bool:

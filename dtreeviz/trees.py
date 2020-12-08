@@ -960,10 +960,8 @@ def class_split_viz(node: ShadowDecTreeNode,
     ax.spines['bottom'].set_linewidth(.3)
 
     class_names = node.shadow_tree.class_names
-
     class_values = node.shadow_tree.classes()
     X_hist = [X_feature[y_train == cl] for cl in class_values]
-
     if histtype == 'strip':
         ax.yaxis.set_visible(False)
         ax.spines['left'].set_visible(False)
@@ -1130,6 +1128,9 @@ def regr_split_viz(node: ShadowDecTreeNode,
         right = y_train[right]
         split = node.split()
 
+        # ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
+
+
         ax.plot([overall_feature_range[0], split], [np.mean(left), np.mean(left)], '--', color=colors['split_line'],
                 linewidth=1)
         ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=1)
@@ -1140,16 +1141,45 @@ def regr_split_viz(node: ShadowDecTreeNode,
         if highlight_node:
             wedge(ax, X[node.feature()], color=colors['highlight'])
     else:
-        xticks = list(overall_feature_range) + node.split()[0]
-        ax.set_xticks(xticks)
-        ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
+        left_index, right_index = node.split_samples()
 
-        left_split_values = node.split()[0]
-        for split_value in left_split_values:
-            wedge(ax, split_value, color=colors['wedge'])
 
-        if highlight_node:
-            wedge(ax, X[node.feature()], color=colors['highlight'])
+        print(f"id {node.id}, split_left {node.split()[0]}, {overall_feature_range }")
+        ax.set_xlim(overall_feature_range[0] - 0.05, overall_feature_range[1] + 0.05)
+        ax.scatter(X_feature[left_index], y_train[left_index], s=5, c=colors["classes"][2][0], alpha=colors['scatter_marker_alpha'], lw=.3)
+        ax.scatter(X_feature[right_index], y_train[right_index], s=5, c=colors["classes"][2][1], alpha=colors['scatter_marker_alpha'], lw=.3)
+
+
+        # indices = np.sum([X_feature == split_value for split_value in node.split()[0]], axis=0)
+        # X_hist = [X_feature[indices == 1], X_feature[indices == 0]]
+
+        # bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=overall_feature_range[1] * 5, endpoint=True)
+
+        # print(f"\nrange: {overall_feature_range}, r={r}, nbins={nbins}, len(bins)={len(bins)}, binwidth={binwidth}\n{bins}")
+        # bins[-1] = overall_feature_range[1] # make sure rounding doesn't kill last value on right
+        # hist, bins, barcontainers = ax.hist(X_hist,
+        #                                     align='mid',
+        #                                     bins=bins)
+        # Alter appearance of each bar
+        # for patch in barcontainers:
+        #     for rect in patch.patches:
+        #         rect.set_linewidth(.5)
+        #         rect.set_edgecolor(colors['rect_edge'])
+        # ax.set_yticks([0, max([max(h) for h in hist])])
+
+
+
+        # xticks = list(overall_feature_range) + node.split()[0]
+        # print(f"overall feature range {overall_feature_range}")
+        # ax.set_xticks(xticks)
+        # ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
+        #
+        # left_split_values = node.split()[0]
+        # for split_value in left_split_values:
+        #     wedge(ax, split_value, color=colors['wedge'])
+        #
+        # if highlight_node:
+        #     wedge(ax, X[node.feature()], color=colors['highlight'])
 
     # plt.tight_layout()
     if filename is not None:
