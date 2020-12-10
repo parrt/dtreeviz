@@ -1129,8 +1129,6 @@ def regr_split_viz(node: ShadowDecTreeNode,
         split = node.split()
 
         # ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
-
-
         ax.plot([overall_feature_range[0], split], [np.mean(left), np.mean(left)], '--', color=colors['split_line'],
                 linewidth=1)
         ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=1)
@@ -1143,11 +1141,11 @@ def regr_split_viz(node: ShadowDecTreeNode,
     else:
         left_index, right_index = node.split_samples()
 
-
-        print(f"id {node.id}, split_left {node.split()[0]}, {overall_feature_range }")
+        print(f"id {node.id}, split_left {node.split()[0]}, {overall_feature_range }, { np.unique(X_feature)}")
         ax.set_xlim(overall_feature_range[0] - 0.05, overall_feature_range[1] + 0.05)
         ax.scatter(X_feature[left_index], y_train[left_index], s=5, c=colors["classes"][2][0], alpha=colors['scatter_marker_alpha'], lw=.3)
         ax.scatter(X_feature[right_index], y_train[right_index], s=5, c=colors["classes"][2][1], alpha=colors['scatter_marker_alpha'], lw=.3)
+        ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
 
 
         # indices = np.sum([X_feature == split_value for split_value in node.split()[0]], axis=0)
