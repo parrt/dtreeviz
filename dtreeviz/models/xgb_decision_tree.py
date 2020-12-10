@@ -33,6 +33,8 @@ class ShadowXGBDTree(ShadowDecTree):
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None
                  ):
+        if hasattr(booster, 'get_booster'):
+            booster = booster.get_booster() # support XGBClassifier and XGBRegressor
         self.booster = booster
         self.tree_index = tree_index
         self.tree_to_dataframe = self._get_tree_dataframe()

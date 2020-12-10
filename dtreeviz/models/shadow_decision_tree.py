@@ -444,6 +444,9 @@ class ShadowDecTree(ABC):
 
     @staticmethod
     def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
+        if hasattr(tree_model, 'get_booster'):
+            tree_model = tree_model.get_booster() # support XGBClassifier and XGBRegressor
+            
         if isinstance(tree_model, ShadowDecTree):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
