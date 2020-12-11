@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 import sklearn
 
-try:
-    import xgboost as xgb
-    from xgboost.core import Booster
-except:
-    xgb = None
-    Booster = None
+# try:
+#     import xgboost as xgb
+#     from xgboost.core import Booster
+# except:
+#     xgb = None
+#     Booster = None
 
 
 class ShadowDecTree(ABC):
@@ -446,7 +446,6 @@ class ShadowDecTree(ABC):
     def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
         if hasattr(tree_model, 'get_booster'):
             tree_model = tree_model.get_booster() # support XGBClassifier and XGBRegressor
-            
         if isinstance(tree_model, ShadowDecTree):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
@@ -456,6 +455,11 @@ class ShadowDecTree(ABC):
         elif str(type(tree_model)).endswith("xgboost.core.Booster'>"):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
+                                                    feature_names, target_name, class_names)
+        elif (str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>") or
+                str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>")):
+            from dtreeviz.models import spark_decision_tree
+            return spark_decision_tree.ShadowSparkTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
         else:
             raise ValueError(
