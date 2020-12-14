@@ -7,6 +7,8 @@ LIGHTORANGE = '#fee090'
 LIGHTBLUE = '#a6bddb'
 GREY = '#444443'
 WEDGE_COLOR = GREY
+CATEGORICAL_SPLIT_LEFT= '#FE5733'
+CATEGORICAL_SPLIT_RIGHT = '#a1dab4'
 
 HIGHLIGHT_COLOR = '#D67C03'
 
@@ -49,7 +51,9 @@ COLORS = {'scatter_edge': GREY,
           'tick_label': GREY,
           'leaf_label': GREY,
           'pie': GREY,
-          'hist_bar': LIGHTBLUE
+          'hist_bar': LIGHTBLUE,
+          'categorical_split_left': CATEGORICAL_SPLIT_LEFT,
+          'categorical_split_right': CATEGORICAL_SPLIT_RIGHT
           }
 
 
