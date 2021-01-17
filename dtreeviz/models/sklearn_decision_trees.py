@@ -2,9 +2,32 @@ from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
+import pandas as pd
 from sklearn.utils import compute_class_weight
+from sklearn.pipeline import Pipeline
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
+
+
+def _extract_final_feature_names(pipeline, features):
+    """
+    Computes the final features names of a :py:mod:`~sklearn.pipeline.Pipeline` used in its last
+    component.
+
+    Args:
+        pipeline (sklearn.pipeline.Pipeline): A pipeline
+        features (list): List of input features to the pipeline
+
+    Returns:
+        list: Features names used by the last component
+    """
+    for component in pipeline[:-1]:
+        if hasattr(component, 'get_support'):
+            features = [f for f, s in zip(features, component.get_support()) if s]
+        if hasattr(component, 'get_feature_names'):
+            features = component.get_feature_names(features)
+
+    return features
 
 
 class ShadowSKDTree(ShadowDecTree):
@@ -16,7 +39,23 @@ class ShadowSKDTree(ShadowDecTree):
                  class_names: (List[str], Mapping[int, str]) = None):
 
         self.node_to_samples = None
-        super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
+
+        if isinstance(tree_model, Pipeline):
+            # Pick last element of pipeline
+            model = tree_model.steps[-1][1]
+
+            feature_names = _extract_final_feature_names(
+                pipeline=tree_model,
+                features=feature_names
+            )
+            x_data = pd.DataFrame(
+                data=tree_model[:-1].transform(x_data),
+                columns=feature_names
+            )
+        else:
+            model = tree_model
+
+        super().__init__(model, x_data, y_data, feature_names, target_name, class_names)
 
     def is_fit(self):
         return getattr(self.tree_model, 'tree_') is not None
