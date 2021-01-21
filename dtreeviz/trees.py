@@ -1161,7 +1161,6 @@ def regr_split_viz(node: ShadowDecTreeNode,
         left_index, right_index = node.split_samples()
         tw = (xmax - xmin) * .018
 
-        # print(f"id {node.id}, split_left {node.split()[0]}, {overall_feature_range }, { np.unique(X_feature)}")
         ax.set_xlim(overall_feature_range[0] - tw, overall_feature_range[1] + tw)
         ax.scatter(X_feature[left_index], y_train[left_index], s=5, c=colors["categorical_split_left"], alpha=colors['scatter_marker_alpha'], lw=.3)
         ax.scatter(X_feature[right_index], y_train[right_index], s=5, c=colors["categorical_split_right"], alpha=colors['scatter_marker_alpha'], lw=.3)
@@ -1172,10 +1171,6 @@ def regr_split_viz(node: ShadowDecTreeNode,
                 linewidth=1)
         ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
 
-        # left_split_values = node.split()[0]
-        # for split_value in left_split_values:
-        #     wedge(ax, split_value, color=colors['wedge'])
-        #
         if highlight_node:
             wedge(ax, X[node.feature()], color=colors['highlight'])
 
