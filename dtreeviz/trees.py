@@ -869,7 +869,7 @@ def dtreeviz(tree_model,
             llabel = all_llabel
             rlabel = all_rlabel
 
-        if node.is_categorical_split():
+        if node.is_categorical_split() and not shadow_tree.is_classifier():
             lcolor, rcolor = colors["categorical_split_left"], colors["categorical_split_right"]
         else:
             lcolor = rcolor = colors['arrow']
@@ -939,6 +939,10 @@ def class_split_viz(node: ShadowDecTreeNode,
                     X: np.array = None,
                     highlight_node: bool = False
                     ):
+
+    def _get_bins(overall_range, nbins_):
+        return np.linspace(start=overall_range[0], stop=overall_range[1], num=nbins_, endpoint=True)
+
     height_range = (.5, 1.5)
     h = prop_size(n=node_heights[node.id], counts=node_heights.values(), output_range=height_range)
     figsize = (3.3, h)
@@ -948,10 +952,17 @@ def class_split_viz(node: ShadowDecTreeNode,
 
     # Get X, y data for all samples associated with this node.
     X_feature = X_train[:, node.feature()]
-    X_feature, y_train = X_feature[node.samples()], y_train[node.samples()]
+    X_node_feature, y_train = X_feature[node.samples()], y_train[node.samples()]
 
     n_classes = node.shadow_tree.nclasses()
     nbins = get_num_bins(histtype, n_classes)
+
+    # for categorical splits, we need to ensure that each vertical bar will represent only one categorical feature value
+    if node.is_categorical_split():
+        feature_unique_size = np.unique(X_feature).size
+        # keep the bar widths as uniform as possible for all node visualisations
+        nbins = nbins if nbins > feature_unique_size else feature_unique_size + 1
+
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
     overall_feature_range_wide = (overall_feature_range[0] - overall_feature_range[0] * .08,
@@ -965,7 +976,7 @@ def class_split_viz(node: ShadowDecTreeNode,
 
     class_names = node.shadow_tree.class_names
     class_values = node.shadow_tree.classes()
-    X_hist = [X_feature[y_train == cl] for cl in class_values]
+    X_hist = [X_node_feature[y_train == cl] for cl in class_values]
     if histtype == 'strip':
         ax.yaxis.set_visible(False)
         ax.spines['left'].set_visible(False)
@@ -982,9 +993,7 @@ def class_split_viz(node: ShadowDecTreeNode,
     else:
         X_colors = [colors[cl] for cl in class_values]
 
-        bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
-        # print(f"\nrange: {overall_feature_range}, r={r}, nbins={nbins}, len(bins)={len(bins)}, binwidth={binwidth}\n{bins}")
-        # bins[-1] = overall_feature_range[1] # make sure rounding doesn't kill last value on right
+        bins = _get_bins(overall_feature_range, nbins)
         hist, bins, barcontainers = ax.hist(X_hist,
                                             color=X_colors,
                                             align='mid',
@@ -1026,7 +1035,13 @@ def class_split_viz(node: ShadowDecTreeNode,
                     color=colors['text_wedge'])
         else:
             left_split_values = node.split()[0]
+            bins = _get_bins(overall_feature_range, nbins)
             for split_value in left_split_values:
+                # to display the wedge exactly in the middle of the vertical bar
+                for bin_index in range(len(bins) - 1):
+                    if bins[bin_index] <= split_value <= bins[bin_index + 1]:
+                        split_value = (bins[bin_index] + bins[bin_index + 1]) / 2
+                        break
                 tria = np.array(
                     [[split_value, tipy], [split_value - tw, -th], [split_value + tw, -th]])
                 t = patches.Polygon(tria, facecolor=color)
