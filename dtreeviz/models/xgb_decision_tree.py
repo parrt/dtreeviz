@@ -8,13 +8,8 @@ import numpy as np
 from dtreeviz.models.shadow_decision_tree import VisualisationNotYetSupportedError
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 
-try:
-    import xgboost as xgb
-    from xgboost.core import Booster
-except ModuleNotFoundError as e:
-    raise ModuleNotFoundError(
-        f"Failed to import xgboost. Make sure it is installed properly. You can install it as an optional "
-        f"dependency with pip install dtreeviz[xgboost]")
+import xgboost as xgb
+from xgboost.core import Booster
 
 
 class ShadowXGBDTree(ShadowDecTree):

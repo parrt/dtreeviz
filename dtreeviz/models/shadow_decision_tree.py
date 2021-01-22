@@ -7,13 +7,6 @@ import numpy as np
 import pandas as pd
 import sklearn
 
-# try:
-#     import xgboost as xgb
-#     from xgboost.core import Booster
-# except:
-#     xgb = None
-#     Booster = None
-
 
 class ShadowDecTree(ABC):
     """
@@ -445,7 +438,9 @@ class ShadowDecTree(ABC):
     @staticmethod
     def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
         if hasattr(tree_model, 'get_booster'):
-            tree_model = tree_model.get_booster() # support XGBClassifier and XGBRegressor
+            # scikit-learn wrappers XGBClassifier and XGBRegressor allow you to
+            # extract the underlying xgboost.core.Booster with the get_booster() method:
+            tree_model = tree_model.get_booster() 
         if isinstance(tree_model, ShadowDecTree):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
@@ -463,7 +458,9 @@ class ShadowDecTree(ABC):
                                                     feature_names, target_name, class_names)
         else:
             raise ValueError(
-                f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
+                f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
+                "xgboost.core.Booster, pyspark DecisionTreeClassificationModel or "
+                "pyspark DecisionTreeClassificationModel) but you passed a {tree_model.__class__.__name__}!")
 
 
 class ShadowDecTreeNode():

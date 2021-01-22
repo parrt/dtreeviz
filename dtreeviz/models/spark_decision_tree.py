@@ -6,13 +6,9 @@ import numpy as np
 import pyspark
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
-try:
-    from pyspark.ml.classification import DecisionTreeClassificationModel
-    from pyspark.ml.regression import DecisionTreeRegressionModel
-except ModuleNotFoundError as e:
-    raise ModuleNotFoundError(
-        f"Failed to import pyspark. Make sure it is installed properly. You can install it as an optional "
-        f"dependency with pip install dtreeviz[pyspark]")
+
+from pyspark.ml.classification import DecisionTreeClassificationModel
+from pyspark.ml.regression import DecisionTreeRegressionModel
 
 
 class ShadowSparkTree(ShadowDecTree):
