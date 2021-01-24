@@ -6,7 +6,6 @@ from typing import List, Tuple, Mapping
 import numpy as np
 import pandas as pd
 import sklearn
-import xgboost
 
 
 class ShadowDecTree(ABC):
@@ -438,17 +437,30 @@ class ShadowDecTree(ABC):
 
     @staticmethod
     def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
+        if hasattr(tree_model, 'get_booster'):
+            # scikit-learn wrappers XGBClassifier and XGBRegressor allow you to
+            # extract the underlying xgboost.core.Booster with the get_booster() method:
+            tree_model = tree_model.get_booster() 
         if isinstance(tree_model, ShadowDecTree):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
             from dtreeviz.models import sklearn_decision_trees
             return sklearn_decision_trees.ShadowSKDTree(tree_model, x_data, y_data, feature_names,
                                                         target_name, class_names)
-        elif isinstance(tree_model, xgboost.core.Booster):
+        elif str(type(tree_model)).endswith("xgboost.core.Booster'>"):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
-        else: raise ValueError(f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, but was {tree_model.__class__.__name__}")
+        elif (str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>") or
+                str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>")):
+            from dtreeviz.models import spark_decision_tree
+            return spark_decision_tree.ShadowSparkTree(tree_model, tree_index, x_data, y_data,
+                                                    feature_names, target_name, class_names)
+        else:
+            raise ValueError(
+                f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
+                "xgboost.core.Booster, pyspark DecisionTreeClassificationModel or "
+                "pyspark DecisionTreeClassificationModel) but you passed a {tree_model.__class__.__name__}!")
 
 
 class ShadowDecTreeNode():
