@@ -257,7 +257,7 @@ dtreeviz(regr,
 
 #### Explain prediction path
 
-These visualizations are useful to explain to somebody, without machine learning skills, why your model made that specific prediction. <br/> In case of _explanation_type=plain_english_, it searches in prediction path and find feature value ranges.  
+These visualizations are useful to explain to somebody, without machine learning skills, why your model made that specific prediction. <br/> In case of `explanation_type=plain_english`, it searches in prediction path and find feature value ranges.  
 
 ```
 X = dataset[features].iloc[10]
@@ -276,7 +276,7 @@ Fare < 23.35
 Sex_label < 0.5
 ``` 
 
-In case of _explanation_type=sklearn_default_ (available only for scikit-learn), we can visualize the features' importance involved in prediction path only. 
+In case of `explanation_type=sklearn_default` (available only for scikit-learn), we can visualize the features' importance involved in prediction path only. 
 Features' importance is calculated based on mean decrease in impurity. <br> 
 Check [Beware Default Random Forest Importances](https://explained.ai/rf-importance/index.html) article for a comparison between features' importance based on mean decrease in impurity vs permutation importance.
 
