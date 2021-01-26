@@ -174,6 +174,7 @@ from dtreeviz.trees import *
 ```
 
 ### Regression decision tree
+
 The default orientation of tree is top down but you can change it to left to right using `orientation="LR"`. `view()` gives a pop up window with rendered graphviz object. 
 
 ```bash
@@ -194,6 +195,7 @@ viz.view()
   
   
 ### Classification decision tree
+
 An additional argument of `class_names` giving a mapping of class value with class name is required for classification trees. 
 
 ```bash
@@ -215,6 +217,7 @@ viz.view()
 <img src=testing/samples/iris-TD-2.svg width=50% height=30% align="center">
 
 ### Prediction path
+
 Highlights the decision nodes in which the feature value of single observation passed in argument `X` falls. Gives feature values of the observation and highlights features which are used by tree to traverse path. 
   
 ```bash
@@ -233,9 +236,11 @@ viz = dtreeviz(regr,
               
 viz.view()  
 ```
+
 <img src=testing/samples/diabetes-LR-2-X.svg width=100% height=50%>
 
 If you want to visualize just the prediction path, you need to set parameter _show_just_path=True_
+
 ```bash
 dtreeviz(regr,
         diabetes.data, 
@@ -247,11 +252,13 @@ dtreeviz(regr,
         show_just_path=True     
         )
 ```
+
 <img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="60%">
 
 #### Explain prediction path
-These visualizations are useful to explain to somebody, without machine learning skills, why your model made that specific prediction. <br/>
-In case of _explanation_type=plain_english_, it searches in prediction path and find feature value ranges.  
+
+These visualizations are useful to explain to somebody, without machine learning skills, why your model made that specific prediction. <br/> In case of _explanation_type=plain_english_, it searches in prediction path and find feature value ranges.  
+
 ```
 X = dataset[features].iloc[10]
 print(X)
@@ -272,14 +279,15 @@ Sex_label < 0.5
 In case of _explanation_type=sklearn_default_ (available only for scikit-learn), we can visualize the features' importance involved in prediction path only. 
 Features' importance is calculated based on mean decrease in impurity. <br> 
 Check [Beware Default Random Forest Importances](https://explained.ai/rf-importance/index.html) article for a comparison between features' importance based on mean decrease in impurity vs permutation importance.
+
 ```
 explain_prediction_path(tree_classifier, X, feature_names=features, explanation_type="sklearn_default")
 ```
+
 <img src="https://user-images.githubusercontent.com/12815158/94448483-9d042380-01b3-11eb-95f6-a973f1b7092a.png" width="60%"/>
 
-
-
 ### Decision tree without scatterplot or histograms for decision nodes
+
 Simple tree without histograms or scatterplots for decision nodes. 
 Use argument `fancy=False`  
   
@@ -333,28 +341,30 @@ plt.show()
 
 ```python
 from mpl_toolkits.mplot3d import Axes3D
+from sklearn.tree import DecisionTreeRegressor
 from dtreeviz.trees import *
 
-df_cars = pd.read_csv("data/cars.csv")
-X = df_cars.drop('MPG', axis=1)
+df_cars = pd.read_csv("cars.csv")
+X = df_cars[['WGT','ENG']]
 y = df_cars['MPG']
 
-features = [2, 1]
-X = X.values[:,features]
+dt = DecisionTreeRegressor(max_depth=3, criterion="mae")
+dt.fit(X, y)
+
 figsize = (6,5)
 fig = plt.figure(figsize=figsize)
 ax = fig.add_subplot(111, projection='3d')
 
-t = rtreeviz_bivar_3D(ax,
+t = rtreeviz_bivar_3D(dt,
                       X, y,
-                      max_depth=4,
                       feature_names=['Vehicle Weight', 'Horse Power'],
                       target_name='MPG',
                       fontsize=14,
                       elev=20,
                       azim=25,
                       dist=8.2,
-                      show={'splits','title'})
+                      show={'splits','title'},
+                      ax=ax)
 plt.show()
 ```
 
@@ -363,21 +373,21 @@ plt.show()
 <img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="60%">
 
 ```python
+from sklearn.tree import DecisionTreeRegressor
 from dtreeviz.trees import *
 
-df_cars = pd.read_csv("data/cars.csv")
-X = df_cars.drop('MPG', axis=1)
+df_cars = pd.read_csv("cars.csv")
+X = df_cars[['WGT','ENG']]
 y = df_cars['MPG']
 
-features=[2, 1]
-X = X.values[:, features]
-figsize = (6, 5)
-fig, ax = plt.subplots(1, 1, figsize=figsize)
-t = rtreeviz_bivar_heatmap(ax,
+dt = DecisionTreeRegressor(max_depth=3, criterion="mae")
+dt.fit(X, y)
+
+t = rtreeviz_bivar_heatmap(dt,
                            X, y,
-                           max_depth=4,
                            feature_names=['Vehicle Weight', 'Horse Power'],
                            fontsize=14)
+
 plt.show()
 ```
 
@@ -386,18 +396,22 @@ plt.show()
 <img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="60%">
 
 ```python
+from sklearn.tree import DecisionTreeClassifier
 from dtreeviz.trees import *
 
-know = pd.read_csv("data/knowledge.csv")
+know = pd.read_csv("knowledge.csv")
 class_names = ['very_low', 'Low', 'Middle', 'High']
 know['UNS'] = know['UNS'].map({n: i for i, n in enumerate(class_names)})
 
-x_train = know.PEG
-y_train = know['UNS']
-figsize = (6,2)
-fig, ax = plt.subplots(1, 1, figsize=figsize)
-ct = ctreeviz_univar(ax, x_train, y_train, max_depth=3,
-                     feature_name = 'PEG', class_names=class_names,
+X = know[['PEG']]
+y = know['UNS']
+
+dt = DecisionTreeClassifier(max_depth=3)
+dt.fit(X, y)
+
+ct = ctreeviz_univar(dt, X, y,
+                     feature_names = ['PEG'],
+                     class_names=class_names,
                      target_name='Knowledge',
                      nbins=40, gtype='strip',
                      show={'splits','title'})
@@ -410,48 +424,58 @@ plt.show()
 <img src="https://user-images.githubusercontent.com/178777/49105085-9792c680-f234-11e8-8af5-bc2fde950ab1.png" width="60%">
 
 ```python
+from sklearn.tree import DecisionTreeClassifier
 from dtreeviz.trees import *
 
-know = pd.read_csv("data/knowledge.csv")
+know = pd.read_csv("knowledge.csv")
+print(know)
 class_names = ['very_low', 'Low', 'Middle', 'High']
 know['UNS'] = know['UNS'].map({n: i for i, n in enumerate(class_names)})
 
-features=[4,3]
-X_train = know.drop('UNS', axis=1)
-y_train = know['UNS']
-X_train = X_train.values[:, features]
-figsize = (6,5)
-fig, ax = plt.subplots(1, 1, figsize=figsize)
-ctreeviz_bivar(ax, X_train, y_train, max_depth=3,
-               feature_names = ['PEG','LPR'],
-               class_names=class_names,
-               target_name='Knowledge')
+X = know[['PEG','LPR']]
+y = know['UNS']
+
+dt = DecisionTreeClassifier(max_depth=3)
+dt.fit(X, y)
+
+ct = ctreeviz_bivar(dt, X, y,
+                    feature_names = ['PEG','LPR'],
+                    class_names=class_names,
+                    target_name='Knowledge')
 plt.tight_layout()
 plt.show()
 ```
+
 ### Leaf node purity
+
 Leaf purity affects prediction confidence. <br>
 For classification leaf purity is calculated based on majority target class (gini, entropy) and for regression is calculated based on target variance values. <br> 
 Leaves with low variance among the target values (regression) or an overwhelming majority target class (classification) are much more reliable predictors.
 When we have a decision tree with a high depth, it can be difficult to get an overview about all leaves purities. That's why we created a specialized visualization only for leaves purities.
 
 *display_type* can take values 'plot' (default), 'hist' or 'text'
+
 ```
 viz_leaf_criterion(tree_classifier, display_type = "plot")
 ```
+
 <img src="https://user-images.githubusercontent.com/12815158/94367215-f271ff00-00e5-11eb-802c-d5f486c45ab4.png" width="60%"/>
 
 ### Leaf node samples
+
 It's also important to take a look at the number of samples from leaves. For example, we can have a leaf with a good purity but very few samples, which is a sign of overfitting.
 The ideal scenario would be to have a leaf with good purity which is based on a significant number of samples.
 
 *display_type* can take values 'plot' (default), 'hist' or 'text'
+
 ```
 viz_leaf_samples(tree_classifier, dataset[features], display_type='plot')
 ``` 
+
 <img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='60%'/>
 
 #### Leaf node samples for classification
+
 This is a specialized visualization for classification. It helps also to see the distribution of target class values from leaf samples.
 ```
 ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target])
@@ -459,33 +483,44 @@ ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target])
 <img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="60%"/>
 
 ### Leaf plots
+
 Visualize leaf target distribution for regression decision trees.
+
 ```
 viz_leaf_target(tree_regressor, dataset[features_reg], dataset[target_reg], features_reg, target_reg)
 ```
+
 <img src="https://user-images.githubusercontent.com/12815158/94445430-19950300-01b0-11eb-9a5a-8f1672f11d94.png" width="35%"> 
 
 
 ## Visualization methods setup
+
 Starting with dtreeviz 1.0 version, we refactored the concept of ShadowDecTree. If we want to add a new ML library in dtreeviz, we just need to add a new implementation of ShadowDecTree API, like ShadowSKDTree, ShadowXGBDTree or ShadowSparkTree. 
    
 Initializing a ShadowSKDTree object:
+
 ```
 sk_dtree = ShadowSKDTree(tree_classifier, dataset[features], dataset[target], features, target, [0, 1])
 ```
+
 Once we have the object initialized, we can used it to create all the visualizations, like : 
+
 ```
 dtreeviz(sk_dtree)
 ```
+
 ```
 viz_leaf_samples(sk_dtree)
 ```
+
 ```
 viz_leaf_criterion(sk_dtree)
 ```
+
 In this way, we reduced substantially the list of parameters required for each visualization and it's also more efficient in terms of computing power.
 
 You can check the [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks) section for more examples of using ShadowSKDTree, ShadowXGBDTree or ShadowSparkTree.
+
 ## Install dtreeviz locally
 
 Make sure to follow the install guidelines above.
@@ -503,22 +538,26 @@ E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packag
 Each function has an optional parameter `colors` which allows passing a dictionary of colors which is used in the plot. For an example of each parameter have a look at this [notebook](notebooks/colors.ipynb).
 
 ### Example
-    dtreeviz.trees.dtreeviz(regr,
-                            boston.data,
-                            boston.target,
-                            target_name='price',
-                            feature_names=boston.feature_names,
-                            colors={'scatter_marker': '#00ff00'})
+
+```python
+dtreeviz.trees.dtreeviz(regr,
+                        boston.data,
+                        boston.target,
+                        target_name='price',
+                        feature_names=boston.feature_names,
+                        colors={'scatter_marker': '#00ff00'})
+```
 
 would paint the scatter (dots) in red.
 
 ![Green plot](testing/samples/colors_scatter_marker.svg)
+
 ### Parameters
+
 The colors are defined in `colors.py`, all options and default parameters are shown below.
 
 
-
-
+```python
     COLORS = {'scatter_edge': GREY,         
               'scatter_marker': BLUE,
               'split_line': GREY,
@@ -542,7 +581,7 @@ The colors are defined in `colors.py`, all options and default parameters are sh
               'leaf_label': GREY,
               'pie': GREY,
               }
-          
+```          
 
 The color needs be in a format [matplotlib](https://matplotlib.org/2.0.2/api/colors_api.html) can interpret, e.g. a html hex like `'#eeefff'` .
 
@@ -574,7 +613,6 @@ See also the list of [contributors](https://github.com/parrt/dtreeviz/graphs/con
 ## License
 
 This project is licensed under the terms of the MIT license, see [LICENSE](LICENSE).
-
 
 ## Deploy
 

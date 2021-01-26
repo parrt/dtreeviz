@@ -460,7 +460,7 @@ class ShadowDecTree(ABC):
             raise ValueError(
                 f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
                 "xgboost.core.Booster, pyspark DecisionTreeClassificationModel or "
-                "pyspark DecisionTreeClassificationModel) but you passed a {tree_model.__class__.__name__}!")
+                f"pyspark DecisionTreeClassificationModel) but you passed a {tree_model.__class__.__name__}!")
 
 
 class ShadowDecTreeNode():
