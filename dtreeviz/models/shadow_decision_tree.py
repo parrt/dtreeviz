@@ -55,14 +55,11 @@ class ShadowDecTree(ABC):
 
         self.feature_names = feature_names
         self.target_name = target_name
-        self.class_names = class_names
-        # self.class_weight = self.get_class_weight()
         self.x_data = ShadowDecTree._get_x_data(x_data)
         self.y_data = ShadowDecTree._get_y_data(y_data)
-        # self.node_to_samples = self.get_node_samples()
         self.root, self.leaves, self.internal = self._get_tree_nodes()
-        if class_names:
-            self.class_names = self._get_class_names()
+        if self.is_classifier():
+            self.class_names = self._normalize_class_names(class_names)
 
     @abstractmethod
     def is_fit(self) -> bool:
@@ -391,14 +388,17 @@ class ShadowDecTree(ABC):
         index, leaf_sample_0, leaf_samples_1 = zip(*leaf_samples)
         return index, leaf_sample_0, leaf_samples_1
 
-    def _get_class_names(self):
+    def _normalize_class_names(self, class_names):
         if self.is_classifier():
-            if isinstance(self.class_names, dict):
-                return self.class_names
-            elif isinstance(self.class_names, Sequence):
-                return {i: n for i, n in enumerate(self.class_names)}
+            if class_names is None:
+                return {i : f"class {i}" for i in range(self.nclasses())}
+            if isinstance(class_names, dict):
+                return class_names
+            elif isinstance(class_names, Sequence):
+                return {i: n for i, n in enumerate(class_names)}
             else:
-                raise Exception(f"class_names must be dict or sequence, not {self.class_names.__class__.__name__}")
+                raise Exception(f"class_names must be dict or sequence, not {class_names.__class__.__name__}")
+        return None
 
     def _get_tree_nodes(self):
         # use locals not args to walk() for recursion speed in python
