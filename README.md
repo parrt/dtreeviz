@@ -317,21 +317,19 @@ For more examples and different implementations, please see the jupyter [noteboo
 
 ```python
 import pandas as pd
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
 from dtreeviz.trees import *
 
-df_cars = pd.read_csv("data/cars.csv")
-X_train, y_train = df_cars.drop('MPG', axis=1), df_cars['MPG']
+df_cars = pd.read_csv("cars.csv")
+X, y = df_cars[['WGT']], df_cars['MPG']
+
+dt = DecisionTreeRegressor(max_depth=3, criterion="mae")
+dt.fit(X, y)
 
 fig = plt.figure()
 ax = fig.gca()
-t = rtreeviz_univar(ax,
-                    X_train.WGT, y_train,
-                    max_depth=2,
-                    feature_name='Vehicle Weight',
-                    target_name='MPG',
-                    fontsize=14)
+rtreeviz_univar(dt, X, y, 'WGT', 'MPG', ax=ax)
 plt.show()
 ```
 
