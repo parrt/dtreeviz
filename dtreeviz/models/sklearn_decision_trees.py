@@ -16,7 +16,6 @@ class ShadowSKDTree(ShadowDecTree):
                  class_names: (List[str], Mapping[int, str]) = None):
 
         self.node_to_samples = None
-
         super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
 
     def is_fit(self):
