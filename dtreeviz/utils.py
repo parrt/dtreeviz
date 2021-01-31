@@ -148,7 +148,12 @@ def _extract_final_feature_names(pipeline, features):
 def extract_params_from_pipeline(pipeline, x_data, feature_names):
     """
     Extracts necessary parameters from an :py:class:`sklearn.pipeline.Pipeline` to pass into
-    :py:class:`dtreeviz.models.sklearn_decision_trees.ShadowSKDTree`
+    :py:class:`dtreeviz.models.sklearn_decision_trees.ShadowSKDTree`.
+
+    Args:
+        pipeline (sklearn.pipeline.Pipeline): An SKlearn pipeline whose last component is a decision tree model.
+        x_data (numpy.ndarray): The (X)-input data on which the pipeline was fitted on.
+        feature_names (list): List of names of the features in `x_data`.
     """
 
     # Pick last element of pipeline
