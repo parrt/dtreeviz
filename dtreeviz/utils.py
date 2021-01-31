@@ -154,6 +154,10 @@ def extract_params_from_pipeline(pipeline, x_data, feature_names):
         pipeline (sklearn.pipeline.Pipeline): An SKlearn pipeline whose last component is a decision tree model.
         x_data (numpy.ndarray): The (X)-input data on which the pipeline was fitted on.
         feature_names (list): List of names of the features in `x_data`.
+
+    Returns:
+        tuple: Tuple consisting of the tree model, the transformed input data, and a list of feature
+        names used by the model.
     """
 
     # Pick last element of pipeline
