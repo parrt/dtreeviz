@@ -4,11 +4,12 @@ from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
-import xgboost as xgb
-from xgboost.core import Booster
 
 from dtreeviz.models.shadow_decision_tree import VisualisationNotYetSupportedError
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
+
+import xgboost as xgb
+from xgboost.core import Booster
 
 
 class ShadowXGBDTree(ShadowDecTree):
@@ -27,6 +28,8 @@ class ShadowXGBDTree(ShadowDecTree):
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None
                  ):
+        if hasattr(booster, 'get_booster'):
+            booster = booster.get_booster() # support XGBClassifier and XGBRegressor
         self.booster = booster
         self.tree_index = tree_index
         self.tree_to_dataframe = self._get_tree_dataframe()
@@ -86,8 +89,6 @@ class ShadowXGBDTree(ShadowDecTree):
         Return dictionary mapping node id to list of sample indexes considered by
         the feature/split decision.
         """
-        # Doc say: "Return a node indicator matrix where non zero elements
-        #           indicates that the samples goes through the nodes."
 
         if self.node_to_samples is not None:
             return self.node_to_samples

@@ -1,3 +1,5 @@
+# This is broken
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -15,7 +17,6 @@ y = df_cars['MPG']
 features = [2, 1]
 X = X.values[:,features]
 
-max_depth = 4
 figsize = (6,5)
 fig = plt.figure(figsize=figsize)
 ax = fig.add_subplot(111, projection='3d')
@@ -23,7 +24,6 @@ ax = fig.add_subplot(111, projection='3d')
 # start topdown view
 t = rtreeviz_bivar_3D(ax,
                       X, y,
-                      max_depth=max_depth,
                       feature_names=['Vehicle Weight', 'Horse Power'],
                       target_name='MPG',
                       fontsize=14,

@@ -3,12 +3,9 @@ from collections import Sequence
 from numbers import Number
 from typing import List, Tuple, Mapping
 
-import lightgbm
 import numpy as np
 import pandas as pd
-import pyspark.ml
 import sklearn
-import xgboost
 
 
 class ShadowDecTree(ABC):
@@ -49,21 +46,20 @@ class ShadowDecTree(ABC):
             Target's name
         :param class_names: List[str], Mapping[int, str]
             Class' names (in case of a classifier)
+
         """
 
-        # TODO check if we need the self.tree_model
         self.tree_model = tree_model
         if not self.is_fit():
             raise Exception(f"Model {tree_model} is not fit.")
 
         self.feature_names = feature_names
         self.target_name = target_name
-        self.class_names = class_names
         self.x_data = ShadowDecTree._get_x_data(x_data)
         self.y_data = ShadowDecTree._get_y_data(y_data)
         self.root, self.leaves, self.internal = self._get_tree_nodes()
-        if class_names:
-            self.class_names = self._get_class_names()
+        if self.is_classifier():
+            self.class_names = self._normalize_class_names(class_names)
 
     @abstractmethod
     def is_fit(self) -> bool:
@@ -394,14 +390,17 @@ class ShadowDecTree(ABC):
         index, leaf_sample_0, leaf_samples_1 = zip(*leaf_samples)
         return index, leaf_sample_0, leaf_samples_1
 
-    def _get_class_names(self):
+    def _normalize_class_names(self, class_names):
         if self.is_classifier():
-            if isinstance(self.class_names, dict):
-                return self.class_names
-            elif isinstance(self.class_names, Sequence):
-                return {i: n for i, n in enumerate(self.class_names)}
+            if class_names is None:
+                return {i : f"class {i}" for i in range(self.nclasses())}
+            if isinstance(class_names, dict):
+                return class_names
+            elif isinstance(class_names, Sequence):
+                return {i: n for i, n in enumerate(class_names)}
             else:
-                raise Exception(f"class_names must be dict or sequence, not {self.class_names.__class__.__name__}")
+                raise Exception(f"class_names must be dict or sequence, not {class_names.__class__.__name__}")
+        return None
 
     def _get_tree_nodes(self):
         # use locals not args to walk() for recursion speed in python
@@ -440,30 +439,30 @@ class ShadowDecTree(ABC):
 
     @staticmethod
     def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
+        if hasattr(tree_model, 'get_booster'):
+            # scikit-learn wrappers XGBClassifier and XGBRegressor allow you to
+            # extract the underlying xgboost.core.Booster with the get_booster() method:
+            tree_model = tree_model.get_booster()
         if isinstance(tree_model, ShadowDecTree):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
             from dtreeviz.models import sklearn_decision_trees
             return sklearn_decision_trees.ShadowSKDTree(tree_model, x_data, y_data, feature_names,
                                                         target_name, class_names)
-        elif isinstance(tree_model, xgboost.core.Booster):
+        elif str(type(tree_model)).endswith("xgboost.core.Booster'>"):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
-        elif isinstance(tree_model, lightgbm.basic.Booster):
-            from dtreeviz.models import lightgbm_decision_tree
-            return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, x_data, y_data, feature_names,
-                                                             target_name, class_names)
-
-        elif isinstance(tree_model, pyspark.ml.classification.DecisionTreeClassificationModel):
+        elif (str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>") or
+                str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>")):
             from dtreeviz.models import spark_decision_tree
-            return spark_decision_tree.ShadowSparkTree(tree_model, x_data, y_data, feature_names, target_name,
-                                                       class_names)
+            return spark_decision_tree.ShadowSparkTree(tree_model, tree_index, x_data, y_data,
+                                                    feature_names, target_name, class_names)
         else:
             raise ValueError(
-                f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, xgboost.core.Booster, "
-                f"lightgbm.basic.Booster, pyspark.ml.classification.DecisionTreeClassificationModel but was "
-                f"{tree_model.__class__.__name__}")
+                f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
+                "xgboost.core.Booster, pyspark DecisionTreeClassificationModel or "
+                f"pyspark DecisionTreeClassificationModel) but you passed a {tree_model.__class__.__name__}!")
 
 
 class ShadowDecTreeNode():
@@ -616,4 +615,4 @@ class ShadowDecTreeNode():
 
 class VisualisationNotYetSupportedError(Exception):
     def __init__(self, method_name, model_name):
-        super().__init__(f"{method_name} is not implemented for {model_name} yet")
+        super().__init__(f"{method_name} is not implemented yet for {model_name}")
