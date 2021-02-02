@@ -1,6 +1,8 @@
 import xml.etree.cElementTree as ET
+import pandas as pd
 from numbers import Number
 from typing import Tuple, Sequence
+
 
 def inline_svg_images(svg) -> str:
     """
@@ -121,6 +123,55 @@ def scale_SVG(svg:str, scale:float) -> str:
 
 def myround(v,ndigits=2):
     return format(v, '.' + str(ndigits) + 'f')
+
+
+def _extract_final_feature_names(pipeline, features):
+    """
+    Computes the final features names of a :py:mod:`~sklearn.pipeline.Pipeline` used in its last
+    component.
+
+    Args:
+        pipeline (sklearn.pipeline.Pipeline): A pipeline
+        features (list): List of input features to the pipeline
+
+    Returns:
+        list: Features names used by the last component
+    """
+    for component in pipeline[:-1]:
+        if hasattr(component, 'get_support'):
+            features = [f for f, s in zip(features, component.get_support()) if s]
+        if hasattr(component, 'get_feature_names'):
+            features = component.get_feature_names(features)
+
+    return features
+
+def extract_params_from_pipeline(pipeline, x_data, feature_names):
+    """
+    Extracts necessary parameters from an :py:class:`sklearn.pipeline.Pipeline` to pass into
+    :py:class:`dtreeviz.models.sklearn_decision_trees.ShadowSKDTree`.
+
+    Args:
+        pipeline (sklearn.pipeline.Pipeline): An SKlearn pipeline whose last component is a decision tree model.
+        x_data (numpy.ndarray): The (X)-input data on which the pipeline was fitted on.
+        feature_names (list): List of names of the features in `x_data`.
+
+    Returns:
+        tuple: Tuple consisting of the tree model, the transformed input data, and a list of feature
+        names used by the model.
+    """
+
+    # Pick last element of pipeline
+    tree_model = pipeline.steps[-1][1]
+
+    feature_names = _extract_final_feature_names(
+        pipeline=pipeline,
+        features=feature_names
+    )
+    x_data = pd.DataFrame(
+        data=pipeline[:-1].transform(x_data),
+        columns=feature_names
+    )
+    return tree_model, x_data, feature_names
 
 
 if __name__ == '__main__':
