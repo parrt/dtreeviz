@@ -144,6 +144,9 @@ class ShadowSparkTree(ShadowDecTree):
             right = np.nonzero(node_X_data > split)[0]
         return left, right
 
+    def get_root_node_labels(self):
+        return ["&le;", "&gt;"]
+
     def get_node_nsamples(self, id):
         def _get_nsamples(spark_version):
             if spark_version >= 3:

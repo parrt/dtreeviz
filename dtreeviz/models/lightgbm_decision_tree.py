@@ -160,6 +160,9 @@ class ShadowLightGBMTree(ShadowDecTree):
             right = np.nonzero(node_X_data > split)[0]
         return left, right
 
+    def get_root_node_labels(self):
+        return ["&le;", "&gt;"]
+
     def get_node_nsamples(self, id):
         if self.children_right[id] == -1 and self.children_left[id] == -1:
             return self.tree_nodes[id]["leaf_count"]

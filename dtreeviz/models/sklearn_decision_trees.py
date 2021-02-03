@@ -75,6 +75,9 @@ class ShadowSKDTree(ShadowDecTree):
 
         return left, right
 
+    def get_root_node_labels(self):
+        return ["&le;", "&gt;"]
+
     def get_node_nsamples(self, id):
         return len(self.get_node_samples()[id])
 
@@ -140,3 +143,4 @@ class ShadowSKDTree(ShadowDecTree):
 
     def shouldGoLeftAtSplit(self, id, x):
         return x < self.get_node_split(id)
+
