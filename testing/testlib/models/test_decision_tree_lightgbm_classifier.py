@@ -82,5 +82,26 @@ def test_get_node_samples(shadow_dec_tree: ShadowLightGBMTree):
     assert len(node_samples[17]) == 196
     assert len(node_samples[21]) == 86
 
+
+def test_get_split_samples(shadow_dec_tree: ShadowLightGBMTree):
+    left_0, rigth_0 = shadow_dec_tree.get_split_samples(0)
+    assert len(left_0) == 245 and len(rigth_0) == 467
+
+    left_1, right_1 = shadow_dec_tree.get_split_samples(1)
+    assert len(left_1) == 130 and len(right_1) == 115
+
+    left_3, right_3 = shadow_dec_tree.get_split_samples(3)
+    assert len(left_3) == 56 and len(right_3) == 54
+
+    left_7, right_7 = shadow_dec_tree.get_split_samples(7)
+    assert len(left_7) == 95 and len(right_7) == 20
+
+    left_12, right_12 = shadow_dec_tree.get_split_samples(12)
+    assert len(left_12) == 340 and len(right_12) == 127
+
+    left_17, right_17 = shadow_dec_tree.get_split_samples(17)
+    assert len(left_17) == 21 and len(right_17) == 175
+
+
 def test_get_min_samples_leaf(shadow_dec_tree: ShadowLightGBMTree):
     assert shadow_dec_tree.get_min_samples_leaf() == 20

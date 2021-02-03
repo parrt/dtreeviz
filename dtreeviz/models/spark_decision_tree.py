@@ -130,6 +130,20 @@ class ShadowSparkTree(ShadowDecTree):
         self.node_to_samples = node_to_samples
         return self.node_to_samples
 
+    def get_split_samples(self, id):
+        samples = np.array(self.get_node_samples()[id])
+        node_X_data = self.x_data[samples, self.get_node_feature(id)]
+        split = self.get_node_split(id)
+
+        if self.is_categorical_split(id):
+            indices = np.sum([node_X_data == split_value for split_value in self.get_node_split(id)[0]], axis=0)
+            left = np.nonzero(indices == 1)[0]
+            right = np.nonzero(indices == 0)[0]
+        else:
+            left = np.nonzero(node_X_data <= split)[0]
+            right = np.nonzero(node_X_data > split)[0]
+        return left, right
+
     def get_node_nsamples(self, id):
         def _get_nsamples(spark_version):
             if spark_version >= 3:

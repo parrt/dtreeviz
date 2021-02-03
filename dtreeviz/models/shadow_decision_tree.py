@@ -132,6 +132,11 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
+    def get_split_samples(self, id):
+        """Returns left and right split indexes from a node"""
+        pass
+
+    @abstractmethod
     def get_node_nsamples(self, id):
         """Returns number of samples for a specific node id."""
         pass
@@ -393,7 +398,7 @@ class ShadowDecTree(ABC):
     def _normalize_class_names(self, class_names):
         if self.is_classifier():
             if class_names is None:
-                return {i : f"class {i}" for i in range(self.nclasses())}
+                return {i: f"class {i}" for i in range(self.nclasses())}
             if isinstance(class_names, dict):
                 return class_names
             elif isinstance(class_names, Sequence):
@@ -454,14 +459,18 @@ class ShadowDecTree(ABC):
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
         elif (str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>") or
-                str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>")):
+              str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>")):
             from dtreeviz.models import spark_decision_tree
             return spark_decision_tree.ShadowSparkTree(tree_model, tree_index, x_data, y_data,
-                                                    feature_names, target_name, class_names)
+                                                       feature_names, target_name, class_names)
+        elif "lightgbm.basic.Booster" in str(type(tree_model)):
+            from dtreeviz.models import lightgbm_decision_tree
+            return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, x_data, y_data,
+                                                             feature_names, target_name, class_names)
         else:
             raise ValueError(
                 f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
-                "xgboost.core.Booster, pyspark DecisionTreeClassificationModel or "
+                "xgboost.core.Booster, lightgbm.basic.Booster, pyspark DecisionTreeClassificationModel or "
                 f"pyspark DecisionTreeClassificationModel) but you passed a {tree_model.__class__.__name__}!")
 
 
@@ -539,17 +548,7 @@ class ShadowDecTreeNode():
     def split_samples(self) -> Tuple[np.ndarray, np.ndarray]:
         """Returns the list of indexes to the left and the right of the split value."""
 
-        samples = np.array(self.samples())
-        node_X_data = self.shadow_tree.x_data[samples, self.feature()]
-        split = self.split()
-        if self.is_categorical_split():
-            indices = np.sum([node_X_data == split_value for split_value in self.split()[0]], axis=0)
-            left = np.nonzero(indices == 1)[0]
-            right = np.nonzero(indices == 0)[0]
-        else:
-            left = np.nonzero(node_X_data < split)[0]
-            right = np.nonzero(node_X_data >= split)[0]
-        return left, right
+        return self.shadow_tree.get_split_samples(self.id)
 
     def isleaf(self) -> bool:
         return self.left is None and self.right is None
