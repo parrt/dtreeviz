@@ -7,15 +7,70 @@ from matplotlib.collections import PatchCollection
 from colour import Color
 from PIL import ImageColor
 
-from dtreeviz.colors import adjust_colors
+from dtreeviz.colors import adjust_colors, GREY
+from dtreeviz.trees import ctreeviz_bivar, add_classifier_legend
+from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 
 
-def rfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=100, tile_fraction=.88,
-                boundary_marker='o', boundary_markersize=.8,
-                show_proba=True,
-                colors:dict=None, dot_w=25, ax=None) -> None:
+def ctreeviz_bivar_fusion(trees, X:np.ndarray, y:np.ndarray,
+                          feature_names, target_name, class_names=None,
+                          fontsize=12,
+                          fontname="Arial",
+                          show_region_edges=True,
+                          alpha=.1,
+                          ax=None):
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
+    ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_linewidth(.5)
+    ax.spines['bottom'].set_linewidth(.5)
+
+    class_names = ShadowDecTree.normalize_class_names(class_names, nclasses=len(np.unique(y)))
+
+    for i in range(len(trees)):
+        ctreeviz_bivar(trees[i], X, y,
+                       feature_names=feature_names, target_name=target_name,
+                       class_names=class_names,
+                       show={'splits'},
+                       colors={'scatter_edge': 'black',
+                               'tesselation_alpha': alpha,
+                               'rect_edge':GREY if show_region_edges else None,
+                               'scatter_marker_alpha':1.0},
+                       fontsize=fontsize,
+                       fontname=fontname,
+                       ax=ax)
+
+
+def crfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
+                 boundary_marker='o', boundary_markersize=.8,
+                 show_proba=True,
+                 feature_names=None, target_name=None, class_names=None,
+                 show=['instances'],
+                 fontsize=12,
+                 fontname="Arial",
+                 colors:dict=None, dot_w=25, ax=None) -> None:
     """
-    Draw a tiled grid over a 2D feature space where each tile is colored by
+
+    :param model:
+    :param X:
+    :param y:
+    :param ntiles:
+    :param tile_fraction:
+    :param boundary_marker:
+    :param boundary_markersize:
+    :param show_proba:
+    :param feature_names:
+    :param target_name:
+    :param class_names:
+    :param colors:
+    :param dot_w:
+    :param ax:
+    :return:
+    """
+    """
+    (crfviz_bivar means "classifier random forest visualize, two variables")
+    Draw a tiled grid over a 2D classifier feature space where each tile is colored by
     the coordinate probabilities or coordinate predicted class. The X,y instances
     are drawn as circles on top of the tiling. Draw dots representing the boundary
     between classes.
@@ -35,13 +90,19 @@ def rfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=100, tile_fraction=.88
                             default is a circle 'o'.
     :param boundary_markersize: The boundary marker size; default is .8
     :param show_proba: Show probabilities by default; if false, show prediction color.
+    :param feature_names: 
+    :param target_name: 
+    :param class_names: 
+    :param show: Which elements to show, includes elements from ['legend', 'instances'] 
+    :param fontsize: 
+    :param fontname: 
     :param colors: A dictionary with adjustments to the colors
     :param dot_w: How wide should the circles be when drawing the instances
     :param ax:  An optional matplotlib "axes" upon which this method should draw.
     :return:
     """
     if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.8))
+        fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
     ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_linewidth(.5)
@@ -71,12 +132,22 @@ def rfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=100, tile_fraction=.88
                         colors, w, h)
 
     # Draw the X instances circles
-    for i, h in enumerate(class_X):
-        ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
-                   edgecolors=colors['scatter_edge'], lw=.5, alpha=1.0)
+    if 'instances' in show:
+        for i, h in enumerate(class_X):
+            ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
+                       edgecolors=colors['scatter_edge'], lw=.5, alpha=1.0)
+
+    if feature_names is not None:
+        ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+
+    if 'legend' in show:
+        class_names = ShadowDecTree.normalize_class_names(class_names,
+                                                          nclasses=len(np.unique(y)))
+        add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
 
 
-def compute_tiling(model, X:np.ndarray, y:np.ndarray, ntiles=100, tile_fraction=.88):
+def compute_tiling(model, X:np.ndarray, y:np.ndarray, ntiles, tile_fraction):
     """
     Create grid over the range of x1 and x2 variables; use the model to
     compute the probabilities with model.predict_proba(), which will work with sklearn
@@ -175,7 +246,7 @@ def draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, b
     # put a zero col vector on the left to restore size
     dx = np.hstack([np.zeros((ntiles, 1)), dx])
 
-    # find transitions moving vertically
+    # find transitions moving vertically, bottom to top (grid matrix is flipped vertically btw)
     dy = np.diff(grid_pred_as_matrix, axis=0)
     dy = np.abs(dy)
     # put a zero row vector on the top to restore size
@@ -185,6 +256,7 @@ def draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, b
     dy_edge_idx = np.where(dy.reshape(-1)) # what are the indexes of dy class transitions?
     dx_edges = grid_points[dx_edge_idx]    # get v1,v2 coordinates of left-to-right transitions
     dy_edges = grid_points[dy_edge_idx]    # get v1,v2 coordinates of bottom-to-top transitions
+
     # Plot the boundary markers in between tiles; e.g., shift dx stuff to the left half a tile
     ax.plot(dx_edges[:, 0] - w / 2, dx_edges[:, 1], boundary_marker,
             markersize=boundary_markersize, c=colors['class_boundary'], alpha=1.0)
