@@ -27,6 +27,7 @@ color_blind_friendly_colors = [
 COLORS = {'scatter_edge': GREY,
           'scatter_marker': BLUE,
           'scatter_marker_alpha': 0.5,
+          'class_boundary' : GREY,
           'tesselation_alpha': 0.3,
           'tesselation_alpha_3D': 0.5,
           'split_line': GREY,
