@@ -13,7 +13,33 @@ from dtreeviz.colors import adjust_colors
 def rfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=100, tile_fraction=.88,
                 boundary_marker='o', boundary_markersize=.8,
                 show_proba=True,
-                colors=None, dot_w=25, ax=None) -> None:
+                colors:dict=None, dot_w=25, ax=None) -> None:
+    """
+    Draw a tiled grid over a 2D feature space where each tile is colored by
+    the coordinate probabilities or coordinate predicted class. The X,y instances
+    are drawn as circles on top of the tiling. Draw dots representing the boundary
+    between classes.
+
+    Warning: there are a number of limitations in this initial implementation and
+    so changes to the API or functionality are likely.
+    :param model: an sklearn classifier model or any other model that can answer
+                  method predict_proba(X)
+    :param X: A 2-column data frame or numpy array with the two features to plot
+    :param y: The target column with integers indicating the true instance classes;
+              currently these must be contiguous 0..k-1 for k classes.
+    :param ntiles: How many tiles to draw across the x1, x2 feature space
+    :param tile_fraction: A value between 0..1 indicating how much of a tile
+                          should be colored; e.g., .9 indicates the tile should leave
+                          10% whitespace around the colored portion.
+    :param boundary_marker: The marker symbol from matplotlib to use for the boundary;
+                            default is a circle 'o'.
+    :param boundary_markersize: The boundary marker size; default is .8
+    :param show_proba: Show probabilities by default; if false, show prediction color.
+    :param colors: A dictionary with adjustments to the colors
+    :param dot_w: How wide should the circles be when drawing the instances
+    :param ax:  An optional matplotlib "axes" upon which this method should draw.
+    :return:
+    """
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.8))
     ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
