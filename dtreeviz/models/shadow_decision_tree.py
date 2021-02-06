@@ -388,16 +388,21 @@ class ShadowDecTree(ABC):
         index, leaf_sample_0, leaf_samples_1 = zip(*leaf_samples)
         return index, leaf_sample_0, leaf_samples_1
 
+    @staticmethod
+    def normalize_class_names(class_names, nclasses):
+        if class_names is None:
+            return {i: f"class {i}" for i in range(nclasses)}
+        if isinstance(class_names, dict):
+            return class_names
+        elif isinstance(class_names, Sequence):
+            return {i: n for i, n in enumerate(class_names)}
+        else:
+            raise Exception(
+                f"class_names must be dict or sequence, not {class_names.__class__.__name__}")
+
     def _normalize_class_names(self, class_names):
         if self.is_classifier():
-            if class_names is None:
-                return {i : f"class {i}" for i in range(self.nclasses())}
-            if isinstance(class_names, dict):
-                return class_names
-            elif isinstance(class_names, Sequence):
-                return {i: n for i, n in enumerate(class_names)}
-            else:
-                raise Exception(f"class_names must be dict or sequence, not {class_names.__class__.__name__}")
+            return ShadowDecTree.normalize_class_names(class_names, self.nclasses())
         return None
 
     def _get_tree_nodes(self):
