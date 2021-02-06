@@ -51,24 +51,6 @@ def crfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
                  fontname="Arial",
                  colors:dict=None, dot_w=25, ax=None) -> None:
     """
-
-    :param model:
-    :param X:
-    :param y:
-    :param ntiles:
-    :param tile_fraction:
-    :param boundary_marker:
-    :param boundary_markersize:
-    :param show_proba:
-    :param feature_names:
-    :param target_name:
-    :param class_names:
-    :param colors:
-    :param dot_w:
-    :param ax:
-    :return:
-    """
-    """
     (crfviz_bivar means "classifier random forest visualize, two variables")
     Draw a tiled grid over a 2D classifier feature space where each tile is colored by
     the coordinate probabilities or coordinate predicted class. The X,y instances
