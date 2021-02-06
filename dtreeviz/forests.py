@@ -9,10 +9,61 @@ from PIL import ImageColor
 
 from dtreeviz.colors import adjust_colors
 
+
 def rfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=100, tile_fraction=.88,
                 boundary_marker='o', boundary_markersize=.8,
                 show_proba=True,
-                colors=None, ax=None) -> None:
+                colors=None, dot_w=25, ax=None) -> None:
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.8))
+    ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_linewidth(.5)
+    ax.spines['bottom'].set_linewidth(.5)
+
+    # Created grid over the range of x1 and x2 variables, get probabilities, predictions
+    grid_points, grid_proba, grid_pred_as_matrix, w, h, class_X, class_values = \
+        compute_tiling(model, X, y, ntiles, tile_fraction)
+
+    colors = adjust_colors(colors)
+
+    # Get class to color map for probabilities and predictions
+    color_map, grid_pred_colors, grid_proba_colors = \
+        get_grid_colors(grid_proba, grid_pred_as_matrix, class_values, colors)
+
+    # Draw probabilities or class prediction grid
+    facecolors = grid_proba_colors if show_proba else grid_pred_colors
+    draw_tiles(ax, grid_points, facecolors, h, w)
+
+    # Get grid with class predictions with coordinates (x,y)
+    # e.g., y_pred[0,0] is lower left pixel and y_pred[5,5] is top-right pixel
+    # for npoints=5
+    grid_pred_as_matrix = grid_pred_as_matrix.reshape(ntiles, ntiles)
+
+    draw_boundary_edges(ax, grid_points, grid_pred_as_matrix,
+                        boundary_marker, boundary_markersize,
+                        colors, w, h)
+
+    # Draw the X instances circles
+    for i, h in enumerate(class_X):
+        ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
+                   edgecolors=colors['scatter_edge'], lw=.5, alpha=1.0)
+
+
+def compute_tiling(model, X:np.ndarray, y:np.ndarray, ntiles=100, tile_fraction=.88):
+    """
+    Create grid over the range of x1 and x2 variables; use the model to
+    compute the probabilities with model.predict_proba(), which will work with sklearn
+    and, I think, XGBoost. Later we will have to figure out how to get probabilities
+    out of the other models we support.
+
+    The predictions are computed simply by picking the argmax of probabilities, which
+    assumes classes are 0..k-1. TODO: update to allow this joint integer class values
+
+    For k=2 binary classifications, there is no way to set the threshold and so
+    a threshold of 0.5 his implicitly chosen by argmax.
+    TODO: support threshold for binary case
+    """
     if isinstance(X, pd.DataFrame):
         X = X.values
     if isinstance(y, pd.Series):
@@ -38,41 +89,46 @@ def rfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=100, tile_fraction=.88
             grid_points.append([v1, v2])
     grid_points = np.array(grid_points)
 
-    grid_proba = model.predict_proba(grid_points)
-    grid_pred = np.argmax(grid_proba, axis=1)
-
     class_values = np.unique(y)
     class_X = [X[y == cl] for cl in class_values]
 
-    rfviz_bivar_(grid_points, grid_proba, grid_pred, w, h, class_X, class_values,
-                 ntiles=ntiles, boundary_marker=boundary_marker, boundary_markersize=boundary_markersize,
-                 show_proba=show_proba,
-                 colors=colors, ax=ax)
+    grid_proba = model.predict_proba(grid_points)
+    grid_pred = np.argmax(grid_proba, axis=1) # TODO: assumes classes are 0..k-1
+
+    return grid_points, grid_proba, grid_pred, w, h, class_X, class_values
 
 
-def rfviz_bivar_(grid_points, grid_proba, grid_pred, w, h, class_X, class_values,
-                 ntiles=100, boundary_marker='o', boundary_markersize=.8,
-                 show_proba=True,
-                 colors=None, ax=None) -> None:
-    if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.8))
-
+def get_grid_colors(grid_proba, grid_pred, class_values, colors):
+    """
+    For the grid locations, return a list of colors, one per location
+    indicating the class color.  To compute the probability color,
+    we want to simulate overlaying regions from multiple trees onto
+    the two-dimensional feature space using alpha to shade the colors.
+    Instead, compute the color for each tile by combining the class colors
+    according to their probabilities. If class 1 has probability .3 and class 2
+    has probability .7, multiply the color ((R,G,B) color vector) associated
+    with class 1 by .3 and the color vector associated with class 2 by .7 then
+    add together. This gives a weighted color vector for each tile associated with
+    the class probabilities. This gives the exact same effect as alpha channels,
+    but transparent colors screwed up plotting the instance circles on top; they
+    got washed out. This gives us more control and we can use alpha=1.
+    """
     nclasses = len(class_values)
+    class_colors = np.array(colors['classes'][nclasses])
 
-    # Get class to color map
-    colors = adjust_colors(colors)
-    color_values = colors['classes'][nclasses]
-    color_map = {v: color_values[i] for i, v in enumerate(class_values)}
+    grid_pred_colors = class_colors[grid_pred] # color for each prediction in grid
+
+    color_map = {v: class_colors[i] for i, v in enumerate(class_values)}
     # multiply each probability vector times rgb color for each class then add
     # together to get weighted color
-    rgb = np.array([ImageColor.getcolor(c, mode="RGB") for c in color_values])
-    mycolors = grid_proba @ rgb
-    mycolors /= 255  # get in [0..1]
-    mycolors = [Color(rgb=c).hex for c in mycolors]
-    y_pred_color = np.array(color_values)[grid_pred]
+    rgb = np.array([ImageColor.getcolor(c, mode="RGB") for c in class_colors])
+    grid_proba_colors = grid_proba @ rgb
+    grid_proba_colors /= 255  # get in [0..1]
+    grid_proba_colors = [Color(rgb=c).hex for c in grid_proba_colors]
+    return color_map, grid_pred_colors, grid_proba_colors
 
-    # Draw probabilities or class prediction grid
-    facecolors = mycolors if show_proba else y_pred_color
+
+def draw_tiles(ax, grid_points, facecolors, h, w):
     boxes = []
     for i, (v1, v2) in enumerate(grid_points):
         # center a box over (v1,v2) grid location
@@ -82,40 +138,29 @@ def rfviz_bivar_(grid_points, grid_proba, grid_pred, w, h, class_X, class_values
     # Adding collection is MUCH faster than repeated add_patch()
     ax.add_collection(PatchCollection(boxes, match_original=True))
 
-    # Draw boundary locations
-    # Get grid with class predictions with coordinates (x,y)
-    # e.g., y_pred[0,0] is lower left pixel and y_pred[5,5] is top-right pixel
-    # for npoints=5
-    grid_pred = grid_pred.reshape(ntiles, ntiles)  # view as matrix
-    dx = np.diff(grid_pred,
-                 axis=1)  # find transitions from one class to the other moving horizontally
+
+def draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, boundary_markersize,
+                        colors, w, h):
+    ntiles = grid_pred_as_matrix.shape[0]
+
+    # find transitions from one class to the other moving horizontally
+    dx = np.diff(grid_pred_as_matrix, axis=1)
     dx = np.abs(dx)
-    dx = np.hstack(
-        [np.zeros((ntiles, 1)), dx])  # put a zero col vector on the left to restore size
-    dy = np.diff(grid_pred, axis=0)  # find transitions moving vertically
+    # put a zero col vector on the left to restore size
+    dx = np.hstack([np.zeros((ntiles, 1)), dx])
+
+    # find transitions moving vertically
+    dy = np.diff(grid_pred_as_matrix, axis=0)
     dy = np.abs(dy)
-    dy = np.vstack(
-        [np.zeros((1, ntiles)), dy])  # put a zero row vector on the top to restore size
-    dx_edge_idx = np.where(
-        dx.reshape(-1))  # what are the indexes of dx class transitions?
-    dy_edge_idx = np.where(
-        dy.reshape(-1))  # what are the indexes of dy class transitions?
-    dx_edges = grid_points[
-        dx_edge_idx]  # get v1,v2 coordinates of left-to-right transitions
-    dy_edges = grid_points[
-        dy_edge_idx]  # get v1,v2 coordinates of bottom-to-top transitions
+    # put a zero row vector on the top to restore size
+    dy = np.vstack([np.zeros((1, ntiles)), dy])
+
+    dx_edge_idx = np.where(dx.reshape(-1)) # what are the indexes of dx class transitions?
+    dy_edge_idx = np.where(dy.reshape(-1)) # what are the indexes of dy class transitions?
+    dx_edges = grid_points[dx_edge_idx]    # get v1,v2 coordinates of left-to-right transitions
+    dy_edges = grid_points[dy_edge_idx]    # get v1,v2 coordinates of bottom-to-top transitions
+    # Plot the boundary markers in between tiles; e.g., shift dx stuff to the left half a tile
     ax.plot(dx_edges[:, 0] - w / 2, dx_edges[:, 1], boundary_marker,
             markersize=boundary_markersize, c=colors['class_boundary'], alpha=1.0)
     ax.plot(dy_edges[:, 0], dy_edges[:, 1] - h / 2, boundary_marker,
             markersize=boundary_markersize, c=colors['class_boundary'], alpha=1.0)
-
-    # Draw the X instances circles
-    dot_w = 25
-    for i, h in enumerate(class_X):
-        ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
-                   edgecolors=colors['scatter_edge'], lw=.5, alpha=1.0)
-
-    ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_linewidth(.5)
-    ax.spines['bottom'].set_linewidth(.5)
