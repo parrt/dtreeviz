@@ -253,7 +253,7 @@ class ShadowDecTree(ABC):
         """Return true if it should go to the left node child based on node split criterion and x value"""
         pass
 
-    def get_root_node_labels(self):
+    def get_root_edge_labels(self):
         pass
 
     def is_categorical_split(self, id) -> bool:

@@ -20,17 +20,16 @@ class ShadowSparkTree(ShadowDecTree):
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
 
-        self.tree_model = tree_model
-        self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
+        self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info(tree_model)
         self.features = None  # lazy initialization
         self.thresholds = None  # lazy initialization
         self.node_to_samples = None  # lazy initialization
         super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
 
-    def _get_nodes_info(self):
-        tree_nodes = [None] * self.tree_model.numNodes
-        children_left = [-1] * self.tree_model.numNodes
-        children_right = [-1] * self.tree_model.numNodes
+    def _get_nodes_info(self, tree_model):
+        tree_nodes = [None] * tree_model.numNodes
+        children_left = [-1] * tree_model.numNodes
+        children_right = [-1] * tree_model.numNodes
         node_index = 0
 
         def recur(node, node_id):
@@ -47,7 +46,7 @@ class ShadowSparkTree(ShadowDecTree):
                 children_right[node_id] = node_index
                 recur(node.rightChild(), node_index)
 
-        recur(self.tree_model._call_java('rootNode'), 0)
+        recur(tree_model._call_java('rootNode'), 0)
         return tree_nodes, children_left, children_right
 
     def is_fit(self) -> bool:
@@ -84,7 +83,7 @@ class ShadowSparkTree(ShadowDecTree):
                 elif "ContinuousSplit" in node.split().toString():
                     node_thresholds[i] = node.split().threshold()
 
-        self.thresholds = np.array(node_thresholds)
+        self.thresholds = np.array(node_thresholds, dtype="object")
         return self.thresholds
 
     def get_features(self) -> np.ndarray:
@@ -123,7 +122,7 @@ class ShadowSparkTree(ShadowDecTree):
 
         node_to_samples = defaultdict(list)
         for i in range(self.x_data.shape[0]):
-            prediction, path = self.predict(self.x_data[i])
+            path = self.predict(self.x_data[i], path_only=True)
             for node in path:
                 node_to_samples[node.id].append(i)
 
@@ -144,7 +143,7 @@ class ShadowSparkTree(ShadowDecTree):
             right = np.nonzero(node_X_data > split)[0]
         return left, right
 
-    def get_root_node_labels(self):
+    def get_root_edge_labels(self):
         return ["&le;", "&gt;"]
 
     def get_node_nsamples(self, id):

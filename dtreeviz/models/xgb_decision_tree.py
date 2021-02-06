@@ -118,7 +118,7 @@ class ShadowXGBDTree(ShadowDecTree):
 
         return left, right
 
-    def get_root_node_labels(self):
+    def get_root_edge_labels(self):
         return ["&lt;", "&ge;"]
 
     def get_node_nsamples(self, id):

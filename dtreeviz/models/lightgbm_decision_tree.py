@@ -103,7 +103,7 @@ class ShadowLightGBMTree(ShadowDecTree):
                 else:
                     node_thresholds[i] = round(self.tree_nodes[i]["threshold"], 2)
 
-        self.thresholds = np.array(node_thresholds)
+        self.thresholds = np.array(node_thresholds, dtype="object")
         return self.thresholds
 
     def get_features(self) -> np.ndarray:
@@ -160,7 +160,7 @@ class ShadowLightGBMTree(ShadowDecTree):
             right = np.nonzero(node_X_data > split)[0]
         return left, right
 
-    def get_root_node_labels(self):
+    def get_root_edge_labels(self):
         return ["&le;", "&gt;"]
 
     def get_node_nsamples(self, id):

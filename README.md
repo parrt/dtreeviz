@@ -43,9 +43,10 @@ conda uninstall graphviz
 To install (Python >=3.6 only), do this (from Anaconda Prompt on Windows!):
 
 ```bash
-pip install dtreeviz             # Install dtreeviz for sklearn
-pip install dtreeviz[boost]      # install XGBoost related dependency
-pip install dtreeviz[pyspark]    # install spark related dependency
+pip install dtreeviz             # install dtreeviz for sklearn
+pip install dtreeviz[xgboost]    # install XGBoost related dependency
+pip install dtreeviz[pyspark]    # install pyspark related dependency
+pip install dtreeviz[lightgbm]   # install LightGBM related dependency
 ```
 
 This should also pull in the `graphviz` Python library (>=0.9), which we are using for platform specific stuff.

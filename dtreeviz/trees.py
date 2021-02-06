@@ -848,8 +848,8 @@ def dtreeviz(tree_model,
     show_edge_labels = False
     all_llabel = '&lt;' if show_edge_labels else ''
     all_rlabel = '&ge;' if show_edge_labels else ''
-    root_llabel = shadow_tree.get_root_node_labels()[0] if show_root_edge_labels else ''
-    root_rlabel = shadow_tree.get_root_node_labels()[1] if show_root_edge_labels else ''
+    root_llabel = shadow_tree.get_root_edge_labels()[0] if show_root_edge_labels else ''
+    root_rlabel = shadow_tree.get_root_edge_labels()[1] if show_root_edge_labels else ''
 
     edges = []
     # non leaf edges with > and <=
