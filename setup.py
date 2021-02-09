@@ -8,7 +8,7 @@ setup(
     url='https://github.com/parrt/dtreeviz',
     license='MIT',
     packages=find_packages(),
-    install_requires=['graphviz>=0.9','pandas','numpy','scikit-learn',
+    install_requires=['graphviz>=0.9','Pillow','pandas','numpy','scikit-learn',
                         'matplotlib','colour', 'pytest'],
     extras_require={'xgboost': ['xgboost'], 'pyspark':['pyspark']},
     python_requires='>=3.6',
