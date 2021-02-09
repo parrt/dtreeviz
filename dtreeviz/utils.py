@@ -125,6 +125,18 @@ def myround(v,ndigits=2):
     return format(v, '.' + str(ndigits) + 'f')
 
 
+def _normalize_class_names(class_names, nclasses):
+    if class_names is None:
+        return {i: f"class {i}" for i in range(nclasses)}
+    if isinstance(class_names, dict):
+        return class_names
+    elif isinstance(class_names, Sequence):
+        return {i: n for i, n in enumerate(class_names)}
+    else:
+        raise Exception(
+            f"class_names must be dict or sequence, not {class_names.__class__.__name__}")
+
+
 def _extract_final_feature_names(pipeline, features):
     """
     Computes the final features names of a :py:mod:`~sklearn.pipeline.Pipeline` used in its last
