@@ -19,6 +19,10 @@ def ctreeviz_bivar_fusion(trees, X:np.ndarray, y:np.ndarray,
                           show_region_edges=True,
                           alpha=.1,
                           ax=None):
+    """
+    Given a list of decision trees, overlap and fuse the feature space partitionings
+    for two variables.
+    """
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
     ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
