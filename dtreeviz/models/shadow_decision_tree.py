@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections import Sequence
+from collections.abc import Sequence
 from numbers import Number
 from typing import List, Tuple, Mapping
 
