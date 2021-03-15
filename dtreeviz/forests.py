@@ -10,7 +10,7 @@ from PIL import ImageColor
 from dtreeviz.colors import adjust_colors, GREY
 from dtreeviz.trees import ctreeviz_bivar, add_classifier_legend
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
-
+import dtreeviz.utils
 
 def ctreeviz_bivar_fusion(trees, X:np.ndarray, y:np.ndarray,
                           feature_names, target_name, class_names=None,
@@ -30,7 +30,7 @@ def ctreeviz_bivar_fusion(trees, X:np.ndarray, y:np.ndarray,
     ax.spines['left'].set_linewidth(.5)
     ax.spines['bottom'].set_linewidth(.5)
 
-    class_names = ShadowDecTree.normalize_class_names(class_names, nclasses=len(np.unique(y)))
+    class_names = dtreeviz.utils._normalize_class_names(class_names, nclasses=len(np.unique(y)))
 
     for i in range(len(trees)):
         ctreeviz_bivar(trees[i], X, y,
