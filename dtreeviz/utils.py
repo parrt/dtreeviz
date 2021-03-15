@@ -125,7 +125,7 @@ def myround(v,ndigits=2):
     return format(v, '.' + str(ndigits) + 'f')
 
 
-def _normalize_class_names(class_names, nclasses):
+def normalize_class_names(class_names, nclasses):
     if class_names is None:
         return {i: f"class {i}" for i in range(nclasses)}
     if isinstance(class_names, dict):

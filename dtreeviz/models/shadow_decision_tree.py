@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import sklearn
 
-import dtreeviz.utils
+from dtreeviz import utils
 
 
 class ShadowDecTree(ABC):
@@ -61,7 +61,7 @@ class ShadowDecTree(ABC):
         self.y_data = ShadowDecTree._get_y_data(y_data)
         self.root, self.leaves, self.internal = self._get_tree_nodes()
         if self.is_classifier():
-            self.class_names = self._normalize_class_names(class_names)
+            self.class_names = utils.normalize_class_names(class_names, self.nclasses())
 
     @abstractmethod
     def is_fit(self) -> bool:
@@ -389,11 +389,6 @@ class ShadowDecTree(ABC):
         leaf_samples = [(node.id, node.n_sample_classes()[0], node.n_sample_classes()[1]) for node in self.leaves]
         index, leaf_sample_0, leaf_samples_1 = zip(*leaf_samples)
         return index, leaf_sample_0, leaf_samples_1
-
-    def _normalize_class_names(self, class_names):
-        if self.is_classifier():
-            return dtreeviz.utils._normalize_class_names(class_names, self.nclasses())
-        return None
 
     def _get_tree_nodes(self):
         # use locals not args to walk() for recursion speed in python
