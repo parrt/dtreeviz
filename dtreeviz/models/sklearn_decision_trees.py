@@ -64,6 +64,19 @@ class ShadowSKDTree(ShadowDecTree):
         self.node_to_samples = node_to_samples
         return node_to_samples
 
+    def get_split_samples(self, id):
+        samples = np.array(self.get_node_samples()[id])
+        node_X_data = self.x_data[samples, self.get_node_feature(id)]
+        split = self.get_node_split(id)
+
+        left = np.nonzero(node_X_data <= split)[0]
+        right = np.nonzero(node_X_data > split)[0]
+
+        return left, right
+
+    def get_root_edge_labels(self):
+        return ["&le;", "&gt;"]
+
     def get_node_nsamples(self, id):
         return len(self.get_node_samples()[id])
 
@@ -97,26 +110,20 @@ class ShadowSKDTree(ShadowDecTree):
         return self.tree_model.tree_.impurity[id]
 
     def get_feature_path_importance(self, node_list):
-        gini_importance = np.zeros(self.tree_model.tree_.n_features)
+        gini = np.zeros(self.tree_model.tree_.n_features)
+        tree_ = self.tree_model.tree_
         for node in node_list:
             if self.tree_model.tree_.children_left[node] != -1:
                 node_left = self.tree_model.tree_.children_left[node]
                 node_right = self.tree_model.tree_.children_right[node]
-
-                gini_importance[self.tree_model.tree_.feature[node]] += self.tree_model.tree_.weighted_n_node_samples[
-                                                                            node] * \
-                                                                        self.tree_model.tree_.impurity[node] \
-                                                                        - self.tree_model.tree_.weighted_n_node_samples[
-                                                                            node_left] * \
-                                                                        self.tree_model.tree_.impurity[node_left] \
-                                                                        - self.tree_model.tree_.weighted_n_node_samples[
-                                                                            node_right] * \
-                                                                        self.tree_model.tree_.impurity[node_right]
-        normalizer = np.sum(gini_importance)
+                gini[tree_.feature[node]] += tree_.weighted_n_node_samples[node] * tree_.impurity[node] \
+                                             - tree_.weighted_n_node_samples[node_left] * tree_.impurity[node_left] \
+                                             - tree_.weighted_n_node_samples[node_right] * tree_.impurity[node_right]
+        normalizer = np.sum(gini)
         if normalizer > 0.0:
-            gini_importance /= normalizer
+            gini /= normalizer
 
-        return gini_importance
+        return gini
 
     def get_max_depth(self):
         return self.tree_model.max_depth

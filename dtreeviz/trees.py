@@ -843,11 +843,13 @@ def dtreeviz(tree_model,
 
     if show_just_path:
         show_root_edge_labels = False
+
+    # TODO do we need show_edge_labels ?
     show_edge_labels = False
     all_llabel = '&lt;' if show_edge_labels else ''
     all_rlabel = '&ge;' if show_edge_labels else ''
-    root_llabel = '&lt;' if show_root_edge_labels else ''
-    root_rlabel = '&ge;' if show_root_edge_labels else ''
+    root_llabel = shadow_tree.get_root_edge_labels()[0] if show_root_edge_labels else ''
+    root_rlabel = shadow_tree.get_root_edge_labels()[1] if show_root_edge_labels else ''
 
     edges = []
     # non leaf edges with > and <=
@@ -869,7 +871,11 @@ def dtreeviz(tree_model,
             llabel = all_llabel
             rlabel = all_rlabel
 
-        lcolor = rcolor = colors['arrow']
+        if node.is_categorical_split() and not shadow_tree.is_classifier():
+            lcolor, rcolor = colors["categorical_split_left"], colors["categorical_split_right"]
+        else:
+            lcolor = rcolor = colors['arrow']
+
         lpw = rpw = "0.3"
         if node.left.id in highlight_path:
             lcolor = colors['highlight']
@@ -935,6 +941,10 @@ def class_split_viz(node: ShadowDecTreeNode,
                     X: np.array = None,
                     highlight_node: bool = False
                     ):
+
+    def _get_bins(overall_range, nbins_):
+        return np.linspace(start=overall_range[0], stop=overall_range[1], num=nbins_, endpoint=True)
+
     height_range = (.5, 1.5)
     h = prop_size(n=node_heights[node.id], counts=node_heights.values(), output_range=height_range)
     figsize = (3.3, h)
@@ -944,10 +954,17 @@ def class_split_viz(node: ShadowDecTreeNode,
 
     # Get X, y data for all samples associated with this node.
     X_feature = X_train[:, node.feature()]
-    X_feature, y_train = X_feature[node.samples()], y_train[node.samples()]
+    X_node_feature, y_train = X_feature[node.samples()], y_train[node.samples()]
 
     n_classes = node.shadow_tree.nclasses()
     nbins = get_num_bins(histtype, n_classes)
+
+    # for categorical splits, we need to ensure that each vertical bar will represent only one categorical feature value
+    if node.is_categorical_split():
+        feature_unique_size = np.unique(X_feature).size
+        # keep the bar widths as uniform as possible for all node visualisations
+        nbins = nbins if nbins > feature_unique_size else feature_unique_size + 1
+
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
     overall_feature_range_wide = (overall_feature_range[0] - overall_feature_range[0] * .08,
@@ -960,10 +977,8 @@ def class_split_viz(node: ShadowDecTreeNode,
     ax.spines['bottom'].set_linewidth(.3)
 
     class_names = node.shadow_tree.class_names
-
     class_values = node.shadow_tree.classes()
-    X_hist = [X_feature[y_train == cl] for cl in class_values]
-
+    X_hist = [X_node_feature[y_train == cl] for cl in class_values]
     if histtype == 'strip':
         ax.yaxis.set_visible(False)
         ax.spines['left'].set_visible(False)
@@ -980,9 +995,7 @@ def class_split_viz(node: ShadowDecTreeNode,
     else:
         X_colors = [colors[cl] for cl in class_values]
 
-        bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
-        # print(f"\nrange: {overall_feature_range}, r={r}, nbins={nbins}, len(bins)={len(bins)}, binwidth={binwidth}\n{bins}")
-        # bins[-1] = overall_feature_range[1] # make sure rounding doesn't kill last value on right
+        bins = _get_bins(overall_feature_range, nbins)
         hist, bins, barcontainers = ax.hist(X_hist,
                                             color=X_colors,
                                             align='mid',
@@ -1023,12 +1036,19 @@ def class_split_viz(node: ShadowDecTreeNode,
                     fontname=fontname,
                     color=colors['text_wedge'])
         else:
-            ax.text(xr/2, -2 * th,
-                    f"{node.split()[0]}",
-                    horizontalalignment='center',
-                    fontsize=ticks_fontsize,
-                    fontname=fontname,
-                    color=colors['text_wedge'])
+            left_split_values = node.split()[0]
+            bins = _get_bins(overall_feature_range, nbins)
+            for split_value in left_split_values:
+                # to display the wedge exactly in the middle of the vertical bar
+                for bin_index in range(len(bins) - 1):
+                    if bins[bin_index] <= split_value <= bins[bin_index + 1]:
+                        split_value = (bins[bin_index] + bins[bin_index + 1]) / 2
+                        break
+                tria = np.array(
+                    [[split_value, tipy], [split_value - tw, -th], [split_value + tw, -th]])
+                t = patches.Polygon(tria, facecolor=color)
+                t.set_clip_on(False)
+                ax.add_patch(t)
 
     wedge(ax, node.split(), color=colors['wedge'])
     if highlight_node:
@@ -1129,6 +1149,7 @@ def regr_split_viz(node: ShadowDecTreeNode,
         right = y_train[right]
         split = node.split()
 
+        # ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
         ax.plot([overall_feature_range[0], split], [np.mean(left), np.mean(left)], '--', color=colors['split_line'],
                 linewidth=1)
         ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=1)
@@ -1139,14 +1160,19 @@ def regr_split_viz(node: ShadowDecTreeNode,
         if highlight_node:
             wedge(ax, X[node.feature()], color=colors['highlight'])
     else:
-        # TODO -125 is hard coded...
-        ax.text(xr / 2, -125,
-                f"{node.split()[0]}",
-                horizontalalignment='center',
-                fontsize=ticks_fontsize,
-                fontname=fontname,
-                color=colors['text_wedge'])
-        ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
+        left_index, right_index = node.split_samples()
+        tw = (xmax - xmin) * .018
+
+        ax.set_xlim(overall_feature_range[0] - tw, overall_feature_range[1] + tw)
+        ax.scatter(X_feature[left_index], y_train[left_index], s=5, c=colors["categorical_split_left"], alpha=colors['scatter_marker_alpha'], lw=.3)
+        ax.scatter(X_feature[right_index], y_train[right_index], s=5, c=colors["categorical_split_right"], alpha=colors['scatter_marker_alpha'], lw=.3)
+
+        ax.plot([xmin - tw, xmax + tw], [np.mean(y_train[left_index]), np.mean(y_train[left_index])], '--', color=colors["categorical_split_left"],
+                linewidth=1)
+        ax.plot([xmin - tw, xmax + tw], [np.mean(y_train[right_index]), np.mean(y_train[right_index])], '--', color=colors["categorical_split_right"],
+                linewidth=1)
+        ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
+
         if highlight_node:
             wedge(ax, X[node.feature()], color=colors['highlight'])
 

@@ -20,17 +20,16 @@ class ShadowSparkTree(ShadowDecTree):
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
 
-        self.tree_model = tree_model
-        self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
+        self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info(tree_model)
         self.features = None  # lazy initialization
         self.thresholds = None  # lazy initialization
         self.node_to_samples = None  # lazy initialization
         super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
 
-    def _get_nodes_info(self):
-        tree_nodes = [None] * self.tree_model.numNodes
-        children_left = [-1] * self.tree_model.numNodes
-        children_right = [-1] * self.tree_model.numNodes
+    def _get_nodes_info(self, tree_model):
+        tree_nodes = [None] * tree_model.numNodes
+        children_left = [-1] * tree_model.numNodes
+        children_right = [-1] * tree_model.numNodes
         node_index = 0
 
         def recur(node, node_id):
@@ -47,7 +46,7 @@ class ShadowSparkTree(ShadowDecTree):
                 children_right[node_id] = node_index
                 recur(node.rightChild(), node_index)
 
-        recur(self.tree_model._call_java('rootNode'), 0)
+        recur(tree_model._call_java('rootNode'), 0)
         return tree_nodes, children_left, children_right
 
     def is_fit(self) -> bool:
@@ -84,7 +83,7 @@ class ShadowSparkTree(ShadowDecTree):
                 elif "ContinuousSplit" in node.split().toString():
                     node_thresholds[i] = node.split().threshold()
 
-        self.thresholds = np.array(node_thresholds)
+        self.thresholds = np.array(node_thresholds, dtype="object")
         return self.thresholds
 
     def get_features(self) -> np.ndarray:
@@ -104,6 +103,9 @@ class ShadowSparkTree(ShadowDecTree):
     def nclasses(self) -> int:
         if not self.is_classifier():
             return 1
+
+        # TODO for multiclass decision tree, the numClasses is the max of classe values + 1
+        # ex. [15, 25, 35, 40, 45, 55, 65, 70] -> numClasses = 71
         return self.tree_model.numClasses
 
     # TODO
@@ -113,17 +115,36 @@ class ShadowSparkTree(ShadowDecTree):
             return np.unique(self.y_data)
 
     def get_node_samples(self):
+        # TODO in case dataset is large, it will take a while to compute all node samples
+        # maybe to include a message for waiting... or loading bar
         if self.node_to_samples is not None:
             return self.node_to_samples
 
         node_to_samples = defaultdict(list)
         for i in range(self.x_data.shape[0]):
-            prediction, path = self.predict(self.x_data[i])
+            path = self.predict(self.x_data[i], path_only=True)
             for node in path:
                 node_to_samples[node.id].append(i)
 
         self.node_to_samples = node_to_samples
         return self.node_to_samples
+
+    def get_split_samples(self, id):
+        samples = np.array(self.get_node_samples()[id])
+        node_X_data = self.x_data[samples, self.get_node_feature(id)]
+        split = self.get_node_split(id)
+
+        if self.is_categorical_split(id):
+            indices = np.sum([node_X_data == split_value for split_value in self.get_node_split(id)[0]], axis=0)
+            left = np.nonzero(indices == 1)[0]
+            right = np.nonzero(indices == 0)[0]
+        else:
+            left = np.nonzero(node_X_data <= split)[0]
+            right = np.nonzero(node_X_data > split)[0]
+        return left, right
+
+    def get_root_edge_labels(self):
+        return ["&le;", "&gt;"]
 
     def get_node_nsamples(self, id):
         def _get_nsamples(spark_version):

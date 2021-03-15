@@ -169,3 +169,8 @@ def test_get_node_nsamples_by_class(shadow_dec_tree):
     assert np.array_equal(shadow_dec_tree.get_node_nsamples_by_class(5), np.array([72, 72]))
     assert np.array_equal(shadow_dec_tree.get_node_nsamples_by_class(10), np.array([5, 9]))
     assert np.array_equal(shadow_dec_tree.get_node_nsamples_by_class(11), np.array([404, 55]))
+
+# def test_get_split_samples(shadow_dec_tree):
+#     hard to test because dataset is not the same with dataset the decision tree model was trained
+#     left_0, right_0 = shadow_dec_tree.get_split_samples(0)
+#     assert len(left_0) == 314 and len(right_0) == 577

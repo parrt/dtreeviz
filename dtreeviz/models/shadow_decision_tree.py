@@ -132,6 +132,11 @@ class ShadowDecTree(ABC):
         pass
 
     @abstractmethod
+    def get_split_samples(self, id):
+        """Returns left and right split indexes from a node"""
+        pass
+
+    @abstractmethod
     def get_node_nsamples(self, id):
         """Returns number of samples for a specific node id."""
         pass
@@ -240,12 +245,15 @@ class ShadowDecTree(ABC):
 
     @abstractmethod
     def get_min_samples_leaf(self) -> (int, float):
-        """Returns the minimum number of samples required to be at a leaf node."""
+        """Returns the minimum number of samples required to be at a leaf node, during node splitting"""
         pass
 
     @abstractmethod
     def shouldGoLeftAtSplit(self, id, x):
         """Return true if it should go to the left node child based on node split criterion and x value"""
+        pass
+
+    def get_root_edge_labels(self):
         pass
 
     def is_categorical_split(self, id) -> bool:
@@ -284,7 +292,7 @@ class ShadowDecTree(ABC):
             # print(f"\tmax={np.max(height_of_bins):2.0f}, heights={list(height_of_bins)}, {len(height_of_bins)} bins")
         return node_heights
 
-    def predict(self, x: np.ndarray) -> Tuple[Number, List]:
+    def predict(self, x: np.ndarray, path_only: bool = False) -> Tuple[Number, List]:
         """
         Given an x - vector of features, return predicted class or value based upon this tree.
         Also return path from root to leaf as 2nd value in return tuple.
@@ -310,6 +318,8 @@ class ShadowDecTree(ABC):
 
         path = []
         leaf = walk(self.root, x, path)
+        if path_only:
+            return path
         return leaf.prediction(), path
 
     def tesselation(self):
@@ -391,7 +401,7 @@ class ShadowDecTree(ABC):
     def _normalize_class_names(self, class_names):
         if self.is_classifier():
             if class_names is None:
-                return {i : f"class {i}" for i in range(self.nclasses())}
+                return {i: f"class {i}" for i in range(self.nclasses())}
             if isinstance(class_names, dict):
                 return class_names
             elif isinstance(class_names, Sequence):
@@ -440,7 +450,7 @@ class ShadowDecTree(ABC):
         if hasattr(tree_model, 'get_booster'):
             # scikit-learn wrappers XGBClassifier and XGBRegressor allow you to
             # extract the underlying xgboost.core.Booster with the get_booster() method:
-            tree_model = tree_model.get_booster() 
+            tree_model = tree_model.get_booster()
         if isinstance(tree_model, ShadowDecTree):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
@@ -452,14 +462,18 @@ class ShadowDecTree(ABC):
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
         elif (str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>") or
-                str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>")):
+              str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>")):
             from dtreeviz.models import spark_decision_tree
-            return spark_decision_tree.ShadowSparkTree(tree_model, tree_index, x_data, y_data,
-                                                    feature_names, target_name, class_names)
+            return spark_decision_tree.ShadowSparkTree(tree_model, x_data, y_data,
+                                                       feature_names, target_name, class_names)
+        elif "lightgbm.basic.Booster" in str(type(tree_model)):
+            from dtreeviz.models import lightgbm_decision_tree
+            return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, x_data, y_data,
+                                                             feature_names, target_name, class_names)
         else:
             raise ValueError(
                 f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
-                "xgboost.core.Booster, pyspark DecisionTreeClassificationModel or "
+                "xgboost.core.Booster, lightgbm.basic.Booster, pyspark DecisionTreeClassificationModel or "
                 f"pyspark DecisionTreeClassificationModel) but you passed a {tree_model.__class__.__name__}!")
 
 
@@ -537,12 +551,7 @@ class ShadowDecTreeNode():
     def split_samples(self) -> Tuple[np.ndarray, np.ndarray]:
         """Returns the list of indexes to the left and the right of the split value."""
 
-        samples = np.array(self.samples())
-        node_X_data = self.shadow_tree.x_data[samples, self.feature()]
-        split = self.split()
-        left = np.nonzero(node_X_data < split)[0]
-        right = np.nonzero(node_X_data >= split)[0]
-        return left, right
+        return self.shadow_tree.get_split_samples(self.id)
 
     def isleaf(self) -> bool:
         return self.left is None and self.right is None
