@@ -174,6 +174,13 @@ def extract_params_from_pipeline(pipeline, x_data, feature_names):
     return tree_model, x_data, feature_names
 
 
+def check_tree_index(tree_index, nr_of_trees):
+    if tree_index is None:
+        raise Exception("You need to setup tree_index parameter")
+    if tree_index >= nr_of_trees:
+        raise Exception(f"tree_index parameter should have values between [{0}, {nr_of_trees - 1}]")
+
+
 if __name__ == '__main__':
     # test rig
     with open("/tmp/t.svg") as f:
