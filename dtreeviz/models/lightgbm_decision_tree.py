@@ -6,6 +6,7 @@ import pandas as pd
 from lightgbm.basic import Booster
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree, VisualisationNotYetSupportedError
+from dtreeviz import utils
 
 
 class ShadowLightGBMTree(ShadowDecTree):
@@ -18,6 +19,8 @@ class ShadowLightGBMTree(ShadowDecTree):
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
+
+        utils.check_tree_index(tree_index, booster.num_trees())
         self.booster = booster
         self.tree_index = tree_index
         self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
