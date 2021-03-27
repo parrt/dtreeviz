@@ -7,6 +7,7 @@ import numpy as np
 
 from dtreeviz.models.shadow_decision_tree import VisualisationNotYetSupportedError
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
+from dtreeviz import utils
 
 import xgboost as xgb
 from xgboost.core import Booster
@@ -30,6 +31,7 @@ class ShadowXGBDTree(ShadowDecTree):
                  ):
         if hasattr(booster, 'get_booster'):
             booster = booster.get_booster() # support XGBClassifier and XGBRegressor
+        utils.check_tree_index(tree_index, len(booster.get_dump()))
         self.booster = booster
         self.tree_index = tree_index
         self.tree_to_dataframe = self._get_tree_dataframe()
