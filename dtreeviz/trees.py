@@ -694,7 +694,7 @@ def dtreeviz(tree_model,
     def instance_gr():
         if X is None:
             return ""
-        pred, path = shadow_tree.predict(X)
+        path = shadow_tree.predict_path(X)
         # print(f"path {[node.feature_name() for node in path]}")
         # print(f"path id {[node.id() for node in path]}")
         # print(f"path prediction {[node.prediction() for node in path]}")
@@ -752,7 +752,7 @@ def dtreeviz(tree_model,
 
     tmp = tempfile.gettempdir()
     if X is not None:
-        pred, path = shadow_tree.predict(X)
+        path = shadow_tree.predict_path(X)
         highlight_path = [n.id for n in path]
 
     n_classes = shadow_tree.nclasses()

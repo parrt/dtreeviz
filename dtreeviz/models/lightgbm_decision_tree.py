@@ -142,7 +142,7 @@ class ShadowLightGBMTree(ShadowDecTree):
 
         node_to_samples = defaultdict(list)
         for i in range(self.x_data.shape[0]):
-            path = self.predict(self.x_data[i], path_only=True)
+            path = self.predict_path(self.x_data[i])
             for node in path:
                 node_to_samples[node.id].append(i)
 

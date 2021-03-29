@@ -35,7 +35,7 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
     node_feature_index = shadow_tree.get_features()
     feature_names = shadow_tree.feature_names
     node_threshold = shadow_tree.get_thresholds()
-    prediction_value, decision_node_path = shadow_tree.predict(x)
+    decision_node_path = shadow_tree.predict_path(x)
 
     # TODO - refactor this logic and find a way to make it simpler
     feature_smaller_values = {}
@@ -116,7 +116,7 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         Prediction feature's importance plot
     """
 
-    prediction_value, decision_node_path = shadow_tree.predict(x)
+    decision_node_path = shadow_tree.predict_path(x)
     decision_node_path = [node.id for node in decision_node_path]
 
     feature_path_importance = shadow_tree.get_feature_path_importance(decision_node_path)
