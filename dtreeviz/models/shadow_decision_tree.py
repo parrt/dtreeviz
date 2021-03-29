@@ -292,7 +292,7 @@ class ShadowDecTree(ABC):
             # print(f"\tmax={np.max(height_of_bins):2.0f}, heights={list(height_of_bins)}, {len(height_of_bins)} bins")
         return node_heights
 
-    def predict(self, x: np.ndarray, path_only: bool = False) -> Tuple[Number, List]:
+    def predict(self, x: np.ndarray) -> Number:
         """
         Given an x - vector of features, return predicted class or value based upon this tree.
         Also return path from root to leaf as 2nd value in return tuple.
@@ -304,23 +304,39 @@ class ShadowDecTree(ABC):
             Feature vector to run down the tree to a  leaf.
         """
 
-        def walk(t, x, path):
-            if t is None:
-                return None
-            path.append(t)
+        def walk(t, x):
             if t.isleaf():
                 return t
-            # if x[t.feature()] < t.split():
-            # print(f"shadow node id, x {t.id} , {t.feature()}")
+            if self.shouldGoLeftAtSplit(t.id, x[t.feature()]):
+                return walk(t.left, x)
+            return walk(t.right, x)
+
+        leaf = walk(self.root, x)
+        return leaf.prediction()
+
+    def predict_path(self, x: np.ndarray) -> List:
+        """
+        Given an x - vector of features, return path prediction based upon this tree.
+        Also return path from root to leaf as 2nd value in return tuple.
+
+        Recursively walk down tree from root to appropriate leaf by comparing feature in x to node's split value.
+
+        :param
+        x: np.ndarray
+            Feature vector to run down the tree to a  leaf.
+        """
+
+        def walk(t, x, path):
+            path.append(t)
+            if t.isleaf():
+                return None
             if self.shouldGoLeftAtSplit(t.id, x[t.feature()]):
                 return walk(t.left, x, path)
             return walk(t.right, x, path)
 
         path = []
-        leaf = walk(self.root, x, path)
-        if path_only:
-            return path
-        return leaf.prediction(), path
+        walk(self.root, x, path)
+        return path
 
     def tesselation(self):
         """
