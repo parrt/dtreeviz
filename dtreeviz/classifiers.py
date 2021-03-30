@@ -8,7 +8,7 @@ from colour import Color
 from PIL import ImageColor
 
 from dtreeviz.colors import adjust_colors, GREY
-from dtreeviz.trees import ctreeviz_bivar, add_classifier_legend
+from dtreeviz.trees import add_classifier_legend
 from dtreeviz import utils
 
 
