@@ -17,6 +17,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
                  show_proba=True,
                  feature_names=None, target_name=None, class_names=None,
                  show=['instances'],
+                 markers=None,
                  fontsize=12,
                  fontname="Arial",
                  colors:dict=None, dot_w=25, ax=None) -> None:
@@ -63,6 +64,9 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
     grid_points, grid_proba, grid_pred_as_matrix, w, h, class_X, class_values = \
         compute_tiling(model, X, y, ntiles, tile_fraction)
 
+    if markers is None:
+        markers = ['o']*len(class_X)
+
     colors = adjust_colors(colors)
 
     # Get class to color map for probabilities and predictions
@@ -85,7 +89,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
     # Draw the X instances circles
     if 'instances' in show:
         for i, h in enumerate(class_X):
-            ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
+            ax.scatter(h[:, 0], h[:, 1], marker=markers[i], s=dot_w, c=color_map[i],
                        edgecolors=colors['scatter_edge'], lw=.5, alpha=1.0)
 
     if feature_names is not None:
