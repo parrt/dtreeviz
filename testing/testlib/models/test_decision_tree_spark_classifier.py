@@ -119,25 +119,36 @@ def test_get_thresholds(spark_dtree):
     #                                 list([1.0, 2.0]), -1, -1, -1]))
 
 
-def test_prediction(spark_dtree, dataset_spark):
+def test_predict(spark_dtree, dataset_spark):
+    leaf_pred_0 = spark_dtree.predict(dataset_spark.iloc[0])
+    assert leaf_pred_0 == 0
+
+    leaf_pred_10 = spark_dtree.predict(dataset_spark.iloc[10])
+    assert leaf_pred_10 == 0
+
+    leaf_pred_109 = spark_dtree.predict(dataset_spark.iloc[109])
+    assert leaf_pred_109 == 1
+
+    leaf_pred_119 = spark_dtree.predict(dataset_spark.iloc[119])
+    assert leaf_pred_119 == 0
+
+
+def test_predict_path(spark_dtree, dataset_spark):
     def get_node_ids(nodes):
         return [node.id for node in nodes]
 
-    leaf_pred_0, leaf_pred_path_0 = spark_dtree.predict(dataset_spark.iloc[0])
-    assert leaf_pred_0 == 0
+    leaf_pred_path_0 = spark_dtree.predict_path(dataset_spark.iloc[0])
     assert get_node_ids(leaf_pred_path_0) == [0, 1, 5]
 
-    leaf_pred_10, leaf_pred_path_10 = spark_dtree.predict(dataset_spark.iloc[10])
-    assert leaf_pred_10 == 0
+    leaf_pred_path_10 = spark_dtree.predict_path(dataset_spark.iloc[10])
     assert get_node_ids(leaf_pred_path_10) == [0, 6, 12, 13, 15]
 
-    leaf_pred_109, leaf_pred_path_109 = spark_dtree.predict(dataset_spark.iloc[109])
-    assert leaf_pred_109 == 1
+    leaf_pred_path_109 = spark_dtree.predict_path(dataset_spark.iloc[109])
     assert get_node_ids(leaf_pred_path_109) == [0, 6, 12, 13, 14]
 
-    leaf_pred_119, leaf_pred_path_119 = spark_dtree.predict(dataset_spark.iloc[119])
-    assert leaf_pred_119 == 0
+    leaf_pred_path_119 = spark_dtree.predict_path(dataset_spark.iloc[119])
     assert get_node_ids(leaf_pred_path_119) == [0, 6, 12, 16]
+
 
 
 def test_get_node_samples(spark_dtree):

@@ -7,6 +7,7 @@ import numpy as np
 
 from dtreeviz.models.shadow_decision_tree import VisualisationNotYetSupportedError
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
+from dtreeviz import utils
 
 import xgboost as xgb
 from xgboost.core import Booster
@@ -30,6 +31,7 @@ class ShadowXGBDTree(ShadowDecTree):
                  ):
         if hasattr(booster, 'get_booster'):
             booster = booster.get_booster() # support XGBClassifier and XGBRegressor
+        utils.check_tree_index(tree_index, len(booster.get_dump()))
         self.booster = booster
         self.tree_index = tree_index
         self.tree_to_dataframe = self._get_tree_dataframe()
@@ -107,6 +109,19 @@ class ShadowXGBDTree(ShadowDecTree):
 
         self.node_to_samples = node_to_samples
         return node_to_samples
+
+    def get_split_samples(self, id):
+        samples = np.array(self.get_node_samples()[id])
+        node_X_data = self.x_data[samples, self.get_node_feature(id)]
+        split = self.get_node_split(id)
+
+        left = np.nonzero(node_X_data < split)[0]
+        right = np.nonzero(node_X_data >= split)[0]
+
+        return left, right
+
+    def get_root_edge_labels(self):
+        return ["&lt;", "&ge;"]
 
     def get_node_nsamples(self, id):
         return len(self.get_node_samples()[id])

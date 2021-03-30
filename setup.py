@@ -10,7 +10,7 @@ setup(
     packages=find_packages(),
     install_requires=['graphviz>=0.9','Pillow','pandas','numpy','scikit-learn',
                         'matplotlib','colour', 'pytest'],
-    extras_require={'xgboost': ['xgboost'], 'pyspark':['pyspark']},
+    extras_require={'xgboost': ['xgboost'], 'pyspark':['pyspark'], 'lightgbm':['lightgbm']},
     python_requires='>=3.6',
     author='Terence Parr, Tudor Lapusan, and Prince Grover',
     author_email='parrt@cs.usfca.edu',

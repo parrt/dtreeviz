@@ -11,6 +11,7 @@ print(f"ROOT_DIR {ROOT_DIR}")
 def dataset() -> pd.DataFrame:
     return pd.read_csv("fixtures/dataset.csv")
 
+
 @pytest.fixture(autouse=True)
 def x_dataset_classifier() -> pd.DataFrame:
     return pd.read_csv(f"{ROOT_DIR}/fixtures/dataset.csv")[
@@ -32,6 +33,11 @@ def x_dataset_regressor() -> pd.DataFrame:
 def y_dataset_regressor(dataset) -> pd.Series:
     return dataset["Age"]
 
+
 @pytest.fixture()
 def dataset_spark() -> pd.DataFrame:
     return pd.read_csv("fixtures/dataset_spark.csv")
+
+@pytest.fixture()
+def dataset_lightgbm() -> pd.DataFrame:
+    return pd.read_csv("fixtures/dataset_lightgbm.csv")
