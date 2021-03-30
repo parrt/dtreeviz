@@ -14,7 +14,7 @@ from dtreeviz import utils
 
 def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
                  boundary_marker='o', boundary_markersize=.8,
-                 show_proba=True,
+                 show_proba=True, binary_threshold=0.5,
                  feature_names=None, target_name=None, class_names=None,
                  show=['instances'],
                  markers=None,
@@ -62,7 +62,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
 
     # Created grid over the range of x1 and x2 variables, get probabilities, predictions
     grid_points, grid_proba, grid_pred_as_matrix, w, h, class_X, class_values = \
-        compute_tiling(model, X, y, ntiles, tile_fraction)
+        compute_tiling(model, X, y, binary_threshold, ntiles, tile_fraction)
 
     if markers is None:
         markers = ['o']*len(class_X)
@@ -102,7 +102,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
         add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
 
 
-def compute_tiling(model, X:np.ndarray, y:np.ndarray, ntiles, tile_fraction):
+def compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold, ntiles, tile_fraction):
     """
     Create grid over the range of x1 and x2 variables; use the model to
     compute the probabilities with model.predict_proba(), which will work with sklearn
@@ -110,10 +110,10 @@ def compute_tiling(model, X:np.ndarray, y:np.ndarray, ntiles, tile_fraction):
     out of the other models we support.
 
     The predictions are computed simply by picking the argmax of probabilities, which
-    assumes classes are 0..k-1. TODO: update to allow this joint integer class values
+    assumes classes are 0..k-1. TODO: update to allow disjoint integer class values
 
     For k=2 binary classifications, there is no way to set the threshold and so
-    a threshold of 0.5 his implicitly chosen by argmax.
+    a threshold of 0.5 is implicitly chosen by argmax.
     TODO: support threshold for binary case
     """
     if isinstance(X, pd.DataFrame):
@@ -145,7 +145,11 @@ def compute_tiling(model, X:np.ndarray, y:np.ndarray, ntiles, tile_fraction):
     class_X = [X[y == cl] for cl in class_values]
 
     grid_proba = model.predict_proba(grid_points)
-    grid_pred = np.argmax(grid_proba, axis=1) # TODO: assumes classes are 0..k-1
+
+    if len(np.unique(y))==2: # is k=2 binary?
+        grid_pred = np.where(grid_proba[:,1]>=binary_threshold,1,0)
+    else:
+        grid_pred = np.argmax(grid_proba, axis=1) # TODO: assumes classes are 0..k-1
 
     return grid_points, grid_proba, grid_pred, w, h, class_X, class_values
 
