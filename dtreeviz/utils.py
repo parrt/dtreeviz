@@ -145,6 +145,18 @@ def _extract_final_feature_names(pipeline, features):
 
     return features
 
+
+def _normalize_class_names(class_names, nclasses):
+    if class_names is None:
+        return {i: f"class {i}" for i in range(nclasses)}
+    if isinstance(class_names, dict):
+        return class_names
+    elif isinstance(class_names, Sequence):
+        return {i: n for i, n in enumerate(class_names)}
+    else:
+        raise Exception(f"class_names must be dict or sequence, not {class_names.__class__.__name__}")
+
+
 def extract_params_from_pipeline(pipeline, x_data, feature_names):
     """
     Extracts necessary parameters from an :py:class:`sklearn.pipeline.Pipeline` to pass into
