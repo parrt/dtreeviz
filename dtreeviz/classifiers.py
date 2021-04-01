@@ -75,7 +75,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
 
     # Draw probabilities or class prediction grid
     facecolors = grid_proba_colors if show_proba else grid_pred_colors
-    draw_tiles(ax, grid_points, facecolors, h, w)
+    draw_tiles(ax, grid_points, facecolors, colors['tile_alpha'], h, w)
 
     # Get grid with class predictions with coordinates (x,y)
     # e.g., y_pred[0,0] is lower left pixel and y_pred[5,5] is top-right pixel
@@ -102,7 +102,8 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
         add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
 
 
-def compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold, ntiles, tile_fraction):
+def compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold,
+                   ntiles, tile_fraction):
     """
     Create grid over the range of x1 and x2 variables; use the model to
     compute the probabilities with model.predict_proba(), which will work with sklearn
@@ -114,7 +115,13 @@ def compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold, ntiles, 
 
     For k=2 binary classifications, there is no way to set the threshold and so
     a threshold of 0.5 is implicitly chosen by argmax.
-    TODO: support threshold for binary case
+
+    This returns all of the details needed to plot the tiles. The coordinates of
+    the grid are a linear space from min to max of each variable, inclusively.
+    So if the range is 1..5 and we want 5 tiles, then the width of each tile is 1.
+    We get a tile at each position. When we are drawing, the position is taken as
+    the center of the tile. In this case, the grid points would be centered over
+    1,2,3,4, and 5.
     """
     if isinstance(X, pd.DataFrame):
         X = X.values
@@ -123,21 +130,21 @@ def compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold, ntiles, 
 
     X1 = X[:, 0]
     X2 = X[:, 1]
-    x1range = (min(X1), max(X1))
-    x2range = (min(X2), max(X2))
-    w = np.diff(np.linspace(*x1range, num=ntiles))[0]
-    h = np.diff(np.linspace(*x2range, num=ntiles))[0]
+    x1r = max(X1) - min(X1)
+    x2r = max(X2) - min(X2)
+    border1 = x1r*0.05 # make a 5% border
+    border2 = x2r*0.05
+    x1range = (min(X1)-border1, max(X1)+border1)
+    x2range = (min(X2)-border2, max(X2)+border2)
+    w = (x1r+2*border1) / (ntiles-1)
+    h = (x2r+2*border2) / (ntiles-1)
     w *= tile_fraction
     h *= tile_fraction
 
-    # Make sure we have one tile around border so instance circles don't overflow
-    x1range = (min(X1) - w, max(X1) + w)
-    x2range = (min(X2) - h, max(X2) + h)
-
     grid_points = []  # a list of coordinate pairs for the grid
     # Iterate through v1 (x-axis) most quickly then v2 (y-axis)
-    for iv2, v2 in enumerate(np.linspace(*x2range, num=ntiles)):
-        for iv1, v1 in enumerate(np.linspace(*x1range, num=ntiles)):
+    for iv2, v2 in enumerate(np.linspace(*x2range, num=ntiles, endpoint=True)):
+        for iv1, v1 in enumerate(np.linspace(*x1range, num=ntiles, endpoint=True)):
             grid_points.append([v1, v2])
     grid_points = np.array(grid_points)
 
@@ -184,12 +191,12 @@ def get_grid_colors(grid_proba, grid_pred, class_values, colors):
     return color_map, grid_pred_colors, grid_proba_colors
 
 
-def draw_tiles(ax, grid_points, facecolors, h, w):
+def draw_tiles(ax, grid_points, facecolors, tile_alpha, h, w):
     boxes = []
     for i, (v1, v2) in enumerate(grid_points):
         # center a box over (v1,v2) grid location
         rect = patches.Rectangle((v1 - w / 2, v2 - h / 2), w, h, angle=0.0, linewidth=0,
-                                 facecolor=facecolors[i], alpha=1.0)
+                                 facecolor=facecolors[i], alpha=tile_alpha)
         boxes.append(rect)
     # Adding collection is MUCH faster than repeated add_patch()
     ax.add_collection(PatchCollection(boxes, match_original=True))

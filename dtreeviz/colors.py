@@ -30,7 +30,8 @@ COLORS = {'scatter_edge': GREY,
           'scatter_marker': BLUE,
           'scatter_marker_alpha': 0.5,
           'class_boundary' : GREY,
-          'tesselation_alpha': 0.3,
+          'tile_alpha':0.8,            # square tiling in clfviz to show probabilities
+          'tesselation_alpha': 0.3,    # rectangular regions for decision tree feature space partitioning
           'tesselation_alpha_3D': 0.5,
           'split_line': GREY,
           'mean_line': '#f46d43',
