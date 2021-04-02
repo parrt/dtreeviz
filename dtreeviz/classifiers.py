@@ -228,3 +228,96 @@ def draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, b
             markersize=boundary_markersize, c=colors['class_boundary'], alpha=1.0)
     ax.plot(dy_edges[:, 0], dy_edges[:, 1] - h / 2, boundary_marker,
             markersize=boundary_markersize, c=colors['class_boundary'], alpha=1.0)
+
+
+def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
+                  binary_threshold=0.5,
+                  feature_name=None, target_name=None, class_names=None,
+                  show=['instances','probabilities','splits'],
+                  markers=None,
+                  fontsize=10,
+                  fontname="Arial",
+                  yshift=.08,
+                  sigma=.013,
+                  dot_w=10,
+                  colors: dict = None, ax=None) -> None:
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=(4, 1))
+
+    mu = 0.08
+    class_values = np.unique(y)
+    class_x = [x[y == cl] for cl in class_values]
+
+    colors = adjust_colors(colors)
+
+    nclasses = len(class_values)
+    class_colors = np.array(colors['classes'][nclasses])
+    color_map = {v: class_colors[i] for i, v in enumerate(class_values)}
+
+    if markers is None:
+        markers = ['o'] * len(class_x)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_linewidth(0.1)
+    ax.set_yticks([])
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
+                   labelsize=fontsize)
+    ax.set_ylim(0, mu + nclasses * yshift + 6*sigma)
+
+    x1r = np.max(x) - np.min(x)
+    x1range = (np.min(x), np.max(x))
+    grid_points, w = np.linspace(*x1range, num=ntiles, endpoint=True, retstep=True)
+    grid_proba = model.predict_proba(grid_points.reshape(-1, 1))
+    if len(np.unique(y)) == 2:  # is k=2 binary?
+        grid_pred = np.where(grid_proba[:, 1] >= binary_threshold, 1, 0)
+    else:
+        grid_pred = np.argmax(grid_proba, axis=1)  # TODO: assumes classes are 0..k-1
+    ymax = ax.get_ylim()[1]
+
+    # compute the stripes on the bottom showing probabilities
+    if 'probabilities' in show:
+        class_values = np.unique(y)
+        color_map, grid_pred_colors, grid_proba_colors = \
+            get_grid_colors(grid_proba, grid_pred, class_values, colors=adjust_colors(None))
+
+        pred_box_height = .05 * ymax
+        boxes = []
+        for i, gx in enumerate(grid_points):
+            rect = patches.Rectangle((gx, 0), w, pred_box_height,
+                                     edgecolor='none', facecolor=grid_proba_colors[i],
+                                     alpha=colors['tile_alpha'])
+            boxes.append(rect)
+        # drop box around the gradation
+        ax.add_collection(PatchCollection(boxes, match_original=True))
+        rect = patches.Rectangle((grid_points[0], 0), x1r + w, pred_box_height, linewidth=.3,
+                                 edgecolor=colors['rect_edge'], facecolor='none')
+        ax.add_patch(rect)
+
+    if 'splits' in show:
+        dx = np.abs(np.diff(grid_pred))
+        dx = np.hstack([0, dx])
+        dx_edge_idx = np.where(dx)  # indexes of dx class transitions?
+        for lx in grid_points[dx_edge_idx]:
+            ax.plot([lx, lx], [*ax.get_ylim()], '--', lw=.3,
+                    c=colors['split_line'], alpha=1.0)
+
+    if 'instances' in show:
+        # user should pass in short and wide fig
+        for i, x_ in enumerate(class_x):
+            noise = np.random.normal(mu, sigma, size=len(x_))
+            ax.scatter(x_, [mu + i * yshift] * len(x_) + noise,
+                       s=dot_w, c=color_map[i],
+                       marker=markers[i],
+                       alpha=colors['scatter_marker_alpha'],
+                       edgecolors=colors['scatter_edge'],
+                       lw=.5)
+
+    if feature_name is not None:
+        ax.set_xlabel(f"{feature_name}", fontsize=fontsize, fontname=fontname,
+                      color=colors['axis_label'])
+
+    if 'legend' in show:
+        class_names = utils._normalize_class_names(class_names, nclasses)
+        add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
