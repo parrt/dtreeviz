@@ -244,6 +244,9 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(4, 1))
 
+    if isinstance(x, pd.DataFrame):
+        x = x.values
+
     mu = 0.08
     class_values = np.unique(y)
     class_x = [x[y == cl] for cl in class_values]
