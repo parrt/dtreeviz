@@ -151,7 +151,7 @@ def compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold,
     class_values = np.unique(y)
     class_X = [X[y == cl] for cl in class_values]
 
-    grid_proba = model.predict_proba(grid_points)
+    grid_proba = predict_proba(model,grid_points)
 
     if len(np.unique(y))==2: # is k=2 binary?
         grid_pred = np.where(grid_proba[:,1]>=binary_threshold,1,0)
@@ -233,7 +233,7 @@ def draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, b
 def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
                   binary_threshold=0.5,
                   feature_name=None, target_name=None, class_names=None,
-                  show=['instances','probabilities','splits'],
+                  show=['instances','probabilities','boundaries'],
                   markers=None,
                   fontsize=10,
                   fontname="Arial",
@@ -269,7 +269,7 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
     x1r = np.max(x) - np.min(x)
     x1range = (np.min(x), np.max(x))
     grid_points, w = np.linspace(*x1range, num=ntiles, endpoint=True, retstep=True)
-    grid_proba = model.predict_proba(grid_points.reshape(-1, 1))
+    grid_proba = predict_proba(model, grid_points)
     if len(np.unique(y)) == 2:  # is k=2 binary?
         grid_pred = np.where(grid_proba[:, 1] >= binary_threshold, 1, 0)
     else:
@@ -282,7 +282,7 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
         color_map, grid_pred_colors, grid_proba_colors = \
             get_grid_colors(grid_proba, grid_pred, class_values, colors=adjust_colors(None))
 
-        pred_box_height = .05 * ymax
+        pred_box_height = .08 * ymax
         boxes = []
         for i, gx in enumerate(grid_points):
             rect = patches.Rectangle((gx, 0), w, pred_box_height,
@@ -295,7 +295,7 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
                                  edgecolor=colors['rect_edge'], facecolor='none')
         ax.add_patch(rect)
 
-    if 'splits' in show:
+    if 'boundaries' in show:
         dx = np.abs(np.diff(grid_pred))
         dx = np.hstack([0, dx])
         dx_edge_idx = np.where(dx)  # indexes of dx class transitions?
@@ -321,3 +321,15 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
     if 'legend' in show:
         class_names = utils._normalize_class_names(class_names, nclasses)
         add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
+
+def predict_proba(model, X):
+    if len(X.shape)==1:
+        X = X.reshape(-1,1)
+    # Keras wants predict not predict_proba and still gives probabilities
+    if model.__class__.__module__.startswith('tensorflow.python.keras'):
+        proba = model.predict(X)
+        proba = np.hstack([1-proba,proba]) # get prob y=0, y=1 nx2 matrix like sklearn
+        return proba
+
+    # sklearn etc...
+    return model.predict_proba(X)
