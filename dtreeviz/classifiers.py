@@ -16,7 +16,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
                  boundary_marker='o', boundary_markersize=.8,
                  show_proba=True, binary_threshold=0.5,
                  feature_names=None, target_name=None, class_names=None,
-                 show=['instances'],
+                 show=['instances','boundaries','misclassified'],
                  markers=None,
                  fontsize=12,
                  fontname="Arial",
@@ -55,13 +55,19 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
     """
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
+
+    if isinstance(X, pd.DataFrame):
+        X = X.values
+    if isinstance(y, pd.Series):
+        y = y.values
+
     ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_linewidth(.5)
     ax.spines['bottom'].set_linewidth(.5)
 
     # Created grid over the range of x1 and x2 variables, get probabilities, predictions
-    grid_points, grid_proba, grid_pred_as_matrix, w, h, class_X, class_values = \
+    grid_points, grid_proba, grid_pred_as_matrix, w, x_, class_X, class_values = \
         compute_tiling(model, X, y, binary_threshold, ntiles, tile_fraction)
 
     if markers is None:
@@ -75,22 +81,32 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
 
     # Draw probabilities or class prediction grid
     facecolors = grid_proba_colors if show_proba else grid_pred_colors
-    draw_tiles(ax, grid_points, facecolors, colors['tile_alpha'], h, w)
+    draw_tiles(ax, grid_points, facecolors, colors['tile_alpha'], x_, w)
 
     # Get grid with class predictions with coordinates (x,y)
     # e.g., y_pred[0,0] is lower left pixel and y_pred[5,5] is top-right pixel
     # for npoints=5
     grid_pred_as_matrix = grid_pred_as_matrix.reshape(ntiles, ntiles)
 
-    draw_boundary_edges(ax, grid_points, grid_pred_as_matrix,
-                        boundary_marker, boundary_markersize,
-                        colors, w, h)
+    if 'boundaries' in show:
+        draw_boundary_edges(ax, grid_points, grid_pred_as_matrix,
+                            boundary_marker, boundary_markersize,
+                            colors, w, x_)
 
     # Draw the X instances circles
     if 'instances' in show:
-        for i, h in enumerate(class_X):
-            ax.scatter(h[:, 0], h[:, 1], marker=markers[i], s=dot_w, c=color_map[i],
-                       edgecolors=colors['scatter_edge'], lw=.5, alpha=1.0)
+        for i, x_ in enumerate(class_X):
+            if 'misclassified' in show:
+                x_proba = predict_proba(model, x_)
+                if len(np.unique(y)) == 2:  # is k=2 binary?
+                    x_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
+                else:
+                    x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
+                ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],'red')
+            else:
+                ecolors = colors['scatter_edge']
+            ax.scatter(x_[:, 0], x_[:, 1], marker=markers[i], s=dot_w, c=color_map[i],
+                       edgecolors=ecolors, lw=.5, alpha=1.0)
 
     if feature_names is not None:
         ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
@@ -233,7 +249,7 @@ def draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, b
 def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
                   binary_threshold=0.5,
                   feature_name=None, target_name=None, class_names=None,
-                  show=['instances','probabilities','boundaries'],
+                  show=['instances','probabilities','boundaries','misclassified'],
                   markers=None,
                   fontsize=10,
                   fontname="Arial",
@@ -244,30 +260,16 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(4, 1))
 
-    if isinstance(x, pd.DataFrame):
+    if isinstance(x, pd.Series):
         x = x.values
-
-    mu = 0.08
-    class_values = np.unique(y)
-    class_x = [x[y == cl] for cl in class_values]
+    if isinstance(y, pd.Series):
+        y = y.values
 
     colors = adjust_colors(colors)
 
+    mu = 0.08
+    class_values = np.unique(y)
     nclasses = len(class_values)
-    class_colors = np.array(colors['classes'][nclasses])
-    color_map = {v: class_colors[i] for i, v in enumerate(class_values)}
-
-    if markers is None:
-        markers = ['o'] * len(class_x)
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_linewidth(0.1)
-    ax.set_yticks([])
-    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
-                   labelsize=fontsize)
-    ax.set_ylim(0, mu + nclasses * yshift + 6*sigma)
 
     x1r = np.max(x) - np.min(x)
     x1range = (np.min(x), np.max(x))
@@ -308,14 +310,37 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
 
     if 'instances' in show:
         # user should pass in short and wide fig
-        for i, x_ in enumerate(class_x):
+        class_x = [x[y == cl] for cl in class_values]
+        class_colors = np.array(colors['classes'][nclasses])
+        color_map = {v: class_colors[i] for i, v in enumerate(class_values)}
+        if markers is None:
+            markers = ['o'] * len(class_x)
+        for i, x_, in enumerate(class_x):
+            if 'misclassified' in show:
+                x_proba = predict_proba(model, x_)
+                if len(np.unique(y)) == 2:  # is k=2 binary?
+                    x_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
+                else:
+                    x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
+                ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],'red')
+            else:
+                ecolors = colors['scatter_edge']
             noise = np.random.normal(mu, sigma, size=len(x_))
             ax.scatter(x_, [mu + i * yshift] * len(x_) + noise,
                        s=dot_w, c=color_map[i],
                        marker=markers[i],
                        alpha=colors['scatter_marker_alpha'],
-                       edgecolors=colors['scatter_edge'],
+                       edgecolors=ecolors,
                        lw=.5)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_linewidth(0.1)
+    ax.set_yticks([])
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
+                   labelsize=fontsize)
+    ax.set_ylim(0, mu + nclasses * yshift + 6*sigma)
 
     if feature_name is not None:
         ax.set_xlabel(f"{feature_name}", fontsize=fontsize, fontname=fontname,
