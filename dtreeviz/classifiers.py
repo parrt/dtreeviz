@@ -411,13 +411,15 @@ def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
                 else:
                     x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
                 ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],colors['warning'])
+                alphas = 1.0
             else:
                 ecolors = colors['scatter_edge']
+                alphas = colors['scatter_marker_alpha']
             noise = np.random.normal(mu, sigma, size=len(x_))
             ax.scatter(x_, [mu + i * yshift] * len(x_) + noise,
                        s=dot_w, c=color_map[i],
                        marker=markers[i],
-                       alpha=colors['scatter_marker_alpha'],
+                       alpha=alphas,
                        edgecolors=ecolors,
                        lw=.5)
 
