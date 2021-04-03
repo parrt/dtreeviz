@@ -215,7 +215,7 @@ viz = dtreeviz(classifier,
 viz.view() 
 ```
 
-<img src=testing/samples/iris-TD-2.svg width=50% height=30% align="center">
+<img src=testing/samples/iris-TD-2.svg width=30%>
 
 ### Prediction path
 
@@ -254,7 +254,7 @@ dtreeviz(regr,
         )
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="60%">
+<img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="30%">
 
 #### Explain prediction path
 
