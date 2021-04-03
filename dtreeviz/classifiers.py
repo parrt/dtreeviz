@@ -54,8 +54,8 @@ def clfviz(model, X: np.ndarray, y: np.ndarray,
     :param boundary_marker: The marker symbol from matplotlib to use for the boundary;
                             default is a circle 'o'.
     :param boundary_markersize: The boundary marker size; default is .8
-    :param feature_names: A list of strings indicating the two X variable names. If None,
-                          no axes labels are showing
+    :param feature_names: A list of strings indicating the one or two X variable names.
+                          If None, no axes labels are showing
     :param target_name: If showing legend, this is the title of the legend box.
     :param class_names: If showing legend, these are the class names in the legend box
     :param show: Which elements to show, includes elements from
