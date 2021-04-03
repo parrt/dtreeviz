@@ -139,6 +139,13 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
     grid_points, grid_proba, grid_pred_as_matrix, w, x_, class_X, class_values = \
         _compute_tiling(model, X, y, binary_threshold, ntiles, tile_fraction)
 
+    x_proba = _predict_proba(model, X)
+    if len(np.unique(y)) == 2:  # is k=2 binary?
+        X_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
+    else:
+        X_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
+    class_X_pred = [X_pred[y == cl] for cl in class_values]
+
     if markers is None:
         markers = ['o']*len(class_X)
 
@@ -168,16 +175,41 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
     if 'instances' in show:
         for i, x_ in enumerate(class_X):
             if 'misclassified' in show:
-                x_proba = _predict_proba(model, x_)
-                if len(class_values) == 2:  # is k=2 binary?
-                    x_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
-                else:
-                    x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
-                ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],colors['warning'])
+                # Show correctly classified markers
+                good_x = x_[class_X_pred[i] == class_values[i],:]
+                ax.scatter(good_x[:, 0], good_x[:, 1],
+                           s=dot_w, c=color_map[i],
+                           marker=markers[i],
+                           alpha=colors['scatter_marker_alpha'],
+                           edgecolors=colors['scatter_edge'],
+                           lw=.5)
+                # Show misclassified markers (can't have alpha per marker so do in 2 calls)
+                bad_x = x_[class_X_pred[i] != class_values[i],:]
+                ax.scatter(bad_x[:, 0], bad_x[:, 1],
+                           s=dot_w, c=color_map[i],
+                           marker=markers[i],
+                           alpha=1.0,
+                           edgecolors=colors['warning'],
+                           lw=.5)
             else:
-                ecolors = colors['scatter_edge']
-            ax.scatter(x_[:, 0], x_[:, 1], marker=markers[i], s=dot_w, c=color_map[i],
-                       edgecolors=ecolors, lw=.5, alpha=1.0)
+                ax.scatter(x_[:, 0], x_[:, 1],
+                           s=dot_w, c=color_map[i],
+                           marker=markers[i],
+                           alpha=colors['scatter_marker_alpha'],
+                           edgecolors=colors['scatter_edge'],
+                           lw=.5)
+
+            # if 'misclassified' in show:
+            #     x_proba = _predict_proba(model, x_)
+            #     if len(class_values) == 2:  # is k=2 binary?
+            #         x_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
+            #     else:
+            #         x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
+            #     ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],colors['warning'])
+            # else:
+            #     ecolors = colors['scatter_edge']
+            # ax.scatter(x_[:, 0], x_[:, 1], marker=markers[i], s=dot_w, c=color_map[i],
+            #            edgecolors=ecolors, lw=.5, alpha=1.0)
 
     if feature_names is not None:
         ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
@@ -335,15 +367,15 @@ def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
                   markers=None,
                   fontsize=9, fontname="Arial",
                   dot_w=25,
-                  yshift=.08,
-                  sigma=.013,
+                  yshift=.09,
+                  sigma=.09,
                   colors: dict = None,
                   ax=None) -> None:
     """
     See comment and parameter descriptions for clfviz() above.
     """
     if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(4, 1))
+        fig, ax = plt.subplots(1, 1, figsize=(4, 1.2))
 
     if isinstance(x, pd.Series):
         x = x.values
@@ -358,7 +390,6 @@ def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
     mu = 0.08
     class_values = np.unique(y)
     nclasses = len(class_values)
-    class_x = [x[y == cl] for cl in class_values]
     class_colors = np.array(colors['classes'][nclasses])
     color_map = {v: class_colors[i] for i, v in enumerate(class_values)}
 
@@ -401,27 +432,44 @@ def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
 
     if 'instances' in show:
         # user should pass in short and wide fig
+        x_proba = _predict_proba(model, x)
+        if len(np.unique(y)) == 2:  # is k=2 binary?
+            x_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
+        else:
+            x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
+        class_x = [x[y == cl] for cl in class_values]
+        class_x_pred = [x_pred[y == cl] for cl in class_values]
+
         if markers is None:
             markers = ['o'] * len(class_x)
         for i, x_, in enumerate(class_x):
             if 'misclassified' in show:
-                x_proba = _predict_proba(model, x_)
-                if len(np.unique(y)) == 2:  # is k=2 binary?
-                    x_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
-                else:
-                    x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
-                ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],colors['warning'])
-                alphas = 1.0
+                # Show correctly classified markers
+                good_x = x_[class_x_pred[i] == class_values[i]]
+                noise = np.random.normal(mu, sigma, size=len(good_x))
+                ax.scatter(good_x, [mu + i * yshift] * len(good_x) + noise,
+                           s=dot_w, c=color_map[i],
+                           marker=markers[i],
+                           alpha=colors['scatter_marker_alpha'],
+                           edgecolors=colors['scatter_edge'],
+                           lw=.5)
+                # Show misclassified markers (can't have alpha per marker so do in 2 calls)
+                bad_x = x_[class_x_pred[i] != class_values[i]]
+                noise = np.random.normal(mu, sigma, size=len(bad_x))
+                ax.scatter(bad_x, [mu + i * yshift] * len(bad_x) + noise,
+                           s=dot_w, c=color_map[i],
+                           marker=markers[i],
+                           alpha=1.0,
+                           edgecolors=colors['warning'],
+                           lw=.5)
             else:
-                ecolors = colors['scatter_edge']
-                alphas = colors['scatter_marker_alpha']
-            noise = np.random.normal(mu, sigma, size=len(x_))
-            ax.scatter(x_, [mu + i * yshift] * len(x_) + noise,
-                       s=dot_w, c=color_map[i],
-                       marker=markers[i],
-                       alpha=alphas,
-                       edgecolors=ecolors,
-                       lw=.5)
+                noise = np.random.normal(mu, sigma, size=len(x_))
+                ax.scatter(x_, [mu + i * yshift] * len(x_) + noise,
+                           s=dot_w, c=color_map[i],
+                           marker=markers[i],
+                           alpha=colors['scatter_marker_alpha'],
+                           edgecolors=colors['scatter_edge'],
+                           lw=.5)
 
     ax.spines['top'].set_visible(False)
     ax.spines['left'].set_visible(False)

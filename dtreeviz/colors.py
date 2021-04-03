@@ -28,7 +28,7 @@ color_blind_friendly_colors = [
 
 COLORS = {'scatter_edge': GREY,
           'scatter_marker': BLUE,
-          'scatter_marker_alpha': 0.5,
+          'scatter_marker_alpha': 0.7,
           'class_boundary' : GREY,
           'warning' : '#E9130D',
           'tile_alpha':0.8,            # square tiling in clfviz to show probabilities
