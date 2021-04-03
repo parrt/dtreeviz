@@ -79,7 +79,7 @@ def clfviz(model, X: np.ndarray, y: np.ndarray,
     if isinstance(y, pd.Series):
         y = y.values
 
-    if len(X.shape) == 1 or (len(X.shape) > 1 and X.shape[1] == 1):
+    if len(X.shape) == 1 or (len(X.shape)==2 and X.shape[1] == 1):
         clfviz_univar(model=model, x=X, y=y,
                       ntiles=ntiles,
                       binary_threshold=binary_threshold,
@@ -350,7 +350,7 @@ def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
     if isinstance(y, pd.Series):
         y = y.values
 
-    if len(x.shape)>1 or (len(x.shape)==2 and x.shape[1]!=1) or len(x.shape)>2:
+    if (len(x.shape)==2 and x.shape[1]!=1) or len(x.shape)>2:
         raise ValueError(f"Expecting 1D data not {x.shape}")
 
     colors = adjust_colors(colors)
