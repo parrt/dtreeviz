@@ -192,7 +192,7 @@ viz = dtreeviz(regr,
 viz.view()              
 ```
   
-<img src=testing/samples/boston-TD-2.svg width=60% height=40%>
+<img src=testing/samples/boston-TD-2.svg width=40%>
   
   
 ### Classification decision tree
