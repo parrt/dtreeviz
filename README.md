@@ -285,7 +285,7 @@ Check [Beware Default Random Forest Importances](https://explained.ai/rf-importa
 explain_prediction_path(tree_classifier, X, feature_names=features, explanation_type="sklearn_default")
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94448483-9d042380-01b3-11eb-95f6-a973f1b7092a.png" width="60%"/>
+<img src="https://user-images.githubusercontent.com/12815158/94448483-9d042380-01b3-11eb-95f6-a973f1b7092a.png" width="40%"/>
 
 ### Decision tree without scatterplot or histograms for decision nodes
 
@@ -308,13 +308,13 @@ viz = dtreeviz(classifier,
 viz.view() 
 ```
 
-<img src=testing/samples/breast_cancer-TD-4-simple.svg width=80% height=60%>
+<img src=testing/samples/breast_cancer-TD-4-simple.svg width=60%>
 
 For more examples and different implementations, please see the jupyter [notebook](notebooks/examples.ipynb) full of examples.
 
 ### Regression univariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49105092-9b264d80-f234-11e8-9d67-cc58c47016ca.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49105092-9b264d80-f234-11e8-9d67-cc58c47016ca.png" width="40%">
 
 ```python
 import pandas as pd
@@ -336,7 +336,7 @@ plt.show()
 
 ### Regression bivariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49104999-4edb0d80-f234-11e8-9010-73b7c0ba5fb9.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49104999-4edb0d80-f234-11e8-9010-73b7c0ba5fb9.png" width="40%">
 
 ```python
 from mpl_toolkits.mplot3d import Axes3D
@@ -369,7 +369,7 @@ plt.show()
 
 ### Regression bivariate feature-target space heatmap
 
-<img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="40%">
 
 ```python
 from sklearn.tree import DecisionTreeRegressor
