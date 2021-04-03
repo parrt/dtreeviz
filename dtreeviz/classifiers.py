@@ -454,7 +454,8 @@ def _predict_proba(model, X):
     # Keras wants predict not predict_proba and still gives probabilities
     if model.__class__.__module__.startswith('tensorflow.python.keras'):
         proba = model.predict(X)
-        proba = np.hstack([1-proba,proba]) # get prob y=0, y=1 nx2 matrix like sklearn
+        if proba.shape[1]==1:
+            proba = np.hstack([1-proba,proba]) # get prob y=0, y=1 nx2 matrix like sklearn
         return proba
 
     # sklearn etc...
