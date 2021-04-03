@@ -1,4 +1,3 @@
-<img width="474" alt="Screen Shot 2021-04-03 at 2 13 05 PM" src="https://user-images.githubusercontent.com/178777/113491568-b9488c00-9486-11eb-9f2d-43d05e2f6ef9.png">
 # dtreeviz : Decision Tree Visualization
 
 ## Description
@@ -502,7 +501,19 @@ clfviz(rf, X, y, feature_names=['x1', 'x2'], markers=['o','X','s','D'])
 
 <img width="40%" src="https://user-images.githubusercontent.com/178777/113491583-d2513d00-9486-11eb-9b0c-3fb425c4c0d7.png">
 
+```python
+clfviz(rf,x,y,feature_names=['f27'])
+```
+
 <img width="40%" src="https://user-images.githubusercontent.com/178777/113491519-2ad40a80-9486-11eb-9377-84312aa7a26a.png">
+
+```python
+clfviz(rf,x,y,
+       show=['instances', 'boundaries', 'probabilities', 'misclassified','legend'],
+       feature_names=['x2'],
+       target_name = 'smiley',
+       colors={'scatter_marker_alpha':.2})
+```
 
 <img width="40%" src="https://user-images.githubusercontent.com/178777/113491526-3cb5ad80-9486-11eb-8bb5-b4d65d0898a4.png">
 
