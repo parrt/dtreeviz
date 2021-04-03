@@ -1,3 +1,4 @@
+<img width="474" alt="Screen Shot 2021-04-03 at 2 13 05 PM" src="https://user-images.githubusercontent.com/178777/113491568-b9488c00-9486-11eb-9f2d-43d05e2f6ef9.png">
 # dtreeviz : Decision Tree Visualization
 
 ## Description
@@ -495,7 +496,11 @@ viz_leaf_target(tree_regressor, dataset[features_reg], dataset[target_reg], feat
 
 With 1.3, we have introduced method `clfviz()` that illustrates one and two-dimensional feature space for classifiers, including colors the represent probabilities, decision boundaries, and misclassified entities. This method works with any model that answers method `predict_proba()` (and we also support Kera), so any model from scikit-learn should work. If you let us know about incompatibilities, we can support more models. There are lots of options would you can check out in the [api documentation](https://github.com/parrt/dtreeviz/blob/master/dtreeviz/classifiers.py). See [classifier-decision-boundaries.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-decision-boundaries.ipynb) and [classifier-boundary-animations.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-boundary-animations.ipynb).
 
-<img width="40%" src="https://user-images.githubusercontent.com/178777/113491538-5fe05d00-9486-11eb-9b10-61ab24ce94a1.png">
+```python
+clfviz(rf, X, y, feature_names=['x1', 'x2'], markers=['o','X','s','D'])
+```
+
+<img width="40%" src="https://user-images.githubusercontent.com/178777/113491583-d2513d00-9486-11eb-9b0c-3fb425c4c0d7.png">
 
 <img width="40%" src="https://user-images.githubusercontent.com/178777/113491519-2ad40a80-9486-11eb-9377-84312aa7a26a.png">
 
