@@ -392,7 +392,7 @@ plt.show()
 
 ### Classification univariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="40%">
 
 ```python
 from sklearn.tree import DecisionTreeClassifier
@@ -420,7 +420,7 @@ plt.show()
 
 ### Classification bivariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49105085-9792c680-f234-11e8-8af5-bc2fde950ab1.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49105085-9792c680-f234-11e8-8af5-bc2fde950ab1.png" width="40%">
 
 ```python
 from sklearn.tree import DecisionTreeClassifier
@@ -458,7 +458,7 @@ When we have a decision tree with a high depth, it can be difficult to get an ov
 viz_leaf_criterion(tree_classifier, display_type = "plot")
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94367215-f271ff00-00e5-11eb-802c-d5f486c45ab4.png" width="60%"/>
+<img src="https://user-images.githubusercontent.com/12815158/94367215-f271ff00-00e5-11eb-802c-d5f486c45ab4.png" width="40%"/>
 
 ### Leaf node samples
 
@@ -471,7 +471,7 @@ The ideal scenario would be to have a leaf with good purity which is based on a 
 viz_leaf_samples(tree_classifier, dataset[features], display_type='plot')
 ``` 
 
-<img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='60%'/>
+<img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='40%'/>
 
 #### Leaf node samples for classification
 
@@ -479,7 +479,7 @@ This is a specialized visualization for classification. It helps also to see the
 ```
 ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target])
 ```
-<img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="60%"/>
+<img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="40%"/>
 
 ### Leaf plots
 
@@ -489,7 +489,7 @@ Visualize leaf target distribution for regression decision trees.
 viz_leaf_target(tree_regressor, dataset[features_reg], dataset[target_reg], features_reg, target_reg)
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94445430-19950300-01b0-11eb-9a5a-8f1672f11d94.png" width="35%"> 
+<img src="https://user-images.githubusercontent.com/12815158/94445430-19950300-01b0-11eb-9a5a-8f1672f11d94.png" width="20%"> 
 
 
 ## Visualization methods setup
