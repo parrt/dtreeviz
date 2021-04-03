@@ -12,26 +12,39 @@ from dtreeviz.trees import add_classifier_legend
 from dtreeviz import utils
 
 
-def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
-                 boundary_marker='o', boundary_markersize=.8,
-                 show_proba=True, binary_threshold=0.5,
-                 feature_names=None, target_name=None, class_names=None,
-                 show=['instances','boundaries','misclassified'],
-                 markers=None,
-                 fontsize=12,
-                 fontname="Arial",
-                 colors:dict=None, dot_w=25, ax=None) -> None:
+def clfviz(model, X: np.ndarray, y: np.ndarray,
+           ntiles=50, tile_fraction=.9,
+           binary_threshold=0.5,
+           show=['instances', 'boundaries', 'probabilities', 'misclassified'],
+           feature_names=None, target_name=None, class_names=None,
+           markers=None,
+           boundary_marker='o', boundary_markersize=.8,
+           fontsize=9, fontname="Arial",
+           dot_w=25,
+           yshift=.08,
+           sigma=.013,
+           colors: dict = None,
+           ax=None) -> None:
     """
+    Two-variable case:
     Draw a tiled grid over a 2D classifier feature space where each tile is colored by
     the coordinate probabilities or coordinate predicted class. The X,y instances
-    are drawn as circles on top of the tiling. Draw dots representing the boundary
-    between classes.
+    are drawn on top of the tiling. The decision boundaries are indicated
+    by dots in between the classes. You can specify a threshold for the binary
+    classification case. Misclassified instances are highlighted.
 
-    Warning: there are a number of limitations in this initial implementation and
-    so changes to the API or functionality are likely.
+    One-variable case:
+    Draw a strip plot over a 1D feature space, one strip per class. A narrow rectangle
+    along the bottom indicates a color combined probabilities from all classes. The
+    color associated with the most likely class will dominate the probabilities rectangle.
+    Misclassified instances are highlighted. Decision boundaries, where the predicted
+    class shifts from one to another, are indicated by vertical dashed lines.
+
+    TODO: assumes classes are contiguous and 0..k-1
+
     :param model: an sklearn classifier model or any other model that can answer
                   method predict_proba(X)
-    :param X: A 2-column data frame or numpy array with the two features to plot
+    :param X: A 1- or 2-column dataframe or numpy array with the one or two features to plot
     :param y: The target column with integers indicating the true instance classes;
               currently these must be contiguous 0..k-1 for k classes.
     :param ntiles: How many tiles to draw across the x1, x2 feature space
@@ -41,47 +54,105 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
     :param boundary_marker: The marker symbol from matplotlib to use for the boundary;
                             default is a circle 'o'.
     :param boundary_markersize: The boundary marker size; default is .8
-    :param show_proba: Show probabilities by default; if false, show prediction color.
-    :param feature_names: 
-    :param target_name: 
-    :param class_names: 
-    :param show: Which elements to show, includes elements from ['legend', 'instances'] 
-    :param fontsize: 
-    :param fontname: 
+    :param feature_names: A list of strings indicating the two X variable names. If None,
+                          no axes labels are showing
+    :param target_name: If showing legend, this is the title of the legend box.
+    :param class_names: If showing legend, these are the class names in the legend box
+    :param show: Which elements to show, includes elements from
+                 ['instances','boundaries','probabilities','misclassified','legend']
+    :param markers: By default, just small circles are shown for each X instance, but
+                    if not None, this is a list of matplotlib marker strings like ['X','s'].
+    :param fontsize: Font size for tick labels and axis labels
+    :param fontname: The font name for  tick labels and axis labels
     :param colors: A dictionary with adjustments to the colors
     :param dot_w: How wide should the circles be when drawing the instances
-    :param ax:  An optional matplotlib "axes" upon which this method should draw.
-    :return:
+    :param yshift: For univariate case. If you'd like to play around with the strip plot,
+                   this variable shifts the class clusters; a shifted zero puts them on
+                   top of each other.
+    :param sigma:  For univariate case. The standard deviation of the noise added to make
+                   the strip plot.
+    :param ax: An optional matplotlib "axes" upon which this method should draw. If you
+               send in your own figure, it should be wide but not tall like shape 4,1
     """
-    if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
-
     if isinstance(X, pd.DataFrame):
         X = X.values
     if isinstance(y, pd.Series):
         y = y.values
 
-    ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_linewidth(.5)
-    ax.spines['bottom'].set_linewidth(.5)
+    if len(X.shape) == 1 or (len(X.shape) > 1 and X.shape[1] == 1):
+        clfviz_univar(model=model, x=X, y=y,
+                      ntiles=ntiles,
+                      binary_threshold=binary_threshold,
+                      show=show,
+                      feature_name=feature_names[0] if feature_names is not None else None,
+                      target_name=target_name,
+                      class_names=class_names,
+                      markers=markers,
+                      fontsize=fontsize, fontname=fontname,
+                      dot_w=dot_w,
+                      sigma=sigma,
+                      yshift=yshift,
+                      colors=colors,
+                      ax=ax)
+    elif len(X.shape) == 2 and X.shape[1] == 2:
+        clfviz_bivar(model=model, X=X, y=y,
+                     ntiles=ntiles, tile_fraction=tile_fraction,
+                     binary_threshold=binary_threshold,
+                     show=show,
+                     feature_names=feature_names, target_name=target_name,
+                     class_names=class_names,
+                     markers=markers,
+                     boundary_marker=boundary_marker,
+                     boundary_markersize=boundary_markersize,
+                     fontsize=fontsize, fontname=fontname,
+                     dot_w=dot_w, colors=colors,
+                     ax=ax)
+    else:
+        raise ValueError(f"Expecting 2D data not {X.shape}")
+
+
+def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
+                 ntiles=50, tile_fraction=.9,
+                 binary_threshold=0.5,
+                 show=['instances','boundaries','probabilities','misclassified'], # also 'legend'
+                 feature_names=None, target_name=None, class_names=None,
+                 markers=None,
+                 boundary_marker='o', boundary_markersize=.8,
+                 fontsize=9, fontname="Arial",
+                 dot_w=25, colors:dict=None,
+                 ax=None) -> None:
+    """
+    See comment and parameter descriptions for clfviz() above.
+    """
+    if isinstance(X, pd.DataFrame):
+        X = X.values
+    if isinstance(y, pd.Series):
+        y = y.values
+
+    if len(X.shape)==1 or (len(X.shape)==2 and X.shape[1]!=2) or len(X.shape)>2:
+        raise ValueError(f"Expecting 2D data not {X.shape}")
+
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
 
     # Created grid over the range of x1 and x2 variables, get probabilities, predictions
     grid_points, grid_proba, grid_pred_as_matrix, w, x_, class_X, class_values = \
-        compute_tiling(model, X, y, binary_threshold, ntiles, tile_fraction)
+        _compute_tiling(model, X, y, binary_threshold, ntiles, tile_fraction)
 
     if markers is None:
         markers = ['o']*len(class_X)
 
     colors = adjust_colors(colors)
 
+    class_values = np.unique(y) # returns sorted
+
     # Get class to color map for probabilities and predictions
     color_map, grid_pred_colors, grid_proba_colors = \
-        get_grid_colors(grid_proba, grid_pred_as_matrix, class_values, colors)
+        _get_grid_colors(grid_proba, grid_pred_as_matrix, class_values, colors)
 
     # Draw probabilities or class prediction grid
-    facecolors = grid_proba_colors if show_proba else grid_pred_colors
-    draw_tiles(ax, grid_points, facecolors, colors['tile_alpha'], x_, w)
+    facecolors = grid_proba_colors if 'probabilities' in show else grid_pred_colors
+    _draw_tiles(ax, grid_points, facecolors, colors['tile_alpha'], x_, w)
 
     # Get grid with class predictions with coordinates (x,y)
     # e.g., y_pred[0,0] is lower left pixel and y_pred[5,5] is top-right pixel
@@ -89,20 +160,20 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
     grid_pred_as_matrix = grid_pred_as_matrix.reshape(ntiles, ntiles)
 
     if 'boundaries' in show:
-        draw_boundary_edges(ax, grid_points, grid_pred_as_matrix,
-                            boundary_marker, boundary_markersize,
-                            colors, w, x_)
+        _draw_boundary_edges(ax, grid_points, grid_pred_as_matrix,
+                             boundary_marker, boundary_markersize,
+                             colors, w, x_)
 
     # Draw the X instances circles
     if 'instances' in show:
         for i, x_ in enumerate(class_X):
             if 'misclassified' in show:
-                x_proba = predict_proba(model, x_)
-                if len(np.unique(y)) == 2:  # is k=2 binary?
+                x_proba = _predict_proba(model, x_)
+                if len(class_values) == 2:  # is k=2 binary?
                     x_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
                 else:
                     x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
-                ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],'red')
+                ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],colors['warning'])
             else:
                 ecolors = colors['scatter_edge']
             ax.scatter(x_[:, 0], x_[:, 1], marker=markers[i], s=dot_w, c=color_map[i],
@@ -113,13 +184,23 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray, ntiles=50, tile_fraction=.9,
         ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
 
     if 'legend' in show:
-        class_names = utils.normalize_class_names(class_names,
-                                                          nclasses=len(np.unique(y)))
+        class_names = utils._normalize_class_names(class_names, nclasses=len(class_values))
         add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
 
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
+                   labelsize=fontsize)
+    for tick in ax.get_xticklabels():
+        tick.set_fontname(fontname)
+    for tick in ax.get_yticklabels():
+        tick.set_fontname(fontname)
+    ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_linewidth(.5)
+    ax.spines['bottom'].set_linewidth(.5)
 
-def compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold,
-                   ntiles, tile_fraction):
+
+def _compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold,
+                    ntiles, tile_fraction):
     """
     Create grid over the range of x1 and x2 variables; use the model to
     compute the probabilities with model.predict_proba(), which will work with sklearn
@@ -167,7 +248,7 @@ def compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold,
     class_values = np.unique(y)
     class_X = [X[y == cl] for cl in class_values]
 
-    grid_proba = predict_proba(model,grid_points)
+    grid_proba = _predict_proba(model, grid_points)
 
     if len(np.unique(y))==2: # is k=2 binary?
         grid_pred = np.where(grid_proba[:,1]>=binary_threshold,1,0)
@@ -177,7 +258,7 @@ def compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold,
     return grid_points, grid_proba, grid_pred, w, h, class_X, class_values
 
 
-def get_grid_colors(grid_proba, grid_pred, class_values, colors):
+def _get_grid_colors(grid_proba, grid_pred, class_values, colors):
     """
     For the grid locations, return a list of colors, one per location
     indicating the class color.  To compute the probability color,
@@ -207,7 +288,7 @@ def get_grid_colors(grid_proba, grid_pred, class_values, colors):
     return color_map, grid_pred_colors, grid_proba_colors
 
 
-def draw_tiles(ax, grid_points, facecolors, tile_alpha, h, w):
+def _draw_tiles(ax, grid_points, facecolors, tile_alpha, h, w):
     boxes = []
     for i, (v1, v2) in enumerate(grid_points):
         # center a box over (v1,v2) grid location
@@ -218,8 +299,8 @@ def draw_tiles(ax, grid_points, facecolors, tile_alpha, h, w):
     ax.add_collection(PatchCollection(boxes, match_original=True))
 
 
-def draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, boundary_markersize,
-                        colors, w, h):
+def _draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, boundary_markersize,
+                         colors, w, h):
     ntiles = grid_pred_as_matrix.shape[0]
 
     # find transitions from one class to the other moving horizontally
@@ -246,17 +327,21 @@ def draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, b
             markersize=boundary_markersize, c=colors['class_boundary'], alpha=1.0)
 
 
-def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
+def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
+                  ntiles=100,
                   binary_threshold=0.5,
+                  show=['instances', 'boundaries', 'probabilities', 'misclassified'],
                   feature_name=None, target_name=None, class_names=None,
-                  show=['instances','probabilities','boundaries','misclassified'],
                   markers=None,
-                  fontsize=10,
-                  fontname="Arial",
+                  fontsize=9, fontname="Arial",
+                  dot_w=25,
                   yshift=.08,
                   sigma=.013,
-                  dot_w=10,
-                  colors: dict = None, ax=None) -> None:
+                  colors: dict = None,
+                  ax=None) -> None:
+    """
+    See comment and parameter descriptions for clfviz() above.
+    """
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(4, 1))
 
@@ -265,16 +350,22 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
     if isinstance(y, pd.Series):
         y = y.values
 
+    if len(x.shape)>1 or (len(x.shape)==2 and x.shape[1]!=1) or len(x.shape)>2:
+        raise ValueError(f"Expecting 1D data not {x.shape}")
+
     colors = adjust_colors(colors)
 
     mu = 0.08
     class_values = np.unique(y)
     nclasses = len(class_values)
+    class_x = [x[y == cl] for cl in class_values]
+    class_colors = np.array(colors['classes'][nclasses])
+    color_map = {v: class_colors[i] for i, v in enumerate(class_values)}
 
     x1r = np.max(x) - np.min(x)
     x1range = (np.min(x), np.max(x))
     grid_points, w = np.linspace(*x1range, num=ntiles, endpoint=True, retstep=True)
-    grid_proba = predict_proba(model, grid_points)
+    grid_proba = _predict_proba(model, grid_points)
     if len(np.unique(y)) == 2:  # is k=2 binary?
         grid_pred = np.where(grid_proba[:, 1] >= binary_threshold, 1, 0)
     else:
@@ -285,7 +376,7 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
     if 'probabilities' in show:
         class_values = np.unique(y)
         color_map, grid_pred_colors, grid_proba_colors = \
-            get_grid_colors(grid_proba, grid_pred, class_values, colors=adjust_colors(None))
+            _get_grid_colors(grid_proba, grid_pred, class_values, colors=adjust_colors(None))
 
         pred_box_height = .08 * ymax
         boxes = []
@@ -310,19 +401,16 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
 
     if 'instances' in show:
         # user should pass in short and wide fig
-        class_x = [x[y == cl] for cl in class_values]
-        class_colors = np.array(colors['classes'][nclasses])
-        color_map = {v: class_colors[i] for i, v in enumerate(class_values)}
         if markers is None:
             markers = ['o'] * len(class_x)
         for i, x_, in enumerate(class_x):
             if 'misclassified' in show:
-                x_proba = predict_proba(model, x_)
+                x_proba = _predict_proba(model, x_)
                 if len(np.unique(y)) == 2:  # is k=2 binary?
                     x_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
                 else:
                     x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
-                ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],'red')
+                ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],colors['warning'])
             else:
                 ecolors = colors['scatter_edge']
             noise = np.random.normal(mu, sigma, size=len(x_))
@@ -340,6 +428,10 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
     ax.set_yticks([])
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
                    labelsize=fontsize)
+    for tick in ax.get_xticklabels():
+        tick.set_fontname(fontname)
+    for tick in ax.get_yticklabels():
+        tick.set_fontname(fontname)
     ax.set_ylim(0, mu + nclasses * yshift + 6*sigma)
 
     if feature_name is not None:
@@ -350,7 +442,13 @@ def clfviz_univar(model, x:np.ndarray, y:np.ndarray, ntiles=100,
         class_names = utils._normalize_class_names(class_names, nclasses)
         add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
 
-def predict_proba(model, X):
+
+def _predict_proba(model, X):
+    """
+    This is where we figure out how to get a matrix of k probabilities for a k-class
+    classification problem.  It works with any model that answers predict_proba()
+    but we can add special cases such as Keras, that has deprecated that method.
+    """
     if len(X.shape)==1:
         X = X.reshape(-1,1)
     # Keras wants predict not predict_proba and still gives probabilities
