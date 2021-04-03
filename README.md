@@ -192,7 +192,7 @@ viz = dtreeviz(regr,
 viz.view()              
 ```
   
-<img src=testing/samples/boston-TD-2.svg width=40%>
+<img src=testing/samples/boston-TD-2.svg width=30%>
   
   
 ### Classification decision tree
@@ -285,7 +285,7 @@ Check [Beware Default Random Forest Importances](https://explained.ai/rf-importa
 explain_prediction_path(tree_classifier, X, feature_names=features, explanation_type="sklearn_default")
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94448483-9d042380-01b3-11eb-95f6-a973f1b7092a.png" width="40%"/>
+<img src="https://user-images.githubusercontent.com/12815158/94448483-9d042380-01b3-11eb-95f6-a973f1b7092a.png" width="30%"/>
 
 ### Decision tree without scatterplot or histograms for decision nodes
 
@@ -314,7 +314,7 @@ For more examples and different implementations, please see the jupyter [noteboo
 
 ### Regression univariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49105092-9b264d80-f234-11e8-9d67-cc58c47016ca.png" width="40%">
+<img src="https://user-images.githubusercontent.com/178777/49105092-9b264d80-f234-11e8-9d67-cc58c47016ca.png" width="30%">
 
 ```python
 import pandas as pd
@@ -336,7 +336,7 @@ plt.show()
 
 ### Regression bivariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49104999-4edb0d80-f234-11e8-9010-73b7c0ba5fb9.png" width="40%">
+<img src="https://user-images.githubusercontent.com/178777/49104999-4edb0d80-f234-11e8-9010-73b7c0ba5fb9.png" width="30%">
 
 ```python
 from mpl_toolkits.mplot3d import Axes3D
@@ -369,7 +369,7 @@ plt.show()
 
 ### Regression bivariate feature-target space heatmap
 
-<img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="40%">
+<img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="30%">
 
 ```python
 from sklearn.tree import DecisionTreeRegressor
@@ -392,7 +392,7 @@ plt.show()
 
 ### Classification univariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="40%">
+<img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="30%">
 
 ```python
 from sklearn.tree import DecisionTreeClassifier
@@ -420,7 +420,7 @@ plt.show()
 
 ### Classification bivariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49105085-9792c680-f234-11e8-8af5-bc2fde950ab1.png" width="40%">
+<img src="https://user-images.githubusercontent.com/178777/49105085-9792c680-f234-11e8-8af5-bc2fde950ab1.png" width="30%">
 
 ```python
 from sklearn.tree import DecisionTreeClassifier
@@ -458,7 +458,7 @@ When we have a decision tree with a high depth, it can be difficult to get an ov
 viz_leaf_criterion(tree_classifier, display_type = "plot")
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94367215-f271ff00-00e5-11eb-802c-d5f486c45ab4.png" width="40%"/>
+<img src="https://user-images.githubusercontent.com/12815158/94367215-f271ff00-00e5-11eb-802c-d5f486c45ab4.png" width="30%"/>
 
 ### Leaf node samples
 
@@ -471,7 +471,7 @@ The ideal scenario would be to have a leaf with good purity which is based on a 
 viz_leaf_samples(tree_classifier, dataset[features], display_type='plot')
 ``` 
 
-<img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='40%'/>
+<img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='30%'/>
 
 #### Leaf node samples for classification
 
@@ -479,7 +479,7 @@ This is a specialized visualization for classification. It helps also to see the
 ```
 ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target])
 ```
-<img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="40%"/>
+<img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="30%"/>
 
 ### Leaf plots
 
@@ -499,13 +499,13 @@ With 1.3, we have introduced method `clfviz()` that illustrates one and two-dime
 clfviz(rf, X, y, feature_names=['x1', 'x2'], markers=['o','X','s','D'])
 ```
 
-<img width="40%" src="https://user-images.githubusercontent.com/178777/113491583-d2513d00-9486-11eb-9b0c-3fb425c4c0d7.png">
+<img width="30%" src="https://user-images.githubusercontent.com/178777/113491583-d2513d00-9486-11eb-9b0c-3fb425c4c0d7.png">
 
 ```python
 clfviz(rf,x,y,feature_names=['f27'])
 ```
 
-<img width="40%" src="https://user-images.githubusercontent.com/178777/113491519-2ad40a80-9486-11eb-9377-84312aa7a26a.png">
+<img width="30%" src="https://user-images.githubusercontent.com/178777/113491519-2ad40a80-9486-11eb-9377-84312aa7a26a.png">
 
 ```python
 clfviz(rf,x,y,
@@ -515,7 +515,7 @@ clfviz(rf,x,y,
        colors={'scatter_marker_alpha':.2})
 ```
 
-<img width="40%" src="https://user-images.githubusercontent.com/178777/113491526-3cb5ad80-9486-11eb-8bb5-b4d65d0898a4.png">
+<img width="30%" src="https://user-images.githubusercontent.com/178777/113491526-3cb5ad80-9486-11eb-8bb5-b4d65d0898a4.png">
 
 ## Visualization methods setup
 
