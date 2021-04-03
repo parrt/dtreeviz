@@ -1,7 +1,7 @@
 # dtreeviz : Decision Tree Visualization
 
 ## Description
-A python library for decision tree visualization and model interpretation.  Currently supports [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest) and [Spark MLlib](https://spark.apache.org/mllib/) trees.
+A python library for decision tree visualization and model interpretation.  Currently supports [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest) and [Spark MLlib](https://spark.apache.org/mllib/) trees. With 1.3, we now provide one- and two-dimensional feature space illustrations for classifiers (any model that can answer `predict_probab()`).
 
 Authors:
 
@@ -494,6 +494,12 @@ viz_leaf_target(tree_regressor, dataset[features_reg], dataset[target_reg], feat
 ##  Classification boundaries in feature space
 
 With 1.3, we have introduced method `clfviz()` that illustrates one and two-dimensional feature space for classifiers, including colors the represent probabilities, decision boundaries, and misclassified entities. This method works with any model that answers method `predict_proba()` (and we also support Kera), so any model from scikit-learn should work. If you let us know about incompatibilities, we can support more models. There are lots of options would you can check out in the [api documentation](https://github.com/parrt/dtreeviz/blob/master/dtreeviz/classifiers.py). See [classifier-decision-boundaries.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-decision-boundaries.ipynb) and [classifier-boundary-animations.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-boundary-animations.ipynb).
+
+<img width="40%" src="https://user-images.githubusercontent.com/178777/113491538-5fe05d00-9486-11eb-9b10-61ab24ce94a1.png">
+
+<img width="40%" src="https://user-images.githubusercontent.com/178777/113491519-2ad40a80-9486-11eb-9377-84312aa7a26a.png">
+
+<img width="40%" src="https://user-images.githubusercontent.com/178777/113491526-3cb5ad80-9486-11eb-8bb5-b4d65d0898a4.png">
 
 ## Visualization methods setup
 
