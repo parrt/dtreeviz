@@ -15,7 +15,7 @@ from dtreeviz import utils
 def clfviz(model, X: np.ndarray, y: np.ndarray,
            ntiles=50, tile_fraction=.9,
            binary_threshold=0.5,
-           show=['instances', 'boundaries', 'probabilities', 'misclassified'],
+           show=['instances', 'boundaries', 'probabilities', 'misclassified', 'legend'],
            feature_names=None, target_name=None, class_names=None,
            markers=None,
            boundary_marker='o', boundary_markersize=.8,
@@ -114,7 +114,7 @@ def clfviz(model, X: np.ndarray, y: np.ndarray,
 def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
                  ntiles=50, tile_fraction=.9,
                  binary_threshold=0.5,
-                 show=['instances','boundaries','probabilities','misclassified'], # also 'legend'
+                 show=['instances','boundaries','probabilities','misclassified','legend'],
                  feature_names=None, target_name=None, class_names=None,
                  markers=None,
                  boundary_marker='o', boundary_markersize=.8,
@@ -133,7 +133,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
         raise ValueError(f"Expecting 2D data not {X.shape}")
 
     if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
+        fig, ax = plt.subplots(1, 1, figsize=(5, 3.5))
 
     # Created grid over the range of x1 and x2 variables, get probabilities, predictions
     grid_points, grid_proba, grid_pred_as_matrix, w, x_, class_X, class_values = \
@@ -199,25 +199,14 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
                            edgecolors=colors['scatter_edge'],
                            lw=.5)
 
-            # if 'misclassified' in show:
-            #     x_proba = _predict_proba(model, x_)
-            #     if len(class_values) == 2:  # is k=2 binary?
-            #         x_pred = np.where(x_proba[:, 1] >= binary_threshold, 1, 0)
-            #     else:
-            #         x_pred = np.argmax(x_proba, axis=1)  # TODO: assumes classes are 0..k-1
-            #     ecolors = np.where(x_pred==class_values[i],colors['scatter_edge'],colors['warning'])
-            # else:
-            #     ecolors = colors['scatter_edge']
-            # ax.scatter(x_[:, 0], x_[:, 1], marker=markers[i], s=dot_w, c=color_map[i],
-            #            edgecolors=ecolors, lw=.5, alpha=1.0)
-
     if feature_names is not None:
         ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
 
     if 'legend' in show:
         class_names = utils._normalize_class_names(class_names, nclasses=len(class_values))
-        add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
+        add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors,
+                              fontsize=fontsize, fontname=fontname)
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
                    labelsize=fontsize)
@@ -362,7 +351,7 @@ def _draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, 
 def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
                   ntiles=100,
                   binary_threshold=0.5,
-                  show=['instances', 'boundaries', 'probabilities', 'misclassified'],
+                  show=['instances', 'boundaries', 'probabilities', 'misclassified', 'legend'],
                   feature_name=None, target_name=None, class_names=None,
                   markers=None,
                   fontsize=9, fontname="Arial",
@@ -375,7 +364,7 @@ def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
     See comment and parameter descriptions for clfviz() above.
     """
     if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(4, 1.2))
+        fig, ax = plt.subplots(1, 1, figsize=(5, 1.2))
 
     if isinstance(x, pd.Series):
         x = x.values
