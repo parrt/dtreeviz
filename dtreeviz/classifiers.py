@@ -479,7 +479,8 @@ def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
 
     if 'legend' in show:
         class_names = utils._normalize_class_names(class_names, nclasses)
-        add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors)
+        add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors,
+                              fontsize=fontsize, fontname=fontname)
 
 
 def _predict_proba(model, X):
