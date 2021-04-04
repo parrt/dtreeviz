@@ -496,26 +496,25 @@ viz_leaf_target(tree_regressor, dataset[features_reg], dataset[target_reg], feat
 With 1.3, we have introduced method `clfviz()` that illustrates one and two-dimensional feature space for classifiers, including colors the represent probabilities, decision boundaries, and misclassified entities. This method works with any model that answers method `predict_proba()` (and we also support Keras), so any model from scikit-learn should work. If you let us know about incompatibilities, we can support more models. There are lots of options would you can check out in the [api documentation](https://github.com/parrt/dtreeviz/blob/master/dtreeviz/classifiers.py). See [classifier-decision-boundaries.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-decision-boundaries.ipynb) and [classifier-boundary-animations.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-boundary-animations.ipynb).
 
 ```python
-clfviz(rf, X, y, feature_names=['x1', 'x2'], markers=['o','X','s','D'])
+clfviz(rf, X, y, feature_names=['x1', 'x2'], markers=['o','X','s','D'], target_name='smiley')
 ```
-
-<img width="30%" src="https://user-images.githubusercontent.com/178777/113491583-d2513d00-9486-11eb-9b0c-3fb425c4c0d7.png">
+<img width="30%" src="https://user-images.githubusercontent.com/178777/113516349-a12c4780-952e-11eb-86f3-0ae457eb500f.png">
 
 ```python
-clfviz(rf,x,y,feature_names=['f27'])
+clfviz(rf,x,y,feature_names=['f27'],target_name='cancer')
 ```
 
-<img width="30%" src="https://user-images.githubusercontent.com/178777/113491519-2ad40a80-9486-11eb-9377-84312aa7a26a.png">
+<img width="30%" src="https://user-images.githubusercontent.com/178777/113516364-b608db00-952e-11eb-91cf-efe2386622f1.png">
+
 
 ```python
 clfviz(rf,x,y,
-       show=['instances', 'boundaries', 'probabilities', 'misclassified','legend'],
        feature_names=['x2'],
        target_name = 'smiley',
        colors={'scatter_marker_alpha':.2})
 ```
 
-<img width="30%" src="https://user-images.githubusercontent.com/178777/113491526-3cb5ad80-9486-11eb-8bb5-b4d65d0898a4.png">
+<img width="30%" src="https://user-images.githubusercontent.com/178777/113516379-d5076d00-952e-11eb-955e-1dd7c09f2f29.png">
 
 ## Visualization methods setup
 
