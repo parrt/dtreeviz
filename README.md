@@ -1,7 +1,7 @@
 # dtreeviz : Decision Tree Visualization
 
 ## Description
-A python library for decision tree visualization and model interpretation.  Currently supports [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest) and [Spark MLlib](https://spark.apache.org/mllib/) trees. With 1.3, we now provide one- and two-dimensional feature space illustrations for classifiers (any model that can answer `predict_probab()`); see [below](README.md#classification-boundaries-in-feature-space).
+A python library for decision tree visualization and model interpretation.  Currently supports [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest), [Spark MLlib](https://spark.apache.org/mllib/), and [LightGBM](https://lightgbm.readthedocs.io/en/latest/) trees. With 1.3, we now provide one- and two-dimensional feature space illustrations for classifiers (any model that can answer `predict_probab()`); see [below](README.md#classification-boundaries-in-feature-space).
 
 Authors:
 
