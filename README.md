@@ -516,6 +516,13 @@ clfviz(rf,x,y,
 
 <img width="30%" src="https://user-images.githubusercontent.com/178777/113516379-d5076d00-952e-11eb-955e-1dd7c09f2f29.png">
 
+Sometimes it's helpful to see animations that change some of the hyper parameters. If you look in notebook [classifier-boundary-animations.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-boundary-animations.ipynb), you will see code that generates animations such as the following (animated png files):
+
+<img width="30%" src="testing/samples/smiley-dtree-maxdepth.png">
+
+<img width="30%" src="testing/samples/smiley-numtrees.png">
+
+
 ## Visualization methods setup
 
 Starting with dtreeviz 1.0 version, we refactored the concept of ShadowDecTree. If we want to add a new ML library in dtreeviz, we just need to add a new implementation of ShadowDecTree API, like ShadowSKDTree, ShadowXGBDTree or ShadowSparkTree. 
