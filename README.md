@@ -1,7 +1,7 @@
 # dtreeviz : Decision Tree Visualization
 
 ## Description
-A python library for decision tree visualization and model interpretation.  Currently supports [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest) and [Spark MLlib](https://spark.apache.org/mllib/) trees.
+A python library for decision tree visualization and model interpretation.  Currently supports [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest), [Spark MLlib](https://spark.apache.org/mllib/), and [LightGBM](https://lightgbm.readthedocs.io/en/latest/) trees. With 1.3, we now provide one- and two-dimensional feature space illustrations for classifiers (any model that can answer `predict_probab()`); see [below](README.md#classification-boundaries-in-feature-space).
 
 Authors:
 
@@ -192,7 +192,7 @@ viz = dtreeviz(regr,
 viz.view()              
 ```
   
-<img src=testing/samples/boston-TD-2.svg width=60% height=40%>
+<img src=testing/samples/boston-TD-2.svg width=30%>
   
   
 ### Classification decision tree
@@ -215,7 +215,7 @@ viz = dtreeviz(classifier,
 viz.view() 
 ```
 
-<img src=testing/samples/iris-TD-2.svg width=50% height=30% align="center">
+<img src=testing/samples/iris-TD-2.svg width=30%>
 
 ### Prediction path
 
@@ -254,7 +254,7 @@ dtreeviz(regr,
         )
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="60%">
+<img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="30%">
 
 #### Explain prediction path
 
@@ -285,7 +285,7 @@ Check [Beware Default Random Forest Importances](https://explained.ai/rf-importa
 explain_prediction_path(tree_classifier, X, feature_names=features, explanation_type="sklearn_default")
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94448483-9d042380-01b3-11eb-95f6-a973f1b7092a.png" width="60%"/>
+<img src="https://user-images.githubusercontent.com/12815158/94448483-9d042380-01b3-11eb-95f6-a973f1b7092a.png" width="30%"/>
 
 ### Decision tree without scatterplot or histograms for decision nodes
 
@@ -308,13 +308,13 @@ viz = dtreeviz(classifier,
 viz.view() 
 ```
 
-<img src=testing/samples/breast_cancer-TD-4-simple.svg width=80% height=60%>
+<img src=testing/samples/breast_cancer-TD-4-simple.svg width=60%>
 
 For more examples and different implementations, please see the jupyter [notebook](notebooks/examples.ipynb) full of examples.
 
 ### Regression univariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49105092-9b264d80-f234-11e8-9d67-cc58c47016ca.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49105092-9b264d80-f234-11e8-9d67-cc58c47016ca.png" width="30%">
 
 ```python
 import pandas as pd
@@ -336,7 +336,7 @@ plt.show()
 
 ### Regression bivariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49104999-4edb0d80-f234-11e8-9010-73b7c0ba5fb9.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49104999-4edb0d80-f234-11e8-9010-73b7c0ba5fb9.png" width="30%">
 
 ```python
 from mpl_toolkits.mplot3d import Axes3D
@@ -369,7 +369,7 @@ plt.show()
 
 ### Regression bivariate feature-target space heatmap
 
-<img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="30%">
 
 ```python
 from sklearn.tree import DecisionTreeRegressor
@@ -392,7 +392,7 @@ plt.show()
 
 ### Classification univariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="30%">
 
 ```python
 from sklearn.tree import DecisionTreeClassifier
@@ -420,7 +420,7 @@ plt.show()
 
 ### Classification bivariate feature-target space
 
-<img src="https://user-images.githubusercontent.com/178777/49105085-9792c680-f234-11e8-8af5-bc2fde950ab1.png" width="60%">
+<img src="https://user-images.githubusercontent.com/178777/49105085-9792c680-f234-11e8-8af5-bc2fde950ab1.png" width="30%">
 
 ```python
 from sklearn.tree import DecisionTreeClassifier
@@ -458,7 +458,7 @@ When we have a decision tree with a high depth, it can be difficult to get an ov
 viz_leaf_criterion(tree_classifier, display_type = "plot")
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94367215-f271ff00-00e5-11eb-802c-d5f486c45ab4.png" width="60%"/>
+<img src="https://user-images.githubusercontent.com/12815158/94367215-f271ff00-00e5-11eb-802c-d5f486c45ab4.png" width="30%"/>
 
 ### Leaf node samples
 
@@ -471,7 +471,7 @@ The ideal scenario would be to have a leaf with good purity which is based on a 
 viz_leaf_samples(tree_classifier, dataset[features], display_type='plot')
 ``` 
 
-<img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='60%'/>
+<img src='https://user-images.githubusercontent.com/12815158/94367931-264f2380-00ea-11eb-9588-525c58528c1e.png' width='30%'/>
 
 #### Leaf node samples for classification
 
@@ -479,7 +479,7 @@ This is a specialized visualization for classification. It helps also to see the
 ```
 ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target])
 ```
-<img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="60%"/>
+<img src="https://user-images.githubusercontent.com/12815158/94368065-eccae800-00ea-11eb-8fd6-250192ad6471.png" width="30%"/>
 
 ### Leaf plots
 
@@ -489,7 +489,36 @@ Visualize leaf target distribution for regression decision trees.
 viz_leaf_target(tree_regressor, dataset[features_reg], dataset[target_reg], features_reg, target_reg)
 ```
 
-<img src="https://user-images.githubusercontent.com/12815158/94445430-19950300-01b0-11eb-9a5a-8f1672f11d94.png" width="35%"> 
+<img src="https://user-images.githubusercontent.com/12815158/94445430-19950300-01b0-11eb-9a5a-8f1672f11d94.png" width="20%"> 
+
+##  Classification boundaries in feature space
+
+With 1.3, we have introduced method `clfviz()` that illustrates one and two-dimensional feature space for classifiers, including colors the represent probabilities, decision boundaries, and misclassified entities. This method works with any model that answers method `predict_proba()` (and we also support Keras), so any model from scikit-learn should work. If you let us know about incompatibilities, we can support more models. There are lots of options would you can check out in the [api documentation](https://github.com/parrt/dtreeviz/blob/master/dtreeviz/classifiers.py). See [classifier-decision-boundaries.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-decision-boundaries.ipynb) and [classifier-boundary-animations.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-boundary-animations.ipynb).
+
+```python
+clfviz(rf, X, y, feature_names=['x1', 'x2'], markers=['o','X','s','D'], target_name='smiley')
+```
+<img width="30%" src="https://user-images.githubusercontent.com/178777/113516349-a12c4780-952e-11eb-86f3-0ae457eb500f.png">
+
+```python
+clfviz(rf,x,y,feature_names=['f27'],target_name='cancer')
+```
+
+<img width="30%" src="https://user-images.githubusercontent.com/178777/113516364-b608db00-952e-11eb-91cf-efe2386622f1.png">
+
+
+```python
+clfviz(rf,x,y,
+       feature_names=['x2'],
+       target_name = 'smiley',
+       colors={'scatter_marker_alpha':.2})
+```
+
+<img width="30%" src="https://user-images.githubusercontent.com/178777/113516379-d5076d00-952e-11eb-955e-1dd7c09f2f29.png">
+
+Sometimes it's helpful to see animations that change some of the hyper parameters. If you look in notebook [classifier-boundary-animations.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-boundary-animations.ipynb), you will see code that generates animations such as the following (animated png files):
+
+<img width="30%" src="testing/samples/smiley-dtree-maxdepth.png">&nbsp;<img width="30%" src="testing/samples/smiley-numtrees.png">
 
 
 ## Visualization methods setup

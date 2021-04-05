@@ -452,7 +452,8 @@ def ctreeviz_bivar(tree_model,
     return None
 
 
-def add_classifier_legend(ax, class_names, class_values, facecolors, target_name, colors):
+def add_classifier_legend(ax, class_names, class_values, facecolors, target_name,
+                          colors, fontsize=10, fontname='Arial'):
     # add boxes for legend
     boxes = []
     for c in class_values:
@@ -463,19 +464,23 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
                     frameon=True,
                     shadow=False,
                     fancybox=True,
-                    title=target_name,
                     handletextpad=.35,
                     borderpad=.8,
                     bbox_to_anchor=(1.0, 1.0),
                     edgecolor=colors['legend_edge'])
 
+    leg.set_title(target_name, prop={'size': fontsize,
+                                     'weight':'bold',
+                                     'family':fontname})
+
     leg.get_frame().set_linewidth(.5)
     leg.get_title().set_color(colors['legend_title'])
-    leg.get_title().set_fontsize(10)
-    leg.get_title().set_fontweight('bold')
+    # leg.get_title().set_fontsize(fontsize)
+    # leg.get_title().set_fontname(fontname)
+    # leg.get_title().set_fontweight('bold')
     for text in leg.get_texts():
         text.set_color(colors['text'])
-        text.set_fontsize(10)
+        text.set_fontsize(fontsize)
 
 
 def dtreeviz(tree_model,

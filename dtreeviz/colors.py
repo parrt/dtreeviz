@@ -28,8 +28,11 @@ color_blind_friendly_colors = [
 
 COLORS = {'scatter_edge': GREY,
           'scatter_marker': BLUE,
-          'scatter_marker_alpha': 0.5,
-          'tesselation_alpha': 0.3,
+          'scatter_marker_alpha': 0.7,
+          'class_boundary' : GREY,
+          'warning' : '#E9130D',
+          'tile_alpha':0.8,            # square tiling in clfviz to show probabilities
+          'tesselation_alpha': 0.3,    # rectangular regions for decision tree feature space partitioning
           'tesselation_alpha_3D': 0.5,
           'split_line': GREY,
           'mean_line': '#f46d43',
