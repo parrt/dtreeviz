@@ -518,9 +518,7 @@ clfviz(rf,x,y,
 
 Sometimes it's helpful to see animations that change some of the hyper parameters. If you look in notebook [classifier-boundary-animations.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-boundary-animations.ipynb), you will see code that generates animations such as the following (animated png files):
 
-<img width="30%" src="testing/samples/smiley-dtree-maxdepth.png">
-
-<img width="30%" src="testing/samples/smiley-numtrees.png">
+<img width="30%" src="testing/samples/smiley-dtree-maxdepth.png">&nbsp;<img width="30%" src="testing/samples/smiley-numtrees.png">
 
 
 ## Visualization methods setup
