@@ -502,6 +502,7 @@ def dtreeviz(tree_model,
              X: np.ndarray = None,
              max_X_features_LR: int = 10,
              max_X_features_TD: int = 20,
+             depth_range_to_display: tuple = None,
              label_fontsize: int = 12,
              ticks_fontsize: int = 8,
              fontname: str = "Arial",
@@ -563,6 +564,7 @@ def dtreeviz(tree_model,
                             display only those features
                            used to guide X vector down tree. Helps when len(X) is large.
                            Default is 25.
+    :param depth_range_to_display: range of depth levels to be displayed.
     :param title: An optional title placed at the top of the tree.
     :param title_fontsize: Size of the text for the title.
     :param scale: Default is 1.0. Scale the width, height of the overall SVG preserving aspect ratio
@@ -792,6 +794,9 @@ def dtreeviz(tree_model,
 
     internal = []
     for node in get_internal_nodes():
+        if depth_range_to_display is not None:
+            if node.level not in range(depth_range_to_display[0], depth_range_to_display[1] + 1):
+                continue
         if fancy:
             if shadow_tree.is_classifier():
                 class_split_viz(node, X_data, y_data,
@@ -827,6 +832,9 @@ def dtreeviz(tree_model,
 
     leaves = []
     for node in get_leaves():
+        if depth_range_to_display is not None:
+            if node.level not in range(depth_range_to_display[0], depth_range_to_display[1] + 1):
+                continue
         if shadow_tree.is_classifier():
             class_leaf_viz(node, colors=color_values,
                            filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
@@ -859,6 +867,9 @@ def dtreeviz(tree_model,
     edges = []
     # non leaf edges with > and <=
     for node in get_internal_nodes():
+        if depth_range_to_display is not None:
+            if node.level not in range(depth_range_to_display[0], depth_range_to_display[1]):
+                continue
         nname = node_name(node)
         if node.left.isleaf():
             left_node_name = 'leaf%d' % node.left.id
