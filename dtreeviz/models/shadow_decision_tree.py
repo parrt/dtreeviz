@@ -423,20 +423,20 @@ class ShadowDecTree(ABC):
         children_left = self.get_children_left()
         children_right = self.get_children_right()
 
-        def walk(node_id):
+        def walk(node_id, level):
             if children_left[node_id] == -1 and children_right[node_id] == -1:  # leaf
-                t = ShadowDecTreeNode(self, node_id)
+                t = ShadowDecTreeNode(self, node_id, level=level)
                 leaves.append(t)
                 return t
             else:  # decision node
-                left = walk(children_left[node_id])
-                right = walk(children_right[node_id])
-                t = ShadowDecTreeNode(self, node_id, left, right)
+                left = walk(children_left[node_id], level + 1)
+                right = walk(children_right[node_id], level + 1)
+                t = ShadowDecTreeNode(self, node_id, left, right, level)
                 internal.append(t)
                 return t
 
         root_node_id = 0
-        root = walk(root_node_id)
+        root = walk(root_node_id, 0)
         return root, leaves, internal
 
     @staticmethod
@@ -490,11 +490,12 @@ class ShadowDecTreeNode():
     saved into field node_samples.
     """
 
-    def __init__(self, shadow_tree: ShadowDecTree, id: int, left=None, right=None):
+    def __init__(self, shadow_tree: ShadowDecTree, id: int, left=None, right=None, level=None):
         self.shadow_tree = shadow_tree
         self.id = id
         self.left = left
         self.right = right
+        self.level = level
 
     def split(self) -> (int, float):
         """Returns the split/threshold value used at this node."""
