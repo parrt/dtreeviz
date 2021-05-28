@@ -29,15 +29,22 @@ class ShadowXGBDTree(ShadowDecTree):
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None
                  ):
-        if hasattr(booster, 'get_booster'):
-            booster = booster.get_booster() # support XGBClassifier and XGBRegressor
+        # if passing a xgb model, will set the booster properly
+        try:
+            if hasattr(booster, 'get_booster'): 
+              self._isXGB = True
+              self.config = booster.get_params()
+              booster = booster.get_booster() # support XGBClassifier and XGBRegressor
+        except:
+            self._isXGB = False
+            self.config = json.loads(booster.save_config()) 
+  
         utils.check_tree_index(tree_index, len(booster.get_dump()))
         self.booster = booster
         self.tree_index = tree_index
         self.tree_to_dataframe = self._get_tree_dataframe()
         self.children_left = self._calculate_children(self.__class__.LEFT_CHILDREN_COLUMN)
         self.children_right = self._calculate_children(self.__class__.RIGHT_CHILDREN_COLUMN)
-        self.config = json.loads(self.booster.save_config())
         self.node_to_samples = None  # lazy initialized
         self.features = None  # lazy initialized
 
@@ -197,7 +204,10 @@ class ShadowXGBDTree(ShadowDecTree):
             return np.mean(self.y_data[node_samples])
 
     def is_classifier(self):
-        objective_name = self.config["learner"]["objective"]["name"].split(":")[0]
+        if self._isXGB:
+            objective_name = self.config["objective"].split(":")[0] #
+        else:
+            objective_name = self.config["objective"]["learner"]["objective"]["name"].split(":")[0]
         if objective_name == "binary":
             return True
         elif objective_name == "reg":
@@ -218,7 +228,10 @@ class ShadowXGBDTree(ShadowDecTree):
             return np.unique(self.y_data)
 
     def get_max_depth(self):
-        return int(self.config["learner"]["gradient_booster"]["updater"]["prune"]["train_param"]["max_depth"])
+        if self._isXGB:
+          return int(self.config["max_depth"]) # 
+        else:
+          return int(self.config["learner"]["gradient_booster"]["updater"]["prune"]["train_param"]["max_depth"])
 
     def get_score(self):
         raise VisualisationNotYetSupportedError("get_score()", "XGBoost")
