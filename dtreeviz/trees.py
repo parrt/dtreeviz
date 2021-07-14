@@ -529,7 +529,7 @@ def dtreeviz(tree_model,
     :param tree_model: A DecisionTreeRegressor or DecisionTreeClassifier that has been
                        fit to X_train, y_data.
     :param X_train: A data frame or 2-D matrix of feature vectors used to train the model.
-    :param y_data: A pandas Series or 1-D vector with target values or classes.
+    :param y_data: A pandas Series or 1-D vector with target or classes values. These values should be numeric types.
     :param feature_names: A list of the feature names.
     :param target_name: The name of the target variable.
     :param class_names: [For classifiers] A dictionary or list of strings mapping class
