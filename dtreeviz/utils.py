@@ -2,7 +2,9 @@ import xml.etree.cElementTree as ET
 import pandas as pd
 from numbers import Number
 from typing import Tuple, Sequence
+import matplotlib.pyplot as plt
 
+default_font=plt.rcParams['font.sans-serif'][0]
 
 def inline_svg_images(svg) -> str:
     """

@@ -19,7 +19,7 @@ from dtreeviz import interpretation as prediction_path
 from dtreeviz.colors import adjust_colors
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
-from dtreeviz.utils import inline_svg_images, myround, scale_SVG
+from dtreeviz.utils import inline_svg_images, myround, scale_SVG,default_font
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [0, 0, 10, 9, 8, 6, 6, 6, 5, 5, 5]
@@ -164,7 +164,7 @@ def rtreeviz_bivar_heatmap(tree_model,
                            target_name: str = None,
                            tree_index: int = None,  # required in case of tree ensemble
                            ax=None,
-                           fontsize=14, ticks_fontsize=12, fontname="Arial",
+                           fontsize=14, ticks_fontsize=12, fontname=default_font,
                            show={'title'},
                            n_colors_in_map=100,
                            colors=None,
@@ -228,7 +228,7 @@ def rtreeviz_bivar_3D(tree_model,
                       class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                       tree_index: int = None,  # required in case of tree ensemble
                       ax=None,
-                      fontsize=14, ticks_fontsize=10, fontname="Arial",
+                      fontsize=14, ticks_fontsize=10, fontname=default_font,
                       azim=0, elev=0, dist=7,
                       show={'title'},
                       colors=None,
@@ -300,7 +300,7 @@ def ctreeviz_univar(tree_model,
                     class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                     tree_index: int = None,  # required in case of tree ensemble
                     ax=None,
-                    fontsize=14, fontname="Arial", nbins=25, gtype='strip',
+                    fontsize=14, fontname=default_font, nbins=25, gtype='strip',
                     show={'title', 'legend', 'splits'},
                     colors=None):
     if ax is None:
@@ -397,7 +397,7 @@ def ctreeviz_bivar(tree_model,
                    tree_index: int = None,  # required in case of tree ensemble
                    ax=None,
                    fontsize=14,
-                   fontname="Arial",
+                   fontname=default_font,
                    show={'title', 'legend', 'splits'},
                    colors=None):
     """
@@ -453,7 +453,7 @@ def ctreeviz_bivar(tree_model,
 
 
 def add_classifier_legend(ax, class_names, class_values, facecolors, target_name,
-                          colors, fontsize=10, fontname='Arial'):
+                          colors, fontsize=10, fontname=default_font):
     # add boxes for legend
     boxes = []
     for c in class_values:
@@ -505,7 +505,7 @@ def dtreeviz(tree_model,
              depth_range_to_display: tuple = None,
              label_fontsize: int = 12,
              ticks_fontsize: int = 8,
-             fontname: str = "Arial",
+             fontname: str = default_font,
              title: str = None,
              title_fontsize: int = 14,
              colors: dict = None,
@@ -951,7 +951,7 @@ def class_split_viz(node: ShadowDecTreeNode,
                     filename: str = None,
                     ticks_fontsize: int = 8,
                     label_fontsize: int = 9,
-                    fontname: str = "Arial",
+                    fontname: str = default_font,
                     precision=1,
                     histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
                     X: np.array = None,
@@ -1106,7 +1106,7 @@ def regr_split_viz(node: ShadowDecTreeNode,
                    y_range=None,
                    ticks_fontsize: int = 8,
                    label_fontsize: int = 9,
-                   fontname: str = "Arial",
+                   fontname: str = default_font,
                    precision=1,
                    X: np.array = None,
                    highlight_node: bool = False,
@@ -1206,7 +1206,7 @@ def regr_leaf_viz(node: ShadowDecTreeNode,
                   precision=1,
                   label_fontsize: int = 9,
                   ticks_fontsize: int = 8,
-                  fontname: str = "Arial",
+                  fontname: str = default_font,
                   colors=None):
     colors = adjust_colors(colors)
 
@@ -1295,7 +1295,7 @@ def draw_legend(shadow_tree, target_name, filename, colors=None):
         plt.close()
 
 
-def draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", graph_colors=None):
+def draw_piechart(counts, size, colors, filename, label=None, fontname=default_font, graph_colors=None):
     graph_colors = adjust_colors(graph_colors)
     n_nonzero = np.count_nonzero(counts)
 
@@ -1362,7 +1362,7 @@ def viz_leaf_samples(tree_model,
                      display_type: str = "plot",
                      colors: dict = None,
                      fontsize: int = 14,
-                     fontname: str = "Arial",
+                     fontname: str = default_font,
                      grid: bool = False,
                      bins: int = 10,
                      min_samples: int = 0,
@@ -1484,7 +1484,7 @@ def viz_leaf_criterion(tree_model,
                        display_type: str = "plot",
                        colors: dict = None,
                        fontsize: int = 14,
-                       fontname: str = "Arial",
+                       fontname: str = default_font,
                        grid: bool = False,
                        bins: int = 10):
     """Visualize leaves criterion.
@@ -1589,7 +1589,7 @@ def ctreeviz_leaf_samples(tree_model,
                           plot_ylim: int = None,
                           colors: dict = None,
                           fontsize: int = 14,
-                          fontname: str = "Arial",
+                          fontname: str = default_font,
                           grid: bool = False):
     """Visualize the number of data samples by class for each leaf.
 
@@ -1710,7 +1710,7 @@ def viz_leaf_target(tree_model,
                     colors: dict = None,
                     markersize: int = 50,
                     label_fontsize: int = 14,
-                    fontname: str = "Arial",
+                    fontname: str = default_font,
                     precision: int = 1,
                     figsize: tuple = None,
                     grid: bool = False,
