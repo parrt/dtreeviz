@@ -376,7 +376,7 @@ def ctreeviz_univar(tree_model,
             ax.add_patch(rect)
 
     if 'legend' in show:
-        add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors)
+        add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors, fontname=fontname)
 
     if 'title' in show:
         accur = shadow_tree.get_score()
@@ -442,7 +442,7 @@ def ctreeviz_bivar(tree_model,
     ax.spines['bottom'].set_linewidth(.3)
 
     if 'legend' in show:
-        add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors)
+        add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors, fontname=fontname)
 
     if 'title' in show:
         accur = shadow_tree.get_score()
@@ -475,8 +475,8 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
 
     leg.get_frame().set_linewidth(.5)
     leg.get_title().set_color(colors['legend_title'])
-    # leg.get_title().set_fontsize(fontsize)
-    # leg.get_title().set_fontname(fontname)
+    leg.get_title().set_fontsize(fontsize)
+    leg.get_title().set_fontname(fontname)
     # leg.get_title().set_fontweight('bold')
     for text in leg.get_texts():
         text.set_color(colors['text'])
@@ -769,7 +769,7 @@ def dtreeviz(tree_model,
     if shadow_tree.is_classifier():
         class_values = shadow_tree.classes()
         color_map = {v: color_values[i] for i, v in enumerate(class_values)}
-        draw_legend(shadow_tree, shadow_tree.target_name, f"{tmp}/legend_{os.getpid()}.svg", colors=colors)
+        draw_legend(shadow_tree, shadow_tree.target_name, f"{tmp}/legend_{os.getpid()}.svg", colors=colors, fontname=fontname)
 
     X_data = shadow_tree.x_data
     y_data = shadow_tree.y_data
@@ -838,7 +838,8 @@ def dtreeviz(tree_model,
         if shadow_tree.is_classifier():
             class_leaf_viz(node, colors=color_values,
                            filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
-                           graph_colors=colors)
+                           graph_colors=colors,
+                           fontname=fontname)
             leaves.append(class_leaf_node(node))
         else:
             # for now, always gen leaf
@@ -1078,7 +1079,8 @@ def class_split_viz(node: ShadowDecTreeNode,
 def class_leaf_viz(node: ShadowDecTreeNode,
                    colors: List[str],
                    filename: str,
-                   graph_colors=None):
+                   graph_colors=None,
+                   fontname: str = "Arial"):
     graph_colors = adjust_colors(graph_colors)
     # size = prop_size(node.nsamples(), counts=node.shadow_tree.leaf_sample_counts(),
     #                  output_range=(.2, 1.5))
@@ -1095,7 +1097,7 @@ def class_leaf_viz(node: ShadowDecTreeNode,
     counts = node.class_counts()
     prediction = node.prediction_name()
     draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
-                  graph_colors=graph_colors)
+                  graph_colors=graph_colors, fontname=fontname)
 
 
 def regr_split_viz(node: ShadowDecTreeNode,
@@ -1251,7 +1253,7 @@ def regr_leaf_viz(node: ShadowDecTreeNode,
         plt.close()
 
 
-def draw_legend(shadow_tree, target_name, filename, colors=None):
+def draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial"):
     colors = adjust_colors(colors)
     n_classes = shadow_tree.nclasses()
     class_values = shadow_tree.classes()
@@ -1283,6 +1285,7 @@ def draw_legend(shadow_tree, target_name, filename, colors=None):
     for text in leg.get_texts():
         text.set_color(colors['text'])
         text.set_fontsize(10)
+        text.set_fontname(fontname)
 
     ax.set_xlim(0, 20)
     ax.set_ylim(0, 10)
