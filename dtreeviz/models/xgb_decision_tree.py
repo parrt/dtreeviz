@@ -74,7 +74,7 @@ class ShadowXGBDTree(ShadowDecTree):
     def get_node_feature(self, id) -> int:
         feature_name = self._get_column_value("Feature")[id]
         try:
-            return self.booster.feature_names.index(feature_name)
+            return self.feature_names.index(feature_name)
         except ValueError as error:
             return self.__class__.NO_FEATURE
 
