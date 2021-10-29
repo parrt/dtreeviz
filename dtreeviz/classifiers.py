@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 import pandas as pd
 
@@ -24,6 +25,7 @@ def clfviz(model, X: np.ndarray, y: np.ndarray,
            yshift=.08,
            sigma=.013,
            colors: dict = None,
+           ranges: Tuple = None,
            ax=None) -> None:
     """
     Two-variable case:
@@ -71,6 +73,9 @@ def clfviz(model, X: np.ndarray, y: np.ndarray,
                    top of each other.
     :param sigma:  For univariate case. The standard deviation of the noise added to make
                    the strip plot.
+    :param ranges: Tuple for ranges of plot. One range per input dimension also specified as tuple, 
+                   e.g. ((10, 100), (500, 600)).
+                   Ranges of plot are determined by min, max of X vector if not specified. 
     :param ax: An optional matplotlib "axes" upon which this method should draw. If you
                send in your own figure, it should be wide but not tall like shape 4,1
     """
@@ -106,6 +111,7 @@ def clfviz(model, X: np.ndarray, y: np.ndarray,
                      boundary_markersize=boundary_markersize,
                      fontsize=fontsize, fontname=fontname,
                      dot_w=dot_w, colors=colors,
+                     ranges=ranges,
                      ax=ax)
     else:
         raise ValueError(f"Expecting 2D data not {X.shape}")
@@ -120,6 +126,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
                  boundary_marker='o', boundary_markersize=.8,
                  fontsize=9, fontname="Arial",
                  dot_w=25, colors:dict=None,
+                 ranges=None,
                  ax=None) -> None:
     """
     See comment and parameter descriptions for clfviz() above.
@@ -137,7 +144,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
 
     # Created grid over the range of x1 and x2 variables, get probabilities, predictions
     grid_points, grid_proba, grid_pred_as_matrix, w, x_, class_X, class_values = \
-        _compute_tiling(model, X, y, binary_threshold, ntiles, tile_fraction)
+        _compute_tiling(model, X, y, binary_threshold, ntiles, tile_fraction, ranges=ranges)
 
     x_proba = _predict_proba(model, X)
     if len(np.unique(y)) == 2:  # is k=2 binary?
@@ -221,7 +228,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
 
 
 def _compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold,
-                    ntiles, tile_fraction):
+                    ntiles, tile_fraction, ranges):
     """
     Create grid over the range of x1 and x2 variables; use the model to
     compute the probabilities with model.predict_proba(), which will work with sklearn
@@ -248,12 +255,21 @@ def _compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold,
 
     X1 = X[:, 0]
     X2 = X[:, 1]
-    x1r = max(X1) - min(X1)
-    x2r = max(X2) - min(X2)
+
+    if ranges is not None:
+        x1range, x2range = ranges
+        min_x1, max_x1 = x1range
+        min_x2, max_x2 = x2range
+    else:
+        min_x1, max_x1 = min(X1), max(X1) 
+        min_x2, max_x2 = min(X2), max(X2)
+        
+    x1r = max_x1 - min_x1
+    x2r = max_x2 - min_x2
     border1 = x1r*0.05 # make a 5% border
     border2 = x2r*0.05
-    x1range = (min(X1)-border1, max(X1)+border1)
-    x2range = (min(X2)-border2, max(X2)+border2)
+    x1range = (min_x1-border1, max_x1+border1)
+    x2range = (min_x2-border2, max_x2+border2)
     w = (x1r+2*border1) / (ntiles-1)
     h = (x2r+2*border2) / (ntiles-1)
     w *= tile_fraction
