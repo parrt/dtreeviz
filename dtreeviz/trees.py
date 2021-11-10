@@ -10,7 +10,7 @@ import graphviz
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 from colour import Color, rgb2hex
-from graphviz.backend import run, view
+import graphviz
 from sklearn import tree
 from typing import Mapping, List, Tuple
 from numbers import Number
@@ -45,7 +45,7 @@ class DTreeViz:
 
     def view(self):
         svgfilename = self.save_svg()
-        view(svgfilename)
+        graphviz.backend.view(svgfilename)
 
     def save_svg(self):
         """Saves the current object as SVG file in the tmp directory and returns the filename"""
@@ -76,7 +76,10 @@ class DTreeViz:
         # Gen .svg file from .dot but output .svg has image refs to other files
         cmd = ["dot", f"-T{format}", "-o", filename, dotfilename]
         # print(' '.join(cmd))
-        run(cmd, capture_output=True, check=True, quiet=False)
+        if graphviz.__version__ <= '0.17':
+            graphviz.backend.run(cmd, capture_output=True, check=True, quiet=False)
+        else:
+            graphviz.backend.execute.run_check(cmd, capture_output=True, check=True, quiet=False)
 
         if filename.endswith(".svg"):
             # now merge in referenced SVG images to make all-in-one file
