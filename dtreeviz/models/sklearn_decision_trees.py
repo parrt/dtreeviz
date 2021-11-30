@@ -27,7 +27,7 @@ class ShadowSKDTree(ShadowDecTree):
     def get_class_weights(self):
         if self.is_classifier():
             unique_target_values = np.unique(self.y_data)
-            return compute_class_weight(self.tree_model.class_weight, unique_target_values, self.y_data)
+            return compute_class_weight(self.tree_model.class_weight, classes=unique_target_values, y=self.y_data)
 
     def get_thresholds(self):
         return self.tree_model.tree_.threshold
