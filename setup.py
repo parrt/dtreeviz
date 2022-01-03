@@ -15,6 +15,7 @@ setup(
     author='Terence Parr, Tudor Lapusan, and Prince Grover',
     author_email='parrt@cs.usfca.edu',
     description='A Python 3 library for sci-kit learn, XGBoost, LightGBM, and Spark decision tree visualization',
+    long_description=README,
     keywords='machine-learning data structures trees visualization',
     classifiers=['License :: OSI Approved :: MIT License',
                  'Intended Audience :: Developers']
