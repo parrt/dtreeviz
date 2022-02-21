@@ -16,6 +16,7 @@ from xgboost.core import Booster
 class ShadowXGBDTree(ShadowDecTree):
     LEFT_CHILDREN_COLUMN = "Yes"
     RIGHT_CHILDREN_COLUMN = "No"
+    NODE_COLUMN = "Node"
     NO_CHILDREN = -1
     NO_SPLIT = -2
     NO_FEATURE = -2
@@ -68,22 +69,23 @@ class ShadowXGBDTree(ShadowDecTree):
         Split values could not be the same like in plot_tree(booster). This is because xgb_model_classifier.joblib.trees_to_dataframe()
         get data using dump_format = text from xgb_model_classifier.joblib.get_dump()
         """
-        node_split = self._get_column_value("Split")[id]
+        node_split = self._get_nodes_values("Split")[id]
         return node_split if not math.isnan(node_split) else self.__class__.NO_SPLIT
 
     def get_node_feature(self, id) -> int:
-        feature_name = self._get_column_value("Feature")[id]
+        feature_name = self._get_nodes_values("Feature")[id]
         try:
             return self.feature_names.index(feature_name)
         except ValueError as error:
             return self.__class__.NO_FEATURE
 
+    # TODO  check explain prediction plain method
     def get_features(self):
         if self.features is not None:
             return self.features
 
-        feature_index = [self.get_node_feature(i) for i in range(0, self.nnodes())]
-        self.features = np.array(feature_index)
+        nodes = self._get_column_value(self.NODE_COLUMN)
+        self.features = {node: self.get_node_feature(node) for node in nodes}
         return self.features
 
     def get_node_samples(self):
@@ -128,18 +130,23 @@ class ShadowXGBDTree(ShadowDecTree):
 
     def _get_leaf_prediction_path(self, leaf):
         prediction_path = [leaf]
+        left_parent = np.array(list(self.children_left.keys()))
+        left_child = np.array(list(self.children_left.values()))
+
+        right_parent = np.array(list(self.children_right.keys()))
+        right_child = np.array(list(self.children_right.values()))
 
         def walk(node_id):
             if node_id != self.__class__.ROOT_NODE:
                 try:
-                    parent_node = np.where(self.children_left == node_id)[0][0]
+                    parent_node = left_parent[np.where(left_child == node_id)[0][0]]
                     prediction_path.append(parent_node)
                     walk(parent_node)
                 except IndexError:
                     pass
 
                 try:
-                    parent_node = np.where(self.children_right == node_id)[0][0]
+                    parent_node = right_parent[np.where(right_child == node_id)[0][0]]
                     prediction_path.append(parent_node)
                     walk(parent_node)
                 except IndexError:
@@ -153,6 +160,12 @@ class ShadowXGBDTree(ShadowDecTree):
 
     def _get_column_value(self, column_name):
         return self._get_tree_dataframe()[column_name].to_numpy()
+
+    def _get_nodes_values(self, column_name):
+        nodes = self._get_column_value(self.NODE_COLUMN)
+        nodes_values = self._get_column_value(column_name)
+
+        return dict(zip(nodes, nodes_values))
 
     def _split_column_value(self, column_name):
         def split_value(value):
@@ -169,7 +182,8 @@ class ShadowXGBDTree(ShadowDecTree):
     def _calculate_children(self, column_name):
         children = self._split_column_value(column_name)
         children = self._change_no_children_value(children)
-        return children.to_numpy(dtype=int)
+        nodes = self._get_column_value(self.NODE_COLUMN)
+        return dict(zip(nodes, map(int, children)))
 
     def get_feature_path_importance(self, node_list):
         raise VisualisationNotYetSupportedError("get_feature_path_importance()", "XGBoost")
@@ -177,9 +191,11 @@ class ShadowXGBDTree(ShadowDecTree):
     def get_node_criterion(self):
         raise VisualisationNotYetSupportedError("get_node_criterion()", "XGBoost")
 
+    # TODO check explain method for both classification and not classification splits
     def get_thresholds(self):
-        thresholds = [self.get_node_split(i) for i in range(0, self.nnodes())]
-        return np.array(thresholds)
+        nodes = self._get_column_value(self.NODE_COLUMN)
+        thresholds = {node: self.get_node_split(node) for node in nodes}
+        return thresholds
 
     def get_node_nsamples_by_class(self, id):
         all_nodes = self.internal + self.leaves
