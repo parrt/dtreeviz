@@ -35,12 +35,12 @@ def test_feature_names(xgb_booster):
 
 
 def test_get_children_left(xgb_tree):
-    assert np.array_equal(xgb_tree.get_children_left(), np.array([1, 3, 5, -1, -1, -1, -1]))
-    assert not np.array_equal(xgb_tree.get_children_left(), np.array([-1, -1, -1, -1, 1, 3, 5]))
+    assert np.array_equal(np.array(list(xgb_tree.get_children_left().values())), np.array([1, 3, 5, -1, -1, -1, -1]))
+    assert not np.array_equal(np.array(list(xgb_tree.get_children_left().values())), np.array([-1, -1, -1, -1, 1, 3, 5]))
 
 
-def test_get_right_children_left(xgb_tree):
-    assert np.array_equal(xgb_tree.get_children_right(), np.array([2, 4, 6, -1, -1, -1, -1]))
+def test_get_children_right(xgb_tree):
+    assert np.array_equal(np.array(list(xgb_tree.get_children_right().values())), np.array([2, 4, 6, -1, -1, -1, -1]))
 
 
 def test_get_node_feature(xgb_tree):
@@ -52,7 +52,7 @@ def test_get_node_feature(xgb_tree):
 
 
 def test_get_features(xgb_tree):
-    assert np.array_equal(xgb_tree.get_features(), np.array([3, 0, 4, -2, -2, -2, -2]))
+    assert np.array_equal(np.array(list(xgb_tree.get_features().values())), np.array([3, 0, 4, -2, -2, -2, -2]))
 
 
 def test_get_node_samples(xgb_tree):
@@ -89,7 +89,7 @@ def test_classes(xgb_tree):
 
 
 def test_get_thresholds(xgb_tree):
-    assert np.array_equal(xgb_tree.get_thresholds(), np.array([1, 3, 4, -2, -2, -2, -2]))
+    assert np.array_equal(np.array(list(xgb_tree.get_thresholds().values())), np.array([1, 3, 4, -2, -2, -2, -2]))
 
 
 def test_is_classifier(xgb_tree):
