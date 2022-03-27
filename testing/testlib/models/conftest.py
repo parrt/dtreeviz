@@ -35,8 +35,8 @@ def y_dataset_regressor(dataset) -> pd.Series:
 
 
 @pytest.fixture()
-def dataset_spark() -> pd.DataFrame:
-    return pd.read_csv("fixtures/dataset_spark.csv")
+def dataset_spark_tf() -> pd.DataFrame:
+    return pd.read_csv("fixtures/dataset_spark_tf.csv")
 
 @pytest.fixture()
 def dataset_lightgbm() -> pd.DataFrame:
