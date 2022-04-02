@@ -52,11 +52,20 @@ def test_get_children_left(tfdf_shadow_clf):
 def test_get_children_right(tfdf_shadow_clf):
     assert tfdf_shadow_clf.get_children_right() == {1: 3, 0: 4, 4: 6, 2: -1, 3: -1, 5: -1, 6: -1}
 
+
 def test_nclasses(tfdf_shadow_clf):
     assert tfdf_shadow_clf.nclasses() == 2
+
 
 def test_classes(tfdf_shadow_clf):
     assert (tfdf_shadow_clf.classes() == [0, 1]).all()
 
+
 def test_get_features(tfdf_shadow_clf):
     assert (tfdf_shadow_clf.get_features() == [ 1,  0, -2, -2,  5, -2, -2]).all()
+
+
+def test_get_node_feature(tfdf_shadow_clf):
+    assert tfdf_shadow_clf.get_node_feature(0) == 1
+    assert tfdf_shadow_clf.get_node_feature(4) == 5
+    assert tfdf_shadow_clf.get_node_feature(2) == -2

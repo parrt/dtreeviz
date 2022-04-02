@@ -97,7 +97,7 @@ class ShadowTFDFTree(ShadowDecTree):
         raise VisualisationNotYetSupportedError("get_node_split()", "TensorFlow Decision Forests")
 
     def get_node_feature(self, id) -> int:
-        raise VisualisationNotYetSupportedError("get_node_feature()", "TensorFlow Decision Forests")
+        return self.get_features()[id]
 
     def get_node_nsamples_by_class(self, id):
         raise VisualisationNotYetSupportedError("get_node_nsamples_by_class()", "TensorFlow Decision Forests")
