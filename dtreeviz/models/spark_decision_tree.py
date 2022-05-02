@@ -115,8 +115,8 @@ class ShadowSparkTree(ShadowDecTree):
             return np.unique(self.y_data)
 
     def get_node_samples(self):
-        # TODO in case dataset is large, it will take a while to compute all node samples
-        # maybe to include a message for waiting... or loading bar
+        # TODO check if we can put this method in the shadow tree
+        # maybe to include a message for waiting... or loading bar in case there is big training set
         if self.node_to_samples is not None:
             return self.node_to_samples
 
