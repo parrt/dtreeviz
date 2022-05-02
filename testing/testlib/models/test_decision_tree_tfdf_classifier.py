@@ -62,10 +62,52 @@ def test_classes(tfdf_shadow_clf):
 
 
 def test_get_features(tfdf_shadow_clf):
-    assert (tfdf_shadow_clf.get_features() == [ 1,  0, -2, -2,  5, -2, -2]).all()
+    assert (tfdf_shadow_clf.get_features() == [1,  0, -2, -2,  5, -2, -2]).all()
 
 
 def test_get_node_feature(tfdf_shadow_clf):
     assert tfdf_shadow_clf.get_node_feature(0) == 1
     assert tfdf_shadow_clf.get_node_feature(4) == 5
     assert tfdf_shadow_clf.get_node_feature(2) == -2
+
+
+def test_get_thresholds(tfdf_shadow_clf):
+    assert (tfdf_shadow_clf.get_thresholds() == [0.5, 1.5, -2.0, -2.0, 2.5, -2.0, -2.0]).all()
+
+
+def test_get_node_samples(tfdf_shadow_clf):
+    assert len(tfdf_shadow_clf.get_node_samples()[0]) == 891, "Node samples for node 0 should be 891"
+    assert len(tfdf_shadow_clf.get_node_samples()[1]) == 577, "Node samples for node 1 should be 577"
+    assert len(tfdf_shadow_clf.get_node_samples()[2]) == 122, "Node samples for node 2 should be 122"
+    assert len(tfdf_shadow_clf.get_node_samples()[4]) == 314, "Node samples for node 4 should be 314"
+
+
+def test_get_node_nsamples(tfdf_shadow_clf):
+    assert tfdf_shadow_clf.get_node_nsamples(0) == 891
+    assert tfdf_shadow_clf.get_node_nsamples(1) == 577
+    assert tfdf_shadow_clf.get_node_nsamples(2) == 122
+    assert tfdf_shadow_clf.get_node_nsamples(4) == 314
+
+
+def test_get_node_nsamples_by_class(tfdf_shadow_clf):
+    assert tfdf_shadow_clf.get_node_nsamples_by_class(0) == (549, 342)
+    assert tfdf_shadow_clf.get_node_nsamples_by_class(1) == (468, 109)
+    assert tfdf_shadow_clf.get_node_nsamples_by_class(4) == (81, 233)
+
+
+def test_get_prediction(tfdf_shadow_clf):
+    assert tfdf_shadow_clf.get_prediction(0) == 0
+    assert tfdf_shadow_clf.get_prediction(1) == 0
+    assert tfdf_shadow_clf.get_prediction(2) == 0
+    assert tfdf_shadow_clf.get_prediction(3) == 0
+    assert tfdf_shadow_clf.get_prediction(4) == 1
+    assert tfdf_shadow_clf.get_prediction(5) == 1
+    assert tfdf_shadow_clf.get_prediction(6) == 0
+
+
+
+
+
+
+
+

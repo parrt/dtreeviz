@@ -10,8 +10,10 @@ from dtreeviz.models.shadow_decision_tree import ShadowDecTree, VisualisationNot
 from tensorflow_decision_forests.component.inspector.inspector import _RandomForestInspector
 
 
+# TODO check the samples size from original tree nodes and my sample nodes
 class ShadowTFDFTree(ShadowDecTree):
     NO_FEATURE = -2
+    NO_SPLIT = -2
 
     # TODO check for the other types of ensamble trees
     def __init__(self, model: RandomForestModel,
@@ -29,6 +31,8 @@ class ShadowTFDFTree(ShadowDecTree):
         self.tree = self.model.make_inspector().extract_tree(tree_idx=tree_index)
         self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
         self.features = None  # lazy initialization
+        self.node_to_samples = None  # lazy initialization
+        self.thresholds = None  # lazy  initialization
 
         super().__init__(model, x_data, y_data, feature_names, target_name, class_names)
 
@@ -52,7 +56,16 @@ class ShadowTFDFTree(ShadowDecTree):
         raise VisualisationNotYetSupportedError("get_class_weights()", "TensorFlow Decision Forests")
 
     def get_thresholds(self) -> np.ndarray:
-        raise VisualisationNotYetSupportedError("get_thresholds()", "TensorFlow Decision Forests")
+        if self.thresholds is not None:
+            return self.thresholds
+
+        thresholds = [self.__class__.NO_SPLIT] * len(self.tree_nodes)
+        for index, node in self.tree_nodes.items():
+            if hasattr(node, "condition"):
+                thresholds[index] = node.condition.threshold
+
+        self.thresholds = np.array(thresholds)
+        return self.thresholds
 
     def get_features(self) -> np.ndarray:
         if self.features is not None:
@@ -70,8 +83,9 @@ class ShadowTFDFTree(ShadowDecTree):
     def criterion(self) -> str:
         raise VisualisationNotYetSupportedError("criterion()", "TensorFlow Decision Forests")
 
+    # TODO check if we need to implement it
     def get_class_weight(self):
-        raise VisualisationNotYetSupportedError("get_class_weight()", "TensorFlow Decision Forests")
+        pass
 
     def nclasses(self) -> int:
         if not self.is_classifier():
@@ -85,25 +99,42 @@ class ShadowTFDFTree(ShadowDecTree):
             return np.unique(self.y_data)
 
     def get_node_samples(self):
-        raise VisualisationNotYetSupportedError("get_node_samples()", "TensorFlow Decision Forests")
+        if self.node_to_samples is not None:
+            return self.node_to_samples
+
+        node_to_samples = defaultdict(list)
+        for i in range(self.x_data.shape[0]):
+            path = self.predict_path(self.x_data[i])
+            for node in path:
+                node_to_samples[node.id].append(i)
+
+        self.node_to_samples = node_to_samples
+        return self.node_to_samples
 
     def get_split_samples(self, id):
         raise VisualisationNotYetSupportedError("get_split_samples()", "TensorFlow Decision Forests")
 
     def get_node_nsamples(self, id):
-        raise VisualisationNotYetSupportedError("get_node_nsamples()", "TensorFlow Decision Forests")
+        return int(self.tree_nodes[id].value.num_examples)
 
     def get_node_split(self, id) -> (int, float):
-        raise VisualisationNotYetSupportedError("get_node_split()", "TensorFlow Decision Forests")
+        return self.get_thresholds()[id]
 
     def get_node_feature(self, id) -> int:
         return self.get_features()[id]
 
+    # TODO check if we can pun this method in the super class
     def get_node_nsamples_by_class(self, id):
-        raise VisualisationNotYetSupportedError("get_node_nsamples_by_class()", "TensorFlow Decision Forests")
+        all_nodes = self.internal + self.leaves
+        if self.is_classifier():
+            node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
+            return node_value[0][0], node_value[0][1]
 
+    # TODO implement for regression tree
     def get_prediction(self, id):
-        raise VisualisationNotYetSupportedError("get_prediction()", "TensorFlow Decision Forests")
+        if self.is_classifier():
+            return np.argmax(self.tree_nodes[id].value.probability)
+        raise VisualisationNotYetSupportedError("get_prediction()", "TensorFlow Decision Forests2")
 
     def nnodes(self) -> int:
         raise VisualisationNotYetSupportedError("nnodes()", "TensorFlow Decision Forests")
@@ -123,8 +154,12 @@ class ShadowTFDFTree(ShadowDecTree):
     def get_min_samples_leaf(self) -> (int, float):
         raise VisualisationNotYetSupportedError("get_min_samples_leaf()", "TensorFlow Decision Forests")
 
+    # TODO check for categorical node splits
     def shouldGoLeftAtSplit(self, id, x):
-        raise VisualisationNotYetSupportedError("shouldGoLeftAtSplit()", "TensorFlow Decision Forests")
+        return x < self.get_node_split(id)
+
+    def get_root_edge_labels(self):
+        return ["&lt;", "&ge;"]
 
     def _get_nodes_info(self):
         """
