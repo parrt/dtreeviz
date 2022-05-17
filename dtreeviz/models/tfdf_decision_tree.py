@@ -62,7 +62,13 @@ class ShadowTFDFTree(ShadowDecTree):
         thresholds = [self.__class__.NO_SPLIT] * len(self.tree_nodes)
         for index, node in self.tree_nodes.items():
             if hasattr(node, "condition"):
-                thresholds[index] = node.condition.threshold
+                node_condition = node.condition
+                if hasattr(node_condition, "threshold"):
+                    thresholds[index] = node.condition.threshold
+                #     for conditional split
+                # TODO in list[0] we have the right condition path.... we need to refactor this
+                if hasattr(node_condition, "mask"):
+                    thresholds[index] = (node.condition.mask, [])
 
         self.thresholds = np.array(thresholds)
         return self.thresholds
@@ -85,7 +91,7 @@ class ShadowTFDFTree(ShadowDecTree):
 
     # TODO check if we need to implement it
     def get_class_weight(self):
-        pass
+        return None
 
     def nclasses(self) -> int:
         if not self.is_classifier():
@@ -115,7 +121,7 @@ class ShadowTFDFTree(ShadowDecTree):
         raise VisualisationNotYetSupportedError("get_split_samples()", "TensorFlow Decision Forests")
 
     def get_node_nsamples(self, id):
-        return int(self.tree_nodes[id].value.num_examples)
+        return len(self.get_node_samples()[id])
 
     def get_node_split(self, id) -> (int, float):
         return self.get_thresholds()[id]
@@ -136,6 +142,14 @@ class ShadowTFDFTree(ShadowDecTree):
             return np.argmax(self.tree_nodes[id].value.probability)
         raise VisualisationNotYetSupportedError("get_prediction()", "TensorFlow Decision Forests2")
 
+    def is_categorical_split(self, id) -> bool:
+        node_condition = self.tree_nodes[id].condition
+
+        if hasattr(node_condition, "threshold"):
+            return False
+        return True
+
+
     def nnodes(self) -> int:
         raise VisualisationNotYetSupportedError("nnodes()", "TensorFlow Decision Forests")
 
@@ -146,7 +160,7 @@ class ShadowTFDFTree(ShadowDecTree):
         raise VisualisationNotYetSupportedError("get_feature_path_importance()", "TensorFlow Decision Forests")
 
     def get_max_depth(self) -> int:
-        raise VisualisationNotYetSupportedError("get_max_depth()", "TensorFlow Decision Forests")
+        return self.model._learner_params["max_depth"]
 
     def get_score(self) -> float:
         raise VisualisationNotYetSupportedError("get_score()", "TensorFlow Decision Forests")
@@ -156,6 +170,8 @@ class ShadowTFDFTree(ShadowDecTree):
 
     # TODO check for categorical node splits
     def shouldGoLeftAtSplit(self, id, x):
+        if self.is_categorical_split(id):
+            return x not in self.get_node_split(id)[0]
         return x < self.get_node_split(id)
 
     def get_root_edge_labels(self):

@@ -105,6 +105,15 @@ def test_get_prediction(tfdf_shadow_clf):
     assert tfdf_shadow_clf.get_prediction(6) == 0
 
 
+def test_get_max_depth(tfdf_shadow_clf):
+    assert tfdf_shadow_clf.get_max_depth() == 3
+
+
+def test_is_categorical_split(tfdf_shadow_clf):
+    assert tfdf_shadow_clf.is_categorical_split(0) is False
+    assert tfdf_shadow_clf.is_categorical_split(1) is False
+
+
 
 
 
