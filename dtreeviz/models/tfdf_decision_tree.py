@@ -7,10 +7,8 @@ from tensorflow_decision_forests.keras import RandomForestModel
 from tensorflow_decision_forests.tensorflow.core import Task
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree, VisualisationNotYetSupportedError
-from tensorflow_decision_forests.component.inspector.inspector import _RandomForestInspector
 
 
-# TODO check the samples size from original tree nodes and my sample nodes
 class ShadowTFDFTree(ShadowDecTree):
     NO_FEATURE = -2
     NO_SPLIT = -2
@@ -149,7 +147,6 @@ class ShadowTFDFTree(ShadowDecTree):
             return False
         return True
 
-
     def nnodes(self) -> int:
         raise VisualisationNotYetSupportedError("nnodes()", "TensorFlow Decision Forests")
 
@@ -168,10 +165,9 @@ class ShadowTFDFTree(ShadowDecTree):
     def get_min_samples_leaf(self) -> (int, float):
         raise VisualisationNotYetSupportedError("get_min_samples_leaf()", "TensorFlow Decision Forests")
 
-    # TODO check for categorical node splits
     def shouldGoLeftAtSplit(self, id, x):
         if self.is_categorical_split(id):
-            return x not in self.get_node_split(id)[0]
+            return x in self.get_node_split(id)[0]
         return x < self.get_node_split(id)
 
     def get_root_edge_labels(self):
@@ -207,7 +203,3 @@ class ShadowTFDFTree(ShadowDecTree):
         recur(self.tree.root, 0)
 
         return tree_nodes, children_left, children_right
-
-
-
-
