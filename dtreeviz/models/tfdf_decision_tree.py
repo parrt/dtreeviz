@@ -64,7 +64,7 @@ class ShadowTFDFTree(ShadowDecTree):
                 if hasattr(node_condition, "threshold"):
                     thresholds[index] = node.condition.threshold
                 #     for conditional split
-                # TODO in list[0] we have the right condition path.... we need to refactor this
+                # TODO in list[0], we can have the left condition, wait for https://github.com/tensorflow/decision-forests/issues/111
                 if hasattr(node_condition, "mask"):
                     thresholds[index] = (node.condition.mask, [])
 
