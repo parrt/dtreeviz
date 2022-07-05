@@ -16,9 +16,9 @@ from typing import Mapping, List, Tuple
 from numbers import Number
 
 from dtreeviz import interpretation as prediction_path
+from dtreeviz.colors import get_colorblind_friendly_colors
 from dtreeviz.colors import adjust_colors
 from dtreeviz.colors import get_hex_colors
-
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
 from dtreeviz.utils import inline_svg_images, myround, scale_SVG
@@ -782,10 +782,12 @@ def dtreeviz(tree_model,
     # only generate custom colors if n_classes > 10
     # otherwise keep the original colorblind friendly colors
     if n_classes > 10:
-
         # call the get_hex_colors function for up to 40 classes
-        colors['classes'] = get_hex_colors(n_classes,cmap) 
+        colors['classes'] = get_hex_colors(n_classes+1,cmap) 
 
+    else:
+        colors['classes'] = get_colorblind_friendly_colors()
+    
     color_values = colors['classes'][n_classes]
 
     # Fix the mapping from target value to color for entire tree

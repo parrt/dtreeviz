@@ -29,6 +29,10 @@ color_blind_friendly_colors = [
     ['#FEFEBB', '#c7e9b4', '#41b6c4', '#74add1', BLUE, DARKBLUE, LIGHTORANGE, '#fdae61', '#f46d43', '#d73027']  # 10
 
 ]
+def get_colorblind_friendly_colors():
+    colors  = color_blind_friendly_colors
+
+    return colors
 
 def get_hex_colors(n_classes,cmap_name = "RdYlBu"):
     """will generate a list of lists that contain n discrete hex colors
@@ -64,7 +68,7 @@ def get_hex_colors(n_classes,cmap_name = "RdYlBu"):
  
     
     hex_colors = []
-    for i in range(2, n_classes + 1):
+    for i in range(2, n_classes):
         cmap = matplotlib.cm.get_cmap(cmap_name, i)
         hex_colors.append(
             [
