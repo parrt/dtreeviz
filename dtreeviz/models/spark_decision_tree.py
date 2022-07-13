@@ -79,7 +79,8 @@ class ShadowSparkTree(ShadowDecTree):
             node = self.tree_nodes[i]
             if "InternalNode" in node.toString():
                 if "CategoricalSplit" in node.split().toString():
-                    node_thresholds[i] = (list(node.split().leftCategories()), list(node.split().rightCategories()))
+                    # node_thresholds[i] = (list(node.split().leftCategories()), list(node.split().rightCategories()))
+                    node_thresholds[i] = list(node.split().leftCategories())
                 elif "ContinuousSplit" in node.split().toString():
                     node_thresholds[i] = node.split().threshold()
 
@@ -135,7 +136,7 @@ class ShadowSparkTree(ShadowDecTree):
         split = self.get_node_split(id)
 
         if self.is_categorical_split(id):
-            indices = np.sum([node_X_data == split_value for split_value in self.get_node_split(id)[0]], axis=0)
+            indices = np.sum([node_X_data == split_value for split_value in self.get_node_split(id)], axis=0)
             left = np.nonzero(indices == 1)[0]
             right = np.nonzero(indices == 0)[0]
         else:
@@ -204,7 +205,7 @@ class ShadowSparkTree(ShadowDecTree):
 
     def shouldGoLeftAtSplit(self, id, x):
         if self.is_categorical_split(id):
-            return x in self.get_node_split(id)[0]
+            return x in self.get_node_split(id)
         return x < self.get_node_split(id)
 
     @staticmethod

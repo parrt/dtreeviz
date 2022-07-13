@@ -101,8 +101,7 @@ class ShadowLightGBMTree(ShadowDecTree):
         for i in range(self.nnodes()):
             if self.children_left[i] != -1 and self.children_right[i] != -1:
                 if self.is_categorical_split(i):
-                    # TODO find out the right split values, we need them for prediction path
-                    node_thresholds[i] = (list(map(int, self.tree_nodes[i]["threshold"].split("||"))), [])
+                    node_thresholds[i] = list(map(int, self.tree_nodes[i]["threshold"].split("||")))
                 else:
                     node_thresholds[i] = round(self.tree_nodes[i]["threshold"], 2)
 
@@ -155,7 +154,7 @@ class ShadowLightGBMTree(ShadowDecTree):
         split = self.get_node_split(id)
 
         if self.is_categorical_split(id):
-            indices = np.sum([node_X_data == split_value for split_value in self.get_node_split(id)[0]], axis=0)
+            indices = np.sum([node_X_data == split_value for split_value in self.get_node_split(id)], axis=0)
             left = np.nonzero(indices == 1)[0]
             right = np.nonzero(indices == 0)[0]
         else:
@@ -222,5 +221,5 @@ class ShadowLightGBMTree(ShadowDecTree):
 
     def shouldGoLeftAtSplit(self, id, x):
         if self.is_categorical_split(id):
-            return x in self.get_node_split(id)[0]
+            return x in self.get_node_split(id)
         return x <= self.get_node_split(id)

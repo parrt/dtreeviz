@@ -64,9 +64,9 @@ class ShadowTFDFTree(ShadowDecTree):
                 if hasattr(node_condition, "threshold"):
                     thresholds[index] = node.condition.threshold
                 #     for conditional split
-                # TODO in list[0], we can have the left condition, wait for https://github.com/tensorflow/decision-forests/issues/111
+                # this threshold contains the right condition path
                 if hasattr(node_condition, "mask"):
-                    thresholds[index] = (node.condition.mask, [])
+                    thresholds[index] = node.condition.mask
 
         self.thresholds = np.array(thresholds)
         return self.thresholds
@@ -167,7 +167,7 @@ class ShadowTFDFTree(ShadowDecTree):
 
     def shouldGoLeftAtSplit(self, id, x):
         if self.is_categorical_split(id):
-            return x in self.get_node_split(id)[0]
+            return x not in self.get_node_split(id)
         return x < self.get_node_split(id)
 
     def get_root_edge_labels(self):

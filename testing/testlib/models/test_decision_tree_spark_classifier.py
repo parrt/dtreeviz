@@ -1,9 +1,10 @@
-import pytest
-from pyspark.ml.classification import DecisionTreeClassificationModel
-from dtreeviz.models.spark_decision_tree import ShadowSparkTree
-from pyspark.sql import SparkSession
 import numpy as np
 import pyspark
+import pytest
+from pyspark.ml.classification import DecisionTreeClassificationModel
+from pyspark.sql import SparkSession
+
+from dtreeviz.models.spark_decision_tree import ShadowSparkTree
 
 
 @pytest.fixture()
@@ -111,12 +112,9 @@ def test_get_min_samples_leaf(spark_dtree):
 
 def test_get_thresholds(spark_dtree):
     assert np.array_equal(spark_dtree.get_thresholds(),
-                          np.array([(list([0.0]), list([1.0, 2.0])), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1,
+                          np.array([list([0.0]), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1,
                                     24.808349999999997,
-                                    (list([1.0, 2.0]), list([0.0, 3.0])), -1, -1, -1]))
-    # assert np.array_equal(spark_dtree.get_thresholds(),
-    #                       np.array([list([0.0]), 3.5, 2.5, -1, -1, -1, 2.5, 3.5, 1.5, -1, -1, -1, 24.808349999999997,
-    #                                 list([1.0, 2.0]), -1, -1, -1]))
+                                    list([1.0, 2.0]), -1, -1, -1]))
 
 
 def test_predict(spark_dtree, dataset_spark_tf):
@@ -148,7 +146,6 @@ def test_predict_path(spark_dtree, dataset_spark_tf):
 
     leaf_pred_path_119 = spark_dtree.predict_path(dataset_spark_tf.iloc[119])
     assert get_node_ids(leaf_pred_path_119) == [0, 6, 12, 16]
-
 
 
 def test_get_node_samples(spark_dtree):
