@@ -779,14 +779,11 @@ def dtreeviz(tree_model,
 
     n_classes = shadow_tree.nclasses()
 
-    # only generate custom colors if n_classes > 10
-    # otherwise keep the original colorblind friendly colors
-    if n_classes > 10:
+    # Only generate custom colors if the current class color lists,
+    # whether user-supplied or the default ones, are not enough.
+    if n_classes+1 > len(colors['classes']):
         # call the get_hex_colors function for up to 40 classes
         colors['classes'] = get_hex_colors(n_classes+1,cmap) 
-
-    else:
-        colors['classes'] = get_colorblind_friendly_colors()
     
     color_values = colors['classes'][n_classes]
 
