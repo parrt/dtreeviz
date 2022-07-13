@@ -61,10 +61,12 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
                     feature_bigger_values[feature_name] = []
                 feature_bigger_values.get(feature_name).append(feature_split_value)
         else:
-            if feature_value in node_threshold[node_id][0]:
-                feature_categorical_value[feature_name] = node_threshold[node_id][0]
-            else:
-                feature_categorical_value[feature_name] = node_threshold[node_id][1]
+            if feature_value in node_threshold[node_id]:
+                # TODO do we need to use append in case the prediction path contains more splits from the same feature ?
+                feature_categorical_value[feature_name] = node_threshold[node_id]
+            # TODO check how to solve for pyspark version
+            # else:
+            #     feature_categorical_value[feature_name] = node_threshold[node_id][1]
 
     prediction_path_output = ""
     for feature_name in feature_names:

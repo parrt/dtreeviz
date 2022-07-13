@@ -1067,9 +1067,9 @@ def class_split_viz(node: ShadowDecTreeNode,
                     fontname=fontname,
                     color=colors['text_wedge'])
         else:
-            left_split_values = node.split()[0]
+            split_values = node.split()
             bins = _get_bins(overall_feature_range, nbins)
-            for split_value in left_split_values:
+            for split_value in split_values:
                 # to display the wedge exactly in the middle of the vertical bar
                 for bin_index in range(len(bins) - 1):
                     if bins[bin_index] <= split_value <= bins[bin_index + 1]:
