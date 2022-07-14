@@ -2,6 +2,8 @@
 Prediction path interpretation for decision tree models.
 In this moment, it contains "plain english" implementation, but others can be added in the future.
 """
+from collections import defaultdict
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas
@@ -40,7 +42,10 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
     # TODO - refactor this logic and find a way to make it simpler
     feature_smaller_values = {}
     feature_bigger_values = {}
-    feature_categorical_value = {}
+    # feature_categorical_value = {}
+    feature_categorical_value = defaultdict(lambda: set())
+    feature_categorical_value_not_in = defaultdict(lambda: set())
+
     for i, node in enumerate(decision_node_path):
         if i == len(decision_node_path) - 1:
             break  # stop at leaf node
@@ -62,8 +67,9 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
                 feature_bigger_values.get(feature_name).append(feature_split_value)
         else:
             if feature_value in node_threshold[node_id]:
-                # TODO do we need to use append in case the prediction path contains more splits from the same feature ?
-                feature_categorical_value[feature_name] = node_threshold[node_id]
+                feature_categorical_value[feature_name].update(node_threshold[node_id])
+            else:
+                feature_categorical_value_not_in[feature_name].update(node_threshold[node_id])
             # TODO check how to solve for pyspark version
             # else:
             #     feature_categorical_value[feature_name] = node_threshold[node_id][1]
@@ -82,8 +88,10 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
         if feature_range != "":
             prediction_path_output += feature_range + "\n"
 
-    for feature_name in feature_categorical_value:
-        prediction_path_output += f"{feature_name} in {feature_categorical_value[feature_name]} \n"
+    for feature_name in set(list(feature_categorical_value.keys()) + list(feature_categorical_value_not_in.keys())):
+        # prediction_path_output += f"{feature_name} in {feature_categorical_value[feature_name]} \n"
+        prediction_path_output += f"{feature_name}{' in ' + str(feature_categorical_value[feature_name]) if feature_name in feature_categorical_value else ''}" \
+                                  f"{' not in ' + str(feature_categorical_value_not_in[feature_name]) if feature_name in feature_categorical_value_not_in else ''}  \n"
 
     return prediction_path_output
 
