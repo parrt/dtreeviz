@@ -79,7 +79,6 @@ class ShadowXGBDTree(ShadowDecTree):
         except ValueError as error:
             return self.__class__.NO_FEATURE
 
-    # TODO  check explain prediction plain method
     def get_features(self):
         if self.features is not None:
             return self.features

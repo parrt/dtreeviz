@@ -70,9 +70,6 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
                 feature_categorical_value[feature_name].update(node_threshold[node_id])
             else:
                 feature_categorical_value_not_in[feature_name].update(node_threshold[node_id])
-            # TODO check how to solve for pyspark version
-            # else:
-            #     feature_categorical_value[feature_name] = node_threshold[node_id][1]
 
     prediction_path_output = ""
     for feature_name in feature_names:
