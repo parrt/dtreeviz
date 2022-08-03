@@ -21,11 +21,20 @@ from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
 from dtreeviz.utils import inline_svg_images, myround, scale_SVG
 
+
 # How many bins should we have based upon number of classes
-NUM_BINS = [0, 0, 10, 9, 8, 6, 6, 6, 5, 5, 5]
+NUM_BINS = [
+    0, 0, 10, 9, 8, 6,
+    6, 6, 5, 5, 5, 5, 
+    5, 5, 5, 5, 5, 5,
+    5, 5, 5, 5, 5, 5,
+    5, 5, 5, 5, 5, 5,
+    5, 5, 5, 5, 5, 5,
+    5, 5, 5, 5, 5, 
+    ] # support for 40 classes
 
 
-# 0, 1, 2,  3, 4, 5, 6, 7, 8, 9, 10
+
 
 
 class DTreeViz:
@@ -512,6 +521,7 @@ def dtreeviz(tree_model,
              title: str = None,
              title_fontsize: int = 14,
              colors: dict = None,
+             cmap: str = "RdYlBu",
              scale=1.0
              ) \
         -> DTreeViz:
@@ -747,7 +757,9 @@ def dtreeviz(tree_model,
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
                                                 tree_index)
-    colors = adjust_colors(colors)
+
+    n_classes = shadow_tree.nclasses()
+    colors = adjust_colors(colors, n_classes)
 
     if orientation == "TD":
         ranksep = ".2"
@@ -765,7 +777,6 @@ def dtreeviz(tree_model,
         path = shadow_tree.predict_path(X)
         highlight_path = [n.id for n in path]
 
-    n_classes = shadow_tree.nclasses()
     color_values = colors['classes'][n_classes]
 
     # Fix the mapping from target value to color for entire tree

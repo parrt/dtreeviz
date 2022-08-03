@@ -158,7 +158,7 @@ class ShadowXGBDTree(ShadowDecTree):
         return self.booster.trees_to_dataframe().query(f"Tree == {self.tree_index}")
 
     def _get_column_value(self, column_name):
-        return self._get_tree_dataframe()[column_name].to_numpy()
+        return self.tree_to_dataframe[column_name].to_numpy()
 
     def _get_nodes_values(self, column_name):
         nodes = self._get_column_value(self.NODE_COLUMN)
