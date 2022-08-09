@@ -9,7 +9,7 @@ from tensorflow_decision_forests.tensorflow.core import Task
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree, VisualisationNotYetSupportedError
 
 
-class ShadowTFDFTree(ShadowDecTree):
+class ShadowTensorflowTree(ShadowDecTree):
     NO_FEATURE = -2
     NO_SPLIT = -2
 
