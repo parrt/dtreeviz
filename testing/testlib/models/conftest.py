@@ -35,7 +35,7 @@ def y_dataset_regressor(dataset) -> pd.Series:
 
 
 @pytest.fixture()
-def dataset_spark_tf() -> pd.DataFrame:
+def dataset_spark_tensorflow() -> pd.DataFrame:
     return pd.read_csv("fixtures/dataset_spark_tf.csv")
 
 @pytest.fixture()
