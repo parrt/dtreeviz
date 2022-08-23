@@ -13,7 +13,7 @@ See [How to visualize decision trees](http://explained.ai/decision-tree-viz/inde
 
 ### Feedback
 
-We welcome info from users on how they use dtreeviz, what features they'd like, etc... via [email (to parrt)](mailto:parrt@cs.usfca.edu) or via an [issue](https://github.com/parrt/dtreeviz/issues).
+We welcome info from users on how they use dtreeviz, what features they'd like, etc... via [email (to parrt)](mailto:parrt@antlr.org) or via an [issue](https://github.com/parrt/dtreeviz/issues).
 
 ## Quick start
 
