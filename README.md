@@ -5,7 +5,7 @@ A python library for decision tree visualization and model interpretation.  Curr
 
 Authors:
 
-* [Terence Parr](http://parrt.cs.usfca.edu), a professor in the [University of San Francisco's data science program](https://www.usfca.edu/arts-sciences/graduate-programs/data-science)
+* [Terence Parr](https://explained.ai/), a tech lead at Google and until 2022 was a professor of data science / computer science at Univ. of San Francisco, where he was founding director of the [University of San Francisco's MS in data science program](https://www.usfca.edu/arts-sciences/graduate-programs/data-science) in 2012.
 * [Tudor Lapusan](https://www.linkedin.com/in/tudor-lapusan-5902593b/)
 * [Prince Grover](https://www.linkedin.com/in/groverpr)
 
