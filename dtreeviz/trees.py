@@ -74,7 +74,7 @@ class DTreeViz:
             os.makedirs(path.parent)
 
         g = graphviz.Source(self.dot, format='svg')
-        dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem)
+        dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem) # TODO option to delete when done
         format = path.suffix[1:]  # ".svg" -> "svg" etc...
 
         if not filename.endswith(".svg"):
@@ -515,7 +515,7 @@ def dtreeviz(tree_model,
              max_X_features_LR: int = 10,
              max_X_features_TD: int = 20,
              depth_range_to_display: tuple = None,
-             label_fontsize: int = 12,
+             label_fontsize: int = 10,
              ticks_fontsize: int = 8,
              fontname: str = "Arial",
              title: str = None,
@@ -876,8 +876,8 @@ def dtreeviz(tree_model,
     show_edge_labels = False
     all_llabel = '&lt;' if show_edge_labels else ''
     all_rlabel = '&ge;' if show_edge_labels else ''
-    root_llabel = shadow_tree.get_root_edge_labels()[0] if show_root_edge_labels else ''
-    root_rlabel = shadow_tree.get_root_edge_labels()[1] if show_root_edge_labels else ''
+    root_llabel = f'  {shadow_tree.get_root_edge_labels()[0]}' if show_root_edge_labels else ''
+    root_rlabel = f'  {shadow_tree.get_root_edge_labels()[1]}' if show_root_edge_labels else ''
 
     edges = []
     # non leaf edges with > and <=
@@ -998,14 +998,19 @@ def class_split_viz(node: ShadowDecTreeNode,
 
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
-    overall_feature_range_wide = (overall_feature_range[0] - overall_feature_range[0] * .08,
-                                  overall_feature_range[1] + overall_feature_range[1] * .05)
+#    overall_feature_range_wide = (overall_feature_range[0] - overall_feature_range[0] * .08,
+#                                  overall_feature_range[1] + overall_feature_range[1] * .05)
+    feature_range_wide_margin = 0.025*(overall_feature_range[1]-overall_feature_range[0])
+    overall_feature_range_wide = (overall_feature_range[0] - feature_range_wide_margin,
+                                  overall_feature_range[1] + feature_range_wide_margin)
 
-    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
+    ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'], labelpad=10)
+    # ax.spines['top'].set_visible(False)
+    # ax.spines['right'].set_visible(False)
     ax.spines['left'].set_linewidth(.3)
     ax.spines['bottom'].set_linewidth(.3)
+    ax.spines['top'].set_linewidth(.3)
+    ax.spines['right'].set_linewidth(.3)
 
     class_names = node.shadow_tree.class_names
     class_values = node.shadow_tree.classes()
@@ -1038,11 +1043,16 @@ def class_split_viz(node: ShadowDecTreeNode,
             for rect in patch.patches:
                 rect.set_linewidth(.5)
                 rect.set_edgecolor(colors['rect_edge'])
-        ax.set_yticks([0, max([max(h) for h in hist])])
+        y_max = max([max(h) for h in hist])
+        ax.set_yticks([0, y_max])
+        ax.set_ylim(0, y_max)
 
-    ax.set_xlim(*overall_feature_range_wide)
+    # ax.set_xlim(*overall_feature_range_wide)
+    ax.set_xlim(overall_feature_range)
     ax.set_xticks(overall_feature_range)
-    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize, top=False, right=False, pad=3.5)
+    ax.tick_params(axis='both', which='minor', top=False, bottom=False, left=False, right=False)
+    # ax.tick_params(axis='y', which='major', pad=4)
 
     def wedge(ax, x, color):
         xmin, xmax = ax.get_xlim()
@@ -1110,7 +1120,9 @@ def class_leaf_viz(node: ShadowDecTreeNode,
     # size = np.sqrt(np.log(size))
     counts = node.class_counts()
     prediction = node.prediction_name()
-    draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
+#    draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
+#                  graph_colors=graph_colors, fontname=fontname)
+    draw_propchart(counts, size=size, colors=colors, filename=filename, label=f"{prediction}",
                   graph_colors=graph_colors, fontname=fontname)
 
 
@@ -1270,8 +1282,8 @@ def regr_leaf_viz(node: ShadowDecTreeNode,
 def draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial"):
     colors = adjust_colors(colors)
     n_classes = shadow_tree.nclasses()
-    class_values = shadow_tree.classes()
     class_names = shadow_tree.class_names
+    class_values = shadow_tree.classes()
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
@@ -1283,9 +1295,9 @@ def draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial
 
     fig, ax = plt.subplots(1, 1, figsize=(1, 1))
     leg = ax.legend(handles=boxes,
-                    frameon=True,
+                    frameon=False,
                     shadow=False,
-                    fancybox=True,
+                    fancybox=False,
                     loc='center',
                     title=target_name,
                     handletextpad=.35,
@@ -1311,6 +1323,44 @@ def draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
 
+# TODO
+def draw_propchart(counts, size, colors, filename, label=None, fontname="Arial", ticks_fontsize=9, graph_colors=None):
+    graph_colors = adjust_colors(graph_colors)
+    n_nonzero = np.count_nonzero(counts)
+
+    if n_nonzero != 0:
+        i = np.nonzero(counts)[0][0]
+        if n_nonzero == 1:
+            counts = [counts[i]]
+            colors = [colors[i]]
+
+    tweak = size * .01
+    fig, ax = plt.subplots(1, 1, figsize=(size, 0.3))
+
+    data_cum = 0
+    for i in range(len(counts)):
+        width = counts[i]
+        plt.barh(0, width, left=data_cum, color=colors[i], height=1)
+        data_cum += width
+
+    ax.spines['left'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.tick_params(axis='x', which='major', width=.3, labelcolor=graph_colors['tick_label'], labelsize=ticks_fontsize, top=False, bottom=False)
+    ax.tick_params(axis='x', which='minor', top=False, bottom=False, left=False, right=False)
+    ax.get_yaxis().set_visible(False)
+    ax.set_xticks([0, sum(counts)])
+
+    if label is not None:
+        ax.text(sum(counts) / 2, -1.5, label,
+                horizontalalignment='center',
+                verticalalignment='top',
+                fontsize=9, color=graph_colors['text'], fontname=fontname)
+
+    # plt.tight_layout()
+    plt.savefig(filename, bbox_inches='tight', pad_inches=0)
+    plt.close()
 
 def draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", graph_colors=None):
     graph_colors = adjust_colors(graph_colors)
