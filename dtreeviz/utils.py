@@ -110,7 +110,7 @@ def scale_SVG(svg:str, scale:float) -> str:
     ns = {"svg": "http://www.w3.org/2000/svg"}
     graph = root.find(".//svg:g", ns) # get first node, which is graph
     transform = graph.attrib['transform']
-    pattern = re.compile(f"scale\([0-9.]+\ [0-9.]+\)")
+    pattern = re.compile(r"scale\([0-9.]+\ [0-9.]+\)")
     scale_str = pattern.search(transform).group()
     transform = transform.replace(scale_str, f'scale({scale} {scale})')
     graph.set("transform", transform)
