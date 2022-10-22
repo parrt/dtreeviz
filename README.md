@@ -644,6 +644,15 @@ This project is licensed under the terms of the MIT license, see [LICENSE](LICEN
 
 ## Deploy
 
+OLD:
+
 ```
 $ python setup.py sdist upload
 ``` 
+
+NEW:
+
+```
+python3 -m build
+twine upload dist/dtreeviz-1.4.0.tar.gz dist/dtreeviz-1.4.0-py3-none-any.whl 
+```

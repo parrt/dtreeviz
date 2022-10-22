@@ -29,10 +29,17 @@ class ShadowTensorflowTree(ShadowDecTree):
         self.tree = self.model.make_inspector().extract_tree(tree_idx=tree_index)
         self.tree_nodes, self.children_left, self.children_right = self._get_nodes_info()
         self.features = None  # lazy initialization
+        self.column_dataspec = self._get_column_dataspec()
         self.node_to_samples = None  # lazy initialization
         self.thresholds = None  # lazy  initialization
 
         super().__init__(model, x_data, y_data, feature_names, target_name, class_names)
+
+    def _get_column_dataspec(self):
+        column_dataspec = {}
+        for column_spec in self.model.make_inspector().dataspec.columns:
+            column_dataspec[column_spec.name] = column_spec
+        return column_dataspec
 
     def is_fit(self) -> bool:
         try:
@@ -67,6 +74,9 @@ class ShadowTensorflowTree(ShadowDecTree):
                 # this threshold contains the right condition path
                 if hasattr(node_condition, "mask"):
                     thresholds[index] = node.condition.mask
+                    feature_split_name = node.condition.feature.name
+                    if self.column_dataspec[feature_split_name].categorical.offset_value_by_one_during_training is True:
+                        thresholds[index] = [value - 1 for value in thresholds[index]]
 
         self.thresholds = np.array(thresholds)
         return self.thresholds
@@ -78,7 +88,7 @@ class ShadowTensorflowTree(ShadowDecTree):
         feature_index = [self.__class__.NO_FEATURE] * len(self.tree_nodes)
         for index, node in self.tree_nodes.items():
             if hasattr(node, "condition"):
-                feature_name = node.condition._feature.name
+                feature_name = node.condition.feature.name
                 feature_index[index] = self.feature_names.index(feature_name)
 
         self.features = np.array(feature_index)
