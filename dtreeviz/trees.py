@@ -74,7 +74,7 @@ class DTreeViz:
             os.makedirs(path.parent)
 
         g = graphviz.Source(self.dot, format='svg')
-        dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem) # TODO option to delete when done
+        dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem)
         format = path.suffix[1:]  # ".svg" -> "svg" etc...
 
         if not filename.endswith(".svg"):
@@ -505,6 +505,7 @@ def dtreeviz(tree_model,
              precision: int = 2,
              orientation: ('TD', 'LR') = "TD",
              instance_orientation: ("TD", "LR") = "LR",
+             leaf_plot_type: ('pie', 'barh') = "pie",
              show_root_edge_labels: bool = True,
              show_node_labels: bool = False,
              show_just_path: bool = False,
@@ -515,7 +516,8 @@ def dtreeviz(tree_model,
              max_X_features_LR: int = 10,
              max_X_features_TD: int = 20,
              depth_range_to_display: tuple = None,
-             label_fontsize: int = 10,
+             all_axis_spines: bool = False,
+             label_fontsize: int = 12,
              ticks_fontsize: int = 8,
              fontname: str = "Arial",
              title: str = None,
@@ -823,7 +825,8 @@ def dtreeviz(tree_model,
                                 ticks_fontsize=ticks_fontsize,
                                 label_fontsize=label_fontsize,
                                 fontname=fontname,
-                                highlight_node=node.id in highlight_path)
+                                highlight_node=node.id in highlight_path,
+                                all_axis_spines=all_axis_spines)
             else:
                 regr_split_viz(node, X_data, y_data,
                                filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
@@ -853,7 +856,8 @@ def dtreeviz(tree_model,
             class_leaf_viz(node, colors=color_values,
                            filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
                            graph_colors=colors,
-                           fontname=fontname)
+                           fontname=fontname,
+                           leaf_plot_type=leaf_plot_type)
             leaves.append(class_leaf_node(node))
         else:
             # for now, always gen leaf
@@ -970,7 +974,8 @@ def class_split_viz(node: ShadowDecTreeNode,
                     precision=1,
                     histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
                     X: np.array = None,
-                    highlight_node: bool = False
+                    highlight_node: bool = False,
+                    all_axis_spines: bool = False
                     ):
 
     def _get_bins(overall_range, nbins_):
@@ -998,19 +1003,17 @@ def class_split_viz(node: ShadowDecTreeNode,
 
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
-#    overall_feature_range_wide = (overall_feature_range[0] - overall_feature_range[0] * .08,
-#                                  overall_feature_range[1] + overall_feature_range[1] * .05)
-    feature_range_wide_margin = 0.025*(overall_feature_range[1]-overall_feature_range[0])
-    overall_feature_range_wide = (overall_feature_range[0] - feature_range_wide_margin,
-                                  overall_feature_range[1] + feature_range_wide_margin)
+    overall_feature_range_wide = (overall_feature_range[0] - 0.05*(overall_feature_range[1]-overall_feature_range[0]),
+                                  overall_feature_range[1] + 0.05*(overall_feature_range[1]-overall_feature_range[0]))
 
     ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'], labelpad=10)
-    # ax.spines['top'].set_visible(False)
-    # ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_linewidth(.3)
-    ax.spines['bottom'].set_linewidth(.3)
     ax.spines['top'].set_linewidth(.3)
     ax.spines['right'].set_linewidth(.3)
+    ax.spines['left'].set_linewidth(.3)
+    ax.spines['bottom'].set_linewidth(.3)
+    if not all_axis_spines:
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
 
     class_names = node.shadow_tree.class_names
     class_values = node.shadow_tree.classes()
@@ -1047,12 +1050,10 @@ def class_split_viz(node: ShadowDecTreeNode,
         ax.set_yticks([0, y_max])
         ax.set_ylim(0, y_max)
 
-    # ax.set_xlim(*overall_feature_range_wide)
-    ax.set_xlim(overall_feature_range)
+    ax.set_xlim(*overall_feature_range_wide)
     ax.set_xticks(overall_feature_range)
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize, top=False, right=False, pad=3.5)
     ax.tick_params(axis='both', which='minor', top=False, bottom=False, left=False, right=False)
-    # ax.tick_params(axis='y', which='major', pad=4)
 
     def wedge(ax, x, color):
         xmin, xmax = ax.get_xlim()
@@ -1104,7 +1105,8 @@ def class_leaf_viz(node: ShadowDecTreeNode,
                    colors: List[str],
                    filename: str,
                    graph_colors=None,
-                   fontname: str = "Arial"):
+                   fontname: str = "Arial",
+                   leaf_plot_type: ('pie', 'barh') = "pie"):
     graph_colors = adjust_colors(graph_colors)
     # size = prop_size(node.nsamples(), counts=node.shadow_tree.leaf_sample_counts(),
     #                  output_range=(.2, 1.5))
@@ -1120,11 +1122,14 @@ def class_leaf_viz(node: ShadowDecTreeNode,
     # size = np.sqrt(np.log(size))
     counts = node.class_counts()
     prediction = node.prediction_name()
-#    draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
-#                  graph_colors=graph_colors, fontname=fontname)
-    draw_propchart(counts, size=size, colors=colors, filename=filename, label=f"{prediction}",
-                  graph_colors=graph_colors, fontname=fontname)
-
+    if leaf_plot_type == 'pie':
+        draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
+                      graph_colors=graph_colors, fontname=fontname)
+    elif leaf_plot_type == 'barh':
+        draw_barh_chart(counts, size=size, colors=colors, filename=filename, label=f"{prediction}",
+                      graph_colors=graph_colors, fontname=fontname)
+    else:
+        raise ValueError(f'Undefined leaf_plot_type = {leaf_plot_type}')
 
 def regr_split_viz(node: ShadowDecTreeNode,
                    X_train: np.ndarray,
@@ -1282,8 +1287,8 @@ def regr_leaf_viz(node: ShadowDecTreeNode,
 def draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial"):
     colors = adjust_colors(colors)
     n_classes = shadow_tree.nclasses()
-    class_names = shadow_tree.class_names
     class_values = shadow_tree.classes()
+    class_names = shadow_tree.class_names
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
@@ -1293,11 +1298,15 @@ def draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial
                                 facecolor=color_map[c], label=class_names[i])
         boxes.append(box)
 
+    draw_legend_frame=True
+    if colors['legend_edge'] is None:
+        draw_legend_frame=False
+
     fig, ax = plt.subplots(1, 1, figsize=(1, 1))
     leg = ax.legend(handles=boxes,
-                    frameon=False,
+                    frameon=draw_legend_frame,
                     shadow=False,
-                    fancybox=False,
+                    fancybox=draw_legend_frame,
                     loc='center',
                     title=target_name,
                     handletextpad=.35,
@@ -1323,44 +1332,6 @@ def draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
 
-# TODO
-def draw_propchart(counts, size, colors, filename, label=None, fontname="Arial", ticks_fontsize=9, graph_colors=None):
-    graph_colors = adjust_colors(graph_colors)
-    n_nonzero = np.count_nonzero(counts)
-
-    if n_nonzero != 0:
-        i = np.nonzero(counts)[0][0]
-        if n_nonzero == 1:
-            counts = [counts[i]]
-            colors = [colors[i]]
-
-    tweak = size * .01
-    fig, ax = plt.subplots(1, 1, figsize=(size, 0.3))
-
-    data_cum = 0
-    for i in range(len(counts)):
-        width = counts[i]
-        plt.barh(0, width, left=data_cum, color=colors[i], height=1)
-        data_cum += width
-
-    ax.spines['left'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.tick_params(axis='x', which='major', width=.3, labelcolor=graph_colors['tick_label'], labelsize=ticks_fontsize, top=False, bottom=False)
-    ax.tick_params(axis='x', which='minor', top=False, bottom=False, left=False, right=False)
-    ax.get_yaxis().set_visible(False)
-    ax.set_xticks([0, sum(counts)])
-
-    if label is not None:
-        ax.text(sum(counts) / 2, -1.5, label,
-                horizontalalignment='center',
-                verticalalignment='top',
-                fontsize=9, color=graph_colors['text'], fontname=fontname)
-
-    # plt.tight_layout()
-    plt.savefig(filename, bbox_inches='tight', pad_inches=0)
-    plt.close()
 
 def draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", graph_colors=None):
     graph_colors = adjust_colors(graph_colors)
@@ -1401,6 +1372,43 @@ def draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", 
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
     plt.close()
 
+def draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial", ticks_fontsize=9, graph_colors=None):
+    graph_colors = adjust_colors(graph_colors)
+    n_nonzero = np.count_nonzero(counts)
+
+    if n_nonzero != 0:
+        i = np.nonzero(counts)[0][0]
+        if n_nonzero == 1:
+            counts = [counts[i]]
+            colors = [colors[i]]
+
+    tweak = size * .01
+    fig, ax = plt.subplots(1, 1, figsize=(size, 0.3))
+
+    data_cum = 0
+    for i in range(len(counts)):
+        width = counts[i]
+        plt.barh(0, width, left=data_cum, color=colors[i], height=1)
+        data_cum += width
+
+    ax.spines['left'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.tick_params(axis='x', which='major', width=.3, labelcolor=graph_colors['tick_label'], labelsize=ticks_fontsize, top=False, bottom=False)
+    ax.tick_params(axis='x', which='minor', top=False, bottom=False, left=False, right=False)
+    ax.get_yaxis().set_visible(False)
+    ax.set_xticks([0, sum(counts)])
+
+    if label is not None:
+        ax.text(sum(counts) / 2, -1.5, label,
+                horizontalalignment='center',
+                verticalalignment='top',
+                fontsize=9, color=graph_colors['text'], fontname=fontname)
+
+    # plt.tight_layout()
+    plt.savefig(filename, bbox_inches='tight', pad_inches=0)
+    plt.close()
 
 def prop_size(n, counts, output_range=(0.00, 0.3)):
     min_samples = min(counts)

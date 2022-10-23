@@ -41,6 +41,7 @@ for n_classes in range(2, 11):
         class_colors.append(f'C{i}')
     mpl_colors.append(class_colors)
 
+
 def get_hex_colors(n_classes, cmap_name="RdYlBu"):
     """
     Will generate a list of lists that contain n discrete hex colors
@@ -91,7 +92,7 @@ COLORS = {'scatter_edge': GREY,
           'edge': GREY,
           'color_map_min': '#c7e9b4',
           'color_map_max': '#081d58',
-          'classes': mpl_colors,
+          'classes': color_blind_friendly_colors,
           'rect_edge': GREY,
           'text': GREY,
           'highlight': HIGHLIGHT_COLOR,
