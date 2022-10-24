@@ -505,7 +505,7 @@ def dtreeviz(tree_model,
              precision: int = 2,
              orientation: ('TD', 'LR') = "TD",
              instance_orientation: ("TD", "LR") = "LR",
-             leaf_plot_type: ('pie', 'barh') = "pie",
+             leaf_plot_type: ('pie', 'barh') = 'pie',
              show_root_edge_labels: bool = True,
              show_node_labels: bool = False,
              show_just_path: bool = False,
@@ -553,6 +553,7 @@ def dtreeviz(tree_model,
                       after the decimal point. Default is 2.
     :param orientation:  Is the tree top down, "TD", or left to right, "LR"?
     :param instance_orientation: table orientation (TD, LR) for showing feature prediction's values.
+    :param leaf_plot_type: leaf plot type ('pie', 'barh')
     :param show_root_edge_labels: Include < and >= on the edges emanating from the root?
     :param show_node_labels: Add "Node id" to top of each node in graph for educational purposes
     :param show_just_path: If True, it shows only the sample(X) prediction path
@@ -580,6 +581,7 @@ def dtreeviz(tree_model,
                            used to guide X vector down tree. Helps when len(X) is large.
                            Default is 25.
     :param depth_range_to_display: range of depth levels to be displayed. The range values are inclusive
+    :param all_axis_spines: Plot axis splines (boundaries) on top and right sides?
     :param title: An optional title placed at the top of the tree.
     :param title_fontsize: Size of the text for the title.
     :param scale: Default is 1.0. Scale the width, height of the overall SVG preserving aspect ratio
@@ -1727,6 +1729,9 @@ def ctreeviz_leaf_samples(tree_model,
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_linewidth(.3)
         ax.spines['bottom'].set_linewidth(.3)
+        ax.tick_params(axis='x', which='major', labelcolor=colors['tick_label'], top=False, bottom=True)
+        ax.tick_params(axis='x', which='minor', top=False, bottom=False)
+        ax.tick_params(axis='y', which='both', labelcolor=colors['tick_label'], left=True, right=False)
         ax.set_xticks(range(0, len(index)))
         ax.set_xticklabels(index)
         if plot_ylim is not None:
@@ -1744,8 +1749,17 @@ def ctreeviz_leaf_samples(tree_model,
         ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.set_ylabel("samples by class", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.grid(grid)
+
+        draw_legend_frame=True
+        if colors['legend_edge'] is None:
+            draw_legend_frame=False
         ax.legend([bar_container0, bar_container1],
-                  [f'class {shadow_tree.classes()[0]}', f'class {shadow_tree.classes()[1]}'])
+                  [f'class {shadow_tree.classes()[0]}', f'class {shadow_tree.classes()[1]}'],
+                  frameon=draw_legend_frame,
+                  shadow=False,
+                  fancybox=draw_legend_frame,
+                  edgecolor=colors['legend_edge'])
+
     elif display_type == "text":
         for leaf, samples_0, samples_1 in zip(index, leaf_samples_0, leaf_samples_1):
             print(f"leaf {leaf}, samples : {samples_0}, {samples_1}")
