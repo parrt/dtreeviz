@@ -1532,8 +1532,8 @@ def viz_leaf_samples(tree_model,
         for rect in barcontainers.patches:
             rect.set_linewidth(.5)
             rect.set_edgecolor(colors['rect_edge'])
-        ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.set_ylabel("samples count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_xlabel("Leaf ID", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel("Samples Count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.grid(visible=grid)
     elif display_type == "text":
         for leaf, samples in zip(leaf_id, leaf_samples):
@@ -1634,8 +1634,8 @@ def viz_leaf_criterion(tree_model,
         for rect in barcontainers.patches:
             rect.set_linewidth(.5)
             rect.set_edgecolor(colors['rect_edge'])
-        ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.set_ylabel(f"{shadow_tree.criterion()}", fontsize=fontsize, fontname=fontname,
+        ax.set_xlabel("Leaf ID", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel(f"{shadow_tree.criterion().title()}", fontsize=fontsize, fontname=fontname,
                       color=colors['axis_label'])
         ax.grid(visible=grid)
     elif display_type == "text":
@@ -1749,15 +1749,15 @@ def ctreeviz_leaf_samples(tree_model,
                 rect.set_linewidth(.5)
                 rect.set_edgecolor(colors['rect_edge'])
 
-        ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.set_ylabel("samples by class", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_xlabel("Leaf ID", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel("Samples by Class", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.grid(visible=grid)
 
         draw_legend_frame=True
         if colors['legend_edge'] is None:
             draw_legend_frame=False
         ax.legend([bar_container0, bar_container1],
-                  [f'class {shadow_tree.classes()[0]}', f'class {shadow_tree.classes()[1]}'],
+                  [f'Class {shadow_tree.classes()[0]}', f'Class {shadow_tree.classes()[1]}'],
                   frameon=draw_legend_frame,
                   shadow=False,
                   fancybox=draw_legend_frame,
