@@ -401,7 +401,7 @@ def ctreeviz_univar(tree_model,
 
 
 def ctreeviz_bivar(tree_model,
-                   x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                   x_data: (pd.DataFrame, np.ndarray) = None,
                    y_data: (pd.Series, np.ndarray) = None,
                    feature_names: List[str] = None,
                    target_name: str = None,
@@ -1012,8 +1012,8 @@ def class_split_viz(node: ShadowDecTreeNode,
 
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
-    overall_feature_range_wide = (overall_feature_range[0] - 0.05*(overall_feature_range[1]-overall_feature_range[0]),
-                                  overall_feature_range[1] + 0.05*(overall_feature_range[1]-overall_feature_range[0]))
+    # overall_feature_range_wide = (overall_feature_range[0] - 0.05*(overall_feature_range[1]-overall_feature_range[0]),
+    #                              overall_feature_range[1] + 0.05*(overall_feature_range[1]-overall_feature_range[0]))
 
     ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'], labelpad=10)
     ax.spines['top'].set_linewidth(.3)
@@ -1059,9 +1059,9 @@ def class_split_viz(node: ShadowDecTreeNode,
         ax.set_yticks([0, y_max])
         ax.set_ylim(0, y_max)
 
-    ax.set_xlim(*overall_feature_range_wide)
+    ax.set_xlim(*overall_feature_range)
     ax.set_xticks(overall_feature_range)
-    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize, top=False, right=False, pad=3.5)
+    ax.tick_params(axis='both', which='major', width=.3, length=4, direction='out', labelcolor=colors['tick_label'], labelsize=ticks_fontsize, top=False, right=False)
     ax.tick_params(axis='both', which='minor', top=False, bottom=False, left=False, right=False)
 
     def wedge(ax, x, color):
@@ -1397,14 +1397,14 @@ def draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial"
     data_cum = 0
     for i in range(len(counts)):
         width = counts[i]
-        plt.barh(0, width, left=data_cum, color=colors[i], height=1, edgecolor=graph_colors['rect_edge'])
+        plt.barh(0, width, left=data_cum, color=colors[i], height=1, edgecolor=graph_colors['rect_edge'], linewidth=0.5)
         data_cum += width
 
     ax.spines['left'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
-    ax.tick_params(axis='x', which='major', width=.3, labelcolor=graph_colors['tick_label'], labelsize=ticks_fontsize, top=False, bottom=False)
+    ax.tick_params(axis='x', which='major', width=.3, labelcolor=graph_colors['tick_label'], labelsize=ticks_fontsize, top=False, bottom=False, left=False, right=False)
     ax.tick_params(axis='x', which='minor', top=False, bottom=False, left=False, right=False)
     ax.get_yaxis().set_visible(False)
     ax.set_xticks([0, sum(counts)])
