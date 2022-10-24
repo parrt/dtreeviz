@@ -1653,7 +1653,7 @@ def viz_leaf_criterion(tree_model,
         for rect in patches:
             rect.set_linewidth(.5)
             rect.set_edgecolor(colors['rect_edge'])
-        ax.set_xlabel(f"{shadow_tree.criterion()}", fontsize=fontsize, fontname=fontname,
+        ax.set_xlabel(f"{shadow_tree.criterion().title()}", fontsize=fontsize, fontname=fontname,
                       color=colors['axis_label'])
         ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.grid(visible=grid)
