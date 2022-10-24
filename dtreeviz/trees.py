@@ -1550,8 +1550,8 @@ def viz_leaf_samples(tree_model,
         for rect in patches:
             rect.set_linewidth(.5)
             rect.set_edgecolor(colors['rect_edge'])
-        ax.set_xlabel("leaf sample", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_xlabel("Leaf Sample", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel("Leaf Count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.grid(visible=grid)
 
 
@@ -1649,13 +1649,15 @@ def viz_leaf_criterion(tree_model,
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_linewidth(.3)
         ax.spines['bottom'].set_linewidth(.3)
+        ax.tick_params(axis='x', which='both', labelcolor=colors['tick_label'], top=False, bottom=True)
+        ax.tick_params(axis='y', which='both', labelcolor=colors['tick_label'], left=True, right=False)
         n, bins, patches = ax.hist(leaf_criteria, bins=bins, color=colors["hist_bar"])
         for rect in patches:
             rect.set_linewidth(.5)
             rect.set_edgecolor(colors['rect_edge'])
         ax.set_xlabel(f"{shadow_tree.criterion().title()}", fontsize=fontsize, fontname=fontname,
                       color=colors['axis_label'])
-        ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel("Leaf Count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.grid(visible=grid)
 
 
@@ -1867,7 +1869,7 @@ def viz_leaf_target(tree_model,
                edgecolor=colors['scatter_edge'], lw=.3)
     ax.set_xlabel(shadow_tree.target_name.lower(), fontsize=label_fontsize, fontname=fontname,
                   color=colors['axis_label'])
-    ax.set_ylabel("leaf", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel("Leaf", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(visible=grid)
 
     if show_leaf_labels:
