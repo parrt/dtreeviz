@@ -1624,6 +1624,9 @@ def viz_leaf_criterion(tree_model,
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_linewidth(.3)
         ax.spines['bottom'].set_linewidth(.3)
+        ax.tick_params(axis='x', which='major', labelcolor=colors['tick_label'], top=False, bottom=True)
+        ax.tick_params(axis='x', which='minor', top=False, bottom=False)
+        ax.tick_params(axis='y', which='both', labelcolor=colors['tick_label'], left=True, right=False)
         ax.set_xticks(range(0, len(leaf_id)))
         ax.set_xticklabels(leaf_id)
         barcontainers = ax.bar(range(0, len(leaf_id)), leaf_criteria, color=colors["hist_bar"], lw=.3, align='center',
