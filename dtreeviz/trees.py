@@ -911,7 +911,13 @@ def dtreeviz(tree_model,
         if node.is_categorical_split() and not shadow_tree.is_classifier():
             lcolor, rcolor = colors["categorical_split_left"], colors["categorical_split_right"]
         else:
-            lcolor = rcolor = colors['arrow']
+            if 'larrow' in colors and 'rarrow' in colors:
+                lcolor = colors['larrow']
+                rcolor = colors['rarrow']
+            elif 'arrow' in colors:
+                lcolor = rcolor = colors['arrow']
+            else:
+                raise ValueError('Can not find arrow, or larrow AND rarrow in colors dict!')
 
         lpw = rpw = "0.3"
         if node.left.id in highlight_path:
@@ -921,14 +927,15 @@ def dtreeviz(tree_model,
             rcolor = colors['highlight']
             rpw = "1.2"
 
+        text_color = colors['text']
         if show_just_path:
             if node.left.id in highlight_path:
-                edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]')
+                edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}> fontcolor="{text_color}"]')
             if node.right.id in highlight_path:
-                edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]')
+                edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}> fontcolor="{text_color}"]')
         else:
-            edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}>]')
-            edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}>]')
+            edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}> fontcolor="{text_color}"]')
+            edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}> fontcolor="{text_color}"]')
             edges.append(f"""
             {{
                 rank=same;
