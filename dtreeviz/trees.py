@@ -1397,7 +1397,7 @@ def draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial"
     data_cum = 0
     for i in range(len(counts)):
         width = counts[i]
-        plt.barh(0, width, left=data_cum, color=colors[i], height=1)
+        plt.barh(0, width, left=data_cum, color=colors[i], height=1, edgecolor=graph_colors['rect_edge'])
         data_cum += width
 
     ax.spines['left'].set_visible(False)
