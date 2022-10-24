@@ -1534,7 +1534,7 @@ def viz_leaf_samples(tree_model,
             rect.set_edgecolor(colors['rect_edge'])
         ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.set_ylabel("samples count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.grid(b=grid)
+        ax.grid(visible=grid)
     elif display_type == "text":
         for leaf, samples in zip(leaf_id, leaf_samples):
             print(f"leaf {leaf} has {samples} samples")
@@ -1552,7 +1552,7 @@ def viz_leaf_samples(tree_model,
             rect.set_edgecolor(colors['rect_edge'])
         ax.set_xlabel("leaf sample", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.grid(b=grid)
+        ax.grid(visible=grid)
 
 
 def viz_leaf_criterion(tree_model,
@@ -1634,7 +1634,7 @@ def viz_leaf_criterion(tree_model,
         ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.set_ylabel(f"{shadow_tree.criterion()}", fontsize=fontsize, fontname=fontname,
                       color=colors['axis_label'])
-        ax.grid(b=grid)
+        ax.grid(visible=grid)
     elif display_type == "text":
         for leaf, criteria in zip(leaf_id, leaf_criteria):
             print(f"leaf {leaf} has {criteria} {shadow_tree.criterion()}")
@@ -1653,7 +1653,7 @@ def viz_leaf_criterion(tree_model,
         ax.set_xlabel(f"{shadow_tree.criterion()}", fontsize=fontsize, fontname=fontname,
                       color=colors['axis_label'])
         ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.grid(b=grid)
+        ax.grid(visible=grid)
 
 
 def ctreeviz_leaf_samples(tree_model,
@@ -1748,7 +1748,7 @@ def ctreeviz_leaf_samples(tree_model,
 
         ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.set_ylabel("samples by class", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.grid(grid)
+        ax.grid(visible=grid)
 
         draw_legend_frame=True
         if colors['legend_edge'] is None:
@@ -1865,7 +1865,7 @@ def viz_leaf_target(tree_model,
     ax.set_xlabel(shadow_tree.target_name.lower(), fontsize=label_fontsize, fontname=fontname,
                   color=colors['axis_label'])
     ax.set_ylabel("leaf", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.grid(b=grid)
+    ax.grid(visible=grid)
 
     if show_leaf_labels:
         for i in range(len(y_labels)):
