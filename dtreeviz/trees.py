@@ -403,13 +403,12 @@ def ctreeviz_univar(tree_model,
 def ctreeviz_bivar(tree_model,
                    x_data: (pd.DataFrame, np.ndarray) = None,
                    y_data: (pd.Series, np.ndarray) = None,
-                   feature_names: List[str] = None,
+                   feature_names: List[str] = None, # two features to plot
                    target_name: str = None,
                    class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                    tree_index: int = None,  # required in case of tree ensemble
                    ax=None,
-                   fontsize=14,
-                   fontname="Arial",
+                   fontsize=14, ticks_fontsize=12, fontname="Arial",
                    show={'title', 'legend', 'splits'},
                    colors=None):
     """
@@ -419,6 +418,9 @@ def ctreeviz_bivar(tree_model,
     # ax as first arg is not good now that it's optional but left for compatibility reasons
     if ax is None:
         fig, ax = plt.subplots(1, 1)
+
+    if len(feature_names) != 2:
+        raise ValueError(f'Must provide 2 features to plot, received {len(feature_names)}!')
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
                                                 tree_index)
@@ -431,13 +433,15 @@ def ctreeviz_bivar(tree_model,
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
+    x_data = x_data[:, [shadow_tree.feature_names.index(feature_names[0]), shadow_tree.feature_names.index(feature_names[1])]]
+
     if 'splits' in show:
         for node, bbox in tesselation:
             x = bbox[0]
             y = bbox[1]
             w = bbox[2] - bbox[0]
             h = bbox[3] - bbox[1]
-            rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
+            rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tesselation_alpha'],
                                      edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
             ax.add_patch(rect)
 
@@ -447,11 +451,13 @@ def ctreeviz_bivar(tree_model,
         ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
                    edgecolors=colors['scatter_edge'], lw=.3)
 
-    ax.set_xlabel(f"{shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_ylabel(f"{shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_linewidth(.3)
+    ax.tick_params(axis='both', which='major', labelcolor=colors['tick_label'], labelsize=ticks_fontsize, top=False, right=False)
+    ax.tick_params(axis='both', which='minor', top=False, right=False)
 
     if 'legend' in show:
         add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors, fontname=fontname)
@@ -472,10 +478,15 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
         box = patches.Rectangle((0, 0), 20, 10, linewidth=.4, edgecolor=colors['rect_edge'],
                                 facecolor=facecolors[c], label=class_names[c])
         boxes.append(box)
+
+    draw_legend_frame=True
+    if colors['legend_edge'] is None:
+        draw_legend_frame=False
+
     leg = ax.legend(handles=boxes,
-                    frameon=True,
+                    frameon=draw_legend_frame,
                     shadow=False,
-                    fancybox=True,
+                    fancybox=draw_legend_frame,
                     handletextpad=.35,
                     borderpad=.8,
                     bbox_to_anchor=(1.0, 1.0),
