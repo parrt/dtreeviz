@@ -305,22 +305,26 @@ def rtreeviz_bivar_3D(tree_model,
 
 
 def ctreeviz_univar(tree_model,
-                    x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                    x_data: (pd.DataFrame, np.ndarray) = None,
                     y_data: (pd.Series, np.ndarray) = None,
-                    feature_names: List[str] = None,
+                    feature_name: str = None,  # one feature to plot
                     target_name: str = None,
                     class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                     tree_index: int = None,  # required in case of tree ensemble
                     ax=None,
-                    fontsize=14, fontname="Arial", nbins=25, gtype='strip',
-                    show={'title', 'legend', 'splits'},
+                    fontsize=14, ticks_fontsize=12, fontname="Arial",
+                    nbins=25, gtype='strip',
+                    show={'title', 'legend', 'splits', 'preds'},
                     colors=None):
+
+    # ax as first arg is not good now that it's optional but left for compatibility reasons
     if ax is None:
         fig, ax = plt.subplots(1, 1)
 
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, [feature_name], target_name, class_names,
                                                 tree_index)
-    x_data = shadow_tree.x_data.reshape(-1, )
+    x_data = shadow_tree.x_data
+    x_data = x_data[:, shadow_tree.feature_names.index(feature_name)]
     y_data = shadow_tree.y_data
     colors = adjust_colors(colors)
     n_classes = shadow_tree.nclasses()
@@ -330,13 +334,14 @@ def ctreeviz_univar(tree_model,
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
     X_colors = [color_map[cl] for cl in class_values]
 
-    ax.set_xlabel(f"{shadow_tree.feature_names}", fontsize=fontsize, fontname=fontname,
+    ax.set_xlabel(f"{feature_name}", fontsize=fontsize, fontname=fontname,
                   color=colors['axis_label'])
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.yaxis.set_visible(False)
-    ax.spines['left'].set_visible(False)
     ax.spines['bottom'].set_linewidth(.3)
+    ax.spines['left'].set_linewidth(.3)
+    ax.tick_params(axis='both', which='major', labelcolor=colors['tick_label'], labelsize=ticks_fontsize, top=False, right=False)
+    ax.tick_params(axis='both', which='minor', top=False, right=False)
 
     X_hist = [x_data[y_data == cl] for cl in class_values]
 
@@ -352,10 +357,8 @@ def ctreeviz_univar(tree_model,
         for patch in barcontainers:
             for rect in patch.patches:
                 rect.set_linewidth(.5)
-                rect.set_edgecolor(colors['edge'])
+                rect.set_edgecolor(colors['rect_edge'])
         ax.set_xlim(*overall_feature_range)
-        ax.set_xticks(overall_feature_range)
-        ax.set_yticks([0, max([max(h) for h in hist])])
     elif gtype == 'strip':
         # user should pass in short and wide fig
         sigma = .013
@@ -367,25 +370,33 @@ def ctreeviz_univar(tree_model,
             y_noise = np.random.normal(mu + i * class_step, sigma, size=len(bucket))
             ax.scatter(bucket, y_noise, alpha=colors['scatter_marker_alpha'], marker='o', s=dot_w, c=color_map[i],
                        edgecolors=colors['scatter_edge'], lw=.3)
+    else:
+        raise ValueError(f'Unrecognized gtype = {gtype}!')
 
-    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
-                   labelsize=fontsize)
+    splits = sorted([node.split() for node in shadow_tree.internal if node.feature() == shadow_tree.feature_names.index(feature_name)])
 
-    splits = [node.split() for node in shadow_tree.internal]
-    splits = sorted(splits)
-    bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
-
-    if 'splits' in show:  # this gets the horiz bars showing prediction region
+    if 'preds' in show:  # this gets the horiz bars showing prediction region
+        bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
         pred_box_height = .07 * ax.get_ylim()[1]
         for i in range(len(bins) - 1):
             left = bins[i]
             right = bins[i + 1]
             inrange = y_data[(x_data >= left) & (x_data <= right)]
+            if 0 == len(inrange):
+                continue
             values, counts = np.unique(inrange, return_counts=True)
             pred = values[np.argmax(counts)]
-            rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
+            rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3, alpha=colors['tesselation_alpha'],
                                      edgecolor=colors['edge'], facecolor=color_map[pred])
             ax.add_patch(rect)
+
+    if 'axis' in show and gtype == 'barstacked':
+            ax.set_ylabel("Data Points", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+            # ax.set_yticks([0, max([max(h) for h in hist])])
+    else:
+        ax.set_xticks(overall_feature_range)
+        ax.yaxis.set_visible(False)
+        ax.spines['left'].set_visible(False)
 
     if 'legend' in show:
         add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors, fontname=fontname)
@@ -396,14 +407,17 @@ def ctreeviz_univar(tree_model,
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     if 'splits' in show:
+        split_heights = [*ax.get_ylim()]
         for split in splits:
-            ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
+            ax.plot([split, split], split_heights, '--', color=colors['split_line'], linewidth=1)
+
+    return None
 
 
 def ctreeviz_bivar(tree_model,
-                   x_data: (pd.DataFrame, np.ndarray) = None,
+                   x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
                    y_data: (pd.Series, np.ndarray) = None,
-                   feature_names: List[str] = None, # two features to plot
+                   feature_names: List[str] = None,
                    target_name: str = None,
                    class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                    tree_index: int = None,  # required in case of tree ensemble
@@ -419,9 +433,6 @@ def ctreeviz_bivar(tree_model,
     if ax is None:
         fig, ax = plt.subplots(1, 1)
 
-    if len(feature_names) != 2:
-        raise ValueError(f'Must provide 2 features to plot, received {len(feature_names)}!')
-
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
                                                 tree_index)
     x_data = shadow_tree.x_data
@@ -432,8 +443,6 @@ def ctreeviz_bivar(tree_model,
     class_values = shadow_tree.classes()
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
-
-    x_data = x_data[:, [shadow_tree.feature_names.index(feature_names[0]), shadow_tree.feature_names.index(feature_names[1])]]
 
     if 'splits' in show:
         for node, bbox in tesselation:
@@ -451,8 +460,8 @@ def ctreeviz_bivar(tree_model,
         ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
                    edgecolors=colors['scatter_edge'], lw=.3)
 
-    ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_xlabel(f"{shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel(f"{shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_linewidth(.3)
@@ -1151,6 +1160,7 @@ def class_leaf_viz(node: ShadowDecTreeNode,
     else:
         raise ValueError(f'Undefined leaf_plot_type = {leaf_plot_type}')
 
+
 def regr_split_viz(node: ShadowDecTreeNode,
                    X_train: np.ndarray,
                    y_train: np.ndarray,
@@ -1392,6 +1402,7 @@ def draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", 
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
     plt.close()
 
+
 def draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial", ticks_fontsize=9, graph_colors=None):
     graph_colors = adjust_colors(graph_colors)
     n_nonzero = np.count_nonzero(counts)
@@ -1429,6 +1440,7 @@ def draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial"
     # plt.tight_layout()
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
     plt.close()
+
 
 def prop_size(n, counts, output_range=(0.00, 0.3)):
     min_samples = min(counts)
@@ -1539,20 +1551,24 @@ def viz_leaf_samples(tree_model,
         colors = adjust_colors(colors)
 
         fig, ax = plt.subplots(figsize=figsize)
+        ax.set_xlabel("Leaf ID", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel("Samples Count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_linewidth(.3)
         ax.spines['bottom'].set_linewidth(.3)
+        ax.tick_params(axis='x', which='major', labelcolor=colors['tick_label'], top=False, bottom=True)
+        ax.tick_params(axis='x', which='minor', top=False, bottom=False)
+        ax.tick_params(axis='y', which='both', labelcolor=colors['tick_label'], left=True, right=False)
         ax.set_xticks(range(0, len(leaf_id)))
         ax.set_xticklabels(leaf_id)
+        ax.grid(visible=grid)
+
         barcontainers = ax.bar(range(0, len(leaf_id)), leaf_samples, color=colors["hist_bar"], lw=.3, align='center',
                                width=1)
         for rect in barcontainers.patches:
             rect.set_linewidth(.5)
             rect.set_edgecolor(colors['rect_edge'])
-        ax.set_xlabel("Leaf ID", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.set_ylabel("Samples Count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.grid(visible=grid)
     elif display_type == "text":
         for leaf, samples in zip(leaf_id, leaf_samples):
             print(f"leaf {leaf} has {samples} samples")
@@ -1560,17 +1576,20 @@ def viz_leaf_samples(tree_model,
         colors = adjust_colors(colors)
 
         fig, ax = plt.subplots(figsize=figsize)
+        ax.set_xlabel("Leaf Sample", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+        ax.set_ylabel("Leaf Count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_linewidth(.3)
         ax.spines['bottom'].set_linewidth(.3)
+        ax.tick_params(axis='both', which='major', labelcolor=colors['tick_label'], top=False, right=False)
+        ax.tick_params(axis='both', which='minor', top=False, right=False)
+        ax.grid(visible=grid)
+
         n, bins, patches = ax.hist(leaf_samples, bins=bins, color=colors["hist_bar"])
         for rect in patches:
             rect.set_linewidth(.5)
             rect.set_edgecolor(colors['rect_edge'])
-        ax.set_xlabel("Leaf Sample", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.set_ylabel("Leaf Count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.grid(visible=grid)
 
 
 def viz_leaf_criterion(tree_model,
