@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import sklearn
 
+from tensorflow_decision_forests.keras import RandomForestModel
+
 from dtreeviz import utils
 
 
@@ -476,6 +478,10 @@ class ShadowDecTree(ABC):
             from dtreeviz.models import lightgbm_decision_tree
             return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, x_data, y_data,
                                                              feature_names, target_name, class_names)
+        elif isinstance(tree_model, RandomForestModel):
+            from dtreeviz.models import tensorflow_decision_tree
+            return tensorflow_decision_tree.ShadowTensorflowTree(tree_model, tree_index, x_data, y_data,
+                                                                 feature_names, target_name, class_names)
         else:
             raise ValueError(
                 f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
