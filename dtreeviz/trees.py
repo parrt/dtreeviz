@@ -1909,3 +1909,15 @@ def explain_prediction_path(tree_model,
                                                 tree_index)
     explainer = prediction_path.get_prediction_explainer(explanation_type)
     return explainer(shadow_tree, x)
+
+
+def get_model(model,
+             tree_index: int,
+             x_data,
+             y_data,
+             feature_names: List[str] = None,
+             target_name: str = None,
+             class_names: (List[str], Mapping[int, str]) = None
+             ):
+    shadow_tree = ShadowDecTree.get_shadow_tree(model, x_data, y_data, feature_names, target_name, class_names, tree_index)
+    return shadow_tree;
