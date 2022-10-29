@@ -1911,7 +1911,7 @@ def explain_prediction_path(tree_model,
     return explainer(shadow_tree, x)
 
 
-def get_model(model,
+def model(model,
              tree_index: int,
              x_data,
              y_data,
