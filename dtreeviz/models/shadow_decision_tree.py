@@ -7,8 +7,6 @@ import numpy as np
 import pandas as pd
 import sklearn
 
-from tensorflow_decision_forests.keras import RandomForestModel
-
 from dtreeviz import utils
 
 
@@ -455,6 +453,11 @@ class ShadowDecTree(ABC):
 
     @staticmethod
     def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
+        """
+        To check to which library the tree_model belongs we are using string checks instead of isinstance()
+        because we don't want all the libraries to be installed as mandatory, except sklearn.
+        """
+
         if hasattr(tree_model, 'get_booster'):
             # scikit-learn wrappers XGBClassifier and XGBRegressor allow you to
             # extract the underlying xgboost.core.Booster with the get_booster() method:
@@ -478,15 +481,16 @@ class ShadowDecTree(ABC):
             from dtreeviz.models import lightgbm_decision_tree
             return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, x_data, y_data,
                                                              feature_names, target_name, class_names)
-        elif isinstance(tree_model, RandomForestModel):
+        elif "tensorflow_decision_forests.keras.RandomForestModel" in str(type(tree_model)):
             from dtreeviz.models import tensorflow_decision_tree
             return tensorflow_decision_tree.ShadowTensorflowTree(tree_model, tree_index, x_data, y_data,
                                                                  feature_names, target_name, class_names)
         else:
             raise ValueError(
                 f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
-                "xgboost.core.Booster, lightgbm.basic.Booster, pyspark DecisionTreeClassificationModel or "
-                f"pyspark DecisionTreeClassificationModel) but you passed a {tree_model.__class__.__name__}!")
+                "xgboost.core.Booster, lightgbm.basic.Booster, pyspark DecisionTreeClassificationModel, "
+                f"pyspark DecisionTreeClassificationModel, tensorflow_decision_forests.keras.RandomForestModel) "
+                f"but you passed a {tree_model.__class__.__name__}!")
 
 
 class ShadowDecTreeNode():
