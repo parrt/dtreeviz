@@ -84,7 +84,7 @@ class ShadowSparkTree(ShadowDecTree):
                 elif "ContinuousSplit" in node.split().toString():
                     node_thresholds[i] = node.split().threshold()
 
-        self.thresholds = np.array(node_thresholds, dtype="object")
+        self.thresholds = np.array(node_thresholds, dtype=object)
         return self.thresholds
 
     def get_features(self) -> np.ndarray:
