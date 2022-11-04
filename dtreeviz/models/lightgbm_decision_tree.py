@@ -105,7 +105,7 @@ class ShadowLightGBMTree(ShadowDecTree):
                 else:
                     node_thresholds[i] = round(self.tree_nodes[i]["threshold"], 2)
 
-        self.thresholds = np.array(node_thresholds, dtype="object")
+        self.thresholds = np.array(node_thresholds, dtype=object)
         return self.thresholds
 
     def get_features(self) -> np.ndarray:

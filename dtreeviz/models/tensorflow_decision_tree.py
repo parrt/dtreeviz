@@ -78,7 +78,7 @@ class ShadowTensorflowTree(ShadowDecTree):
                     if self.column_dataspec[feature_split_name].categorical.offset_value_by_one_during_training is True:
                         thresholds[index] = [value - 1 for value in thresholds[index]]
 
-        self.thresholds = np.array(thresholds)
+        self.thresholds = np.array(thresholds, dtype=object)
         return self.thresholds
 
     def get_features(self) -> np.ndarray:
