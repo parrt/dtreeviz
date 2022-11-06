@@ -621,7 +621,7 @@ def dtreeviz(tree_model,
             </tr>
             </table>"""
         else:
-            html = f"""<font face="Helvetica" color="#444443" point-size="12">{name}@{split}</font>"""
+            html = f"""<font face="Helvetica" color="{colors["text"]}" point-size="12">{name}@{split}</font>"""
         if node.id in highlight_path:
             gr_node = f'{node_name} [margin="0" shape=box penwidth=".5" color="{colors["highlight"]}" style="dashed" label=<{html}>]'
         else:
@@ -1033,7 +1033,7 @@ def class_split_viz(node: ShadowDecTreeNode,
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
     # overall_feature_range_wide = (overall_feature_range[0] - 0.05*(overall_feature_range[1]-overall_feature_range[0]),
-    #                              overall_feature_range[1] + 0.05*(overall_feature_range[1]-overall_feature_range[0]))
+    #                               overall_feature_range[1] + 0.05*(overall_feature_range[1]-overall_feature_range[0]))
 
     ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'], labelpad=10)
     ax.spines['top'].set_linewidth(.3)
@@ -1077,8 +1077,10 @@ def class_split_viz(node: ShadowDecTreeNode,
                 rect.set_edgecolor(colors['rect_edge'])
         y_max = max([max(h) for h in hist])
         ax.set_yticks([0, y_max])
+        # ax.set_ylim(0, 1.05*y_max)
         ax.set_ylim(0, y_max)
 
+    # ax.set_xlim(*overall_feature_range_wide)
     ax.set_xlim(*overall_feature_range)
     ax.set_xticks(overall_feature_range)
     ax.tick_params(axis='both', which='major', width=.3, length=4, direction='out', labelcolor=colors['tick_label'], labelsize=ticks_fontsize, top=False, right=False)
@@ -1709,7 +1711,8 @@ def ctreeviz_leaf_samples(tree_model,
                           colors: dict = None,
                           fontsize: int = 14,
                           fontname: str = "Arial",
-                          grid: bool = False):
+                          grid: bool = False,
+                          label_all_leafs: bool = True):
     """Visualize the number of data samples by class for each leaf.
 
     It's a good way to see how classes are distributed in leaves. For example, you can observe that in some
@@ -1756,6 +1759,8 @@ def ctreeviz_leaf_samples(tree_model,
         Plot labels font name
     :param grid: bool
         True if we want to display the grid lines on the visualization
+    :param label_all_leafs: bool
+        True if we want to label all leafs IDs on the x axis
     """
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, None, None,
@@ -1772,10 +1777,14 @@ def ctreeviz_leaf_samples(tree_model,
         ax.spines['left'].set_linewidth(.3)
         ax.spines['bottom'].set_linewidth(.3)
         ax.tick_params(axis='x', which='major', labelcolor=colors['tick_label'], top=False, bottom=True)
-        ax.tick_params(axis='x', which='minor', top=False, bottom=False)
         ax.tick_params(axis='y', which='both', labelcolor=colors['tick_label'], left=True, right=False)
-        ax.set_xticks(range(0, len(index)))
-        ax.set_xticklabels(index)
+        ax.tick_params(axis='x', which='minor', labelcolor=colors['tick_label'], top=False, bottom=not label_all_leafs)
+        if label_all_leafs:
+            ax.set_xticks(range(0, len(index)))
+            ax.set_xticklabels(index)
+        else:
+            ax.set_xlim(0, len(index))
+
         if plot_ylim is not None:
             ax.set_ylim(0, plot_ylim)
 
