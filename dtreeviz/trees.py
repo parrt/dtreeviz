@@ -536,7 +536,7 @@ def dtreeviz(tree_model,
              max_X_features_LR: int = 10,
              max_X_features_TD: int = 20,
              depth_range_to_display: tuple = None,
-             all_axis_spines: bool = False,
+             all_axes_spines: bool = False,
              label_fontsize: int = 12,
              ticks_fontsize: int = 8,
              fontname: str = "Arial",
@@ -601,7 +601,7 @@ def dtreeviz(tree_model,
                            used to guide X vector down tree. Helps when len(X) is large.
                            Default is 25.
     :param depth_range_to_display: range of depth levels to be displayed. The range values are inclusive
-    :param all_axis_spines: Plot axis splines (boundaries) on top and right sides?
+    :param all_axes_spines: Plot axis splines (boundaries) on top and right sides?
     :param title: An optional title placed at the top of the tree.
     :param title_fontsize: Size of the text for the title.
     :param scale: Default is 1.0. Scale the width, height of the overall SVG preserving aspect ratio
@@ -848,7 +848,7 @@ def dtreeviz(tree_model,
                                 label_fontsize=label_fontsize,
                                 fontname=fontname,
                                 highlight_node=node.id in highlight_path,
-                                all_axis_spines=all_axis_spines)
+                                all_axes_spines=all_axes_spines)
             else:
                 regr_split_viz(node, X_data, y_data,
                                filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
@@ -1004,7 +1004,7 @@ def class_split_viz(node: ShadowDecTreeNode,
                     histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
                     X: np.array = None,
                     highlight_node: bool = False,
-                    all_axis_spines: bool = False
+                    all_axes_spines: bool = False
                     ):
 
     def _get_bins(overall_range, nbins_):
@@ -1040,7 +1040,7 @@ def class_split_viz(node: ShadowDecTreeNode,
     ax.spines['right'].set_linewidth(.3)
     ax.spines['left'].set_linewidth(.3)
     ax.spines['bottom'].set_linewidth(.3)
-    if not all_axis_spines:
+    if not all_axes_spines:
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
