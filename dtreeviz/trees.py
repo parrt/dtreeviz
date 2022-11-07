@@ -621,7 +621,7 @@ def dtreeviz(tree_model,
             </tr>
             </table>"""
         else:
-            html = f"""<font face="Helvetica" color="{colors["text"]}" point-size="12">{name}@{split}</font>"""
+            html = f"""<font face="{fontname}" color="{colors["text"]}" point-size="12">{name}@{split}</font>"""
         if node.id in highlight_path:
             gr_node = f'{node_name} [margin="0" shape=box penwidth=".5" color="{colors["highlight"]}" style="dashed" label=<{html}>]'
         else:
@@ -656,7 +656,7 @@ def dtreeviz(tree_model,
             return f'leaf{node.id} [margin="0" shape=box penwidth="0" color="{colors["text"]}" label=<{html}>]'
 
     def node_label(node):
-        return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="Helvetica" color="{colors["node_label"]}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
+        return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="{fontname}" color="{colors["node_label"]}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
 
     def class_legend_html():
         return f"""
@@ -698,7 +698,7 @@ def dtreeviz(tree_model,
             else:
                 color = colors['text']
             headers.append(f'<td cellpadding="1" align="right" bgcolor="white">'
-                           f'<font face="Helvetica" color="{color}" point-size="{instance_fontsize}">'
+                           f'<font face="{fontname}" color="{color}" point-size="{instance_fontsize}">'
                            f'{name}'
                            '</font>'
                            '</td>')
@@ -714,7 +714,7 @@ def dtreeviz(tree_model,
             else:
                 disp_v = myround(v, precision)
             values.append(f'<td cellpadding="1" align="right" bgcolor="white">'
-                          f'<font face="Helvetica" color="{color}" point-size="{instance_fontsize}">{disp_v}</font>'
+                          f'<font face="{fontname}" color="{color}" point-size="{instance_fontsize}">{disp_v}</font>'
                           '</td>')
 
         if instance_orientation == "TD":
@@ -755,7 +755,7 @@ def dtreeviz(tree_model,
                 {instance_html(path)}
                 >]
             }}
-            {leaf} -> X_y [dir=back; penwidth="1.2" color="{colors['highlight']}" label=<<font face="Helvetica" color="{colors['leaf_label']}" point-size="{11}">{edge_label}</font>>]
+            {leaf} -> X_y [dir=back; penwidth="1.2" color="{colors['highlight']}" label=<<font face="{fontname}" color="{colors['leaf_label']}" point-size="{11}">{edge_label}</font>>]
             """
 
     def get_internal_nodes():
