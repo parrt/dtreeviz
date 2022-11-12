@@ -1155,7 +1155,7 @@ def class_leaf_viz(node: ShadowDecTreeNode,
         draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
     elif leaf_plot_type == 'barh':
-        draw_barh_chart(counts, size=size, colors=colors, filename=filename, label=f"{prediction}",
+        draw_barh_chart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
     else:
         raise ValueError(f'Undefined leaf_plot_type = {leaf_plot_type}')
@@ -1426,13 +1426,12 @@ def draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial"
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
-    ax.tick_params(axis='x', which='major', width=.3, labelcolor=graph_colors['tick_label'], labelsize=ticks_fontsize, top=False, bottom=False, left=False, right=False)
-    ax.tick_params(axis='x', which='minor', top=False, bottom=False, left=False, right=False)
+    ax.tick_params(axis='x', which='both', top=False, bottom=False, left=False, right=False)
     ax.get_yaxis().set_visible(False)
-    ax.set_xticks([0, sum(counts)])
+    ax.set_xticks([])
 
     if label is not None:
-        ax.text(sum(counts) / 2, -1.5, label,
+        ax.text(sum(counts) / 2, -1, label,
                 horizontalalignment='center',
                 verticalalignment='top',
                 fontsize=9, color=graph_colors['text'], fontname=fontname)
