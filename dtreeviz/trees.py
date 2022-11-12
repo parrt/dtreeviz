@@ -321,6 +321,21 @@ def ctreeviz_univar(tree_model,
     if ax is None:
         fig, ax = plt.subplots(1, 1)
 
+    if feature_name is None:
+        if isinstance(tree_model, ShadowDecTree):
+            feature_names = tree_model.feature_names
+            if isinstance(feature_names, str):
+                feature_name = feature_names
+            elif isinstance(feature_names, list):
+                if 1 < len(feature_names):
+                    raise ValueError('Provide a ShadowDecTree with only one feature, or specify which feature to use via the feature_name parameter!')
+                else:
+                    feature_name = feature_names[0]
+            else:
+                raise ValueError('Must specify which feature to use via the feature_name parameter!')
+        else:
+            raise ValueError('Must specify which feature to use via the feature_name parameter!')
+
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, [feature_name], target_name, class_names,
                                                 tree_index)
     x_data = shadow_tree.x_data
