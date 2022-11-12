@@ -582,7 +582,7 @@ def dtreeviz(tree_model,
     """
 
     warnings.warn(
-        "dtreeviz() function is deprecated starting from version 2.0. Please use instead the view() function.",
+        "dtreeviz() function is deprecated starting from version 2.0. Please use the view() function instead.",
         DeprecationWarning, stacklevel=2)
     return view(tree_model, x_data, y_data, feature_names, target_name, class_names, tree_index, precision, orientation,
                 instance_orientation,
@@ -1554,7 +1554,7 @@ def viz_leaf_samples(tree_model,
     """
 
     warnings.warn("viz_leaf_samples() function is deprecated starting from version 2.0. "
-                  "Please use instead the leaf_sizes() function.",
+                  "Please use the leaf_sizes() function instead.",
                   DeprecationWarning, stacklevel=2)
     leaf_sizes(tree_model, x_data, feature_names, tree_index, figsize, display_type, colors, fontsize,
                fontname, grid, bins, min_samples, max_samples)
@@ -1742,7 +1742,7 @@ def viz_leaf_criterion(tree_model,
     """
 
     warnings.warn("viz_leaf_criterion() function is deprecated starting from version 2.0. "
-                  "Please use instead the leaf_purity() function.",
+                  "Please use the leaf_purity() function instead.",
                   DeprecationWarning, stacklevel=2)
     leaf_purity(tree_model, tree_index, figsize, display_type, colors, fontsize, fontname, grid, bins)
 
@@ -1907,7 +1907,7 @@ def ctreeviz_leaf_samples(tree_model,
         True if we want to display the grid lines on the visualization
     """
     warnings.warn("ctreeviz_leaf_samples() function is deprecated starting from version 2.0. "
-                  "Please use instead the ctree_leaf_distributions() function.",
+                  "Please use the ctree_leaf_distributions() function instead.",
                   DeprecationWarning, stacklevel=2)
 
     ctree_leaf_distributions(tree_model, x_data, y_data, feature_names, tree_index, figsize, display_type, plot_ylim,
@@ -2092,7 +2092,7 @@ def viz_leaf_target(tree_model,
     """
 
     warnings.warn("viz_leaf_target() function is deprecated starting from version 2.0. "
-                  "Please use instead the rtree_leaf_distributions() function.",
+                  "Please use the rtree_leaf_distributions() function instead.",
                   DeprecationWarning, stacklevel=2)
     rtree_leaf_distributions(tree_model, x_data, y_data, feature_names, target_name, tree_index, show_leaf_labels,
                              colors, markersize, label_fontsize, fontname, precision, figsize, grid,
@@ -2225,7 +2225,7 @@ def describe_node_sample(tree_model,
 
     warnings.warn(
         "describe_node_sample() function is deprecated starting from version 2.0. "
-        "Please use instead the node_stats() function.",
+        "Please use the node_stats() function instead.",
         DeprecationWarning, stacklevel=2)
 
     return node_stats(tree_model, node_id, x_data, feature_names, tree_index)
@@ -2321,7 +2321,7 @@ def explain_prediction_path(tree_model,
     if explanation_type == "sklearn_default":
         warnings.warn(
             "explain_prediction_path(explanation_type=sklearn_default) function is deprecated starting from version 2.0."
-            " Please use instead the instance_feature_importance() function.",
+            " Please use the instance_feature_importance() function instead.",
             DeprecationWarning, stacklevel=2)
         instance_feature_importance(tree_model, x, x_data, y_data, feature_names, target_name, class_names, tree_index)
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, None, class_names,
@@ -2369,7 +2369,7 @@ def instance_feature_importance(tree_model,
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, None, class_names,
                                                 tree_index)
     explainer = prediction_path.get_prediction_explainer("sklearn_default")
-    return explainer(shadow_tree, x)
+    explainer(shadow_tree, x)
 
 
 def model(model,
