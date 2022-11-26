@@ -1472,35 +1472,34 @@ class DTreeViz:
                    fontname: str = "Arial",
                    grid: bool = False,
                    bins: int = 10,
-                   min_samples: int = 0,
-                   max_samples: int = None):
-        """Visualize the number of data samples from each leaf.
+                   min_size: int = 0,
+                   max_size: int = None):
+        """Visualize leaf sizes.
 
-        Interpreting leaf samples can help us to see how the data is spread over the tree:
-        - if we have a leaf with many samples and a good impurity, it means that we can be pretty confident
+        Interpreting leaf sizes can help us to see how the data is spread over the tree:
+        - if we have a leaf with many samples and a good purity, it means that we can be pretty confident
         on its prediction.
-        - if we have a leaf with few samples and a good impurity, we cannot be very confident on its predicion and
+        - if we have a leaf with few samples and a good purity, we cannot be very confident on its prediction and
         it could be a sign of overfitting.
-        - by visualizing leaf samples, we can easily discover important leaves . Using describe_node_sample() function we
-        can take all its samples and discover common patterns between leaf samples.
-        - if the tree contains a lot of leaves and we want a general overview about leaves samples, we can use the
-        parameter display_type='hist' to display the histogram of leaf samples.
+        - by visualizing leaf sizes, we can easily discover important leaves . Using node_stats() function we
+        can take all of its samples and discover common patterns between leaf samples.
+        - if the tree contains a lot of leaves and we want a general overview about leaves sizes, we can use the
+        parameter display_type='hist' to display the histogram of leaf sizes.
 
-        There is the option to filter the leaves with samples between 'min_samples' and 'max_samples'. This is helpful
-        especially when you want to investigate leaves with number of samples from a specific range.
-
-        TODO : put a link with notebook examples (at each function docs)
+        There is the option to filter the leaves with sizes between 'min_size' and 'max_size'. This is helpful
+        especially when you want to investigate leaves with sizes from a specific range.
 
         This method contains three types of visualizations:
-        - If display_type = 'plot' it will show leaf samples using a plot.
-        - If display_type = 'text' it will show leaf samples as plain text. This method is preferred if number
+        - If display_type = 'plot' it will show leaf sizes using a plot.
+        - If display_type = 'text' it will show leaf sizes as plain text. This method is preferred if number
         of leaves is very large and the plot become very big and hard to interpret.
-        - If display_type = 'hist' it will show leaf sample histogram. Useful when you want to easily see the general
-        distribution of leaf samples.
+        - If display_type = 'hist' it will show leaf size histogram. Useful when you want to easily see the general
+        distribution of leaf sizes.
 
-        Note : If the x_data and y_data are the datasets used to trained the model, then we will investigate the tree model
-        as it was trained. We can give other x_data and y_data datasets, ex. validation dataset, to see how the new data is
-        spread over the tree.
+        Usage example :
+        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+               target_name=target, class_names=[0, 1])
+        viz_model.leaf_sizes()
 
         :param figsize: tuple of int
             The plot size
@@ -1516,13 +1515,13 @@ class DTreeViz:
             True if we want to display the grid lines on the visualization
         :param bins: int
             Number of histogram bins
-        :param min_samples: int
-            Min number of samples for a leaf
-        :param max_samples: int
-            Max number of samples for a leaf
+        :param min_size: int
+            Min size for a leaf
+        :param max_size: int
+            Max size for a leaf
         """
 
-        leaf_id, leaf_samples = self.shadow_tree.get_leaf_sample_counts(min_samples, max_samples)
+        leaf_id, leaf_sizes = self.shadow_tree.get_leaf_sample_counts(min_size, max_size)
 
         if display_type == "plot":
             colors = adjust_colors(colors)
@@ -1534,7 +1533,7 @@ class DTreeViz:
             ax.spines['bottom'].set_linewidth(.3)
             ax.set_xticks(range(0, len(leaf_id)))
             ax.set_xticklabels(leaf_id)
-            barcontainers = ax.bar(range(0, len(leaf_id)), leaf_samples, color=colors["hist_bar"], lw=.3,
+            barcontainers = ax.bar(range(0, len(leaf_id)), leaf_sizes, color=colors["hist_bar"], lw=.3,
                                    align='center',
                                    width=1)
             for rect in barcontainers.patches:
@@ -1544,7 +1543,7 @@ class DTreeViz:
             ax.set_ylabel("samples count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.grid(b=grid)
         elif display_type == "text":
-            for leaf, samples in zip(leaf_id, leaf_samples):
+            for leaf, samples in zip(leaf_id, leaf_sizes):
                 print(f"leaf {leaf} has {samples} samples")
         elif display_type == "hist":
             colors = adjust_colors(colors)
@@ -1554,7 +1553,7 @@ class DTreeViz:
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
             ax.spines['bottom'].set_linewidth(.3)
-            n, bins, patches = ax.hist(leaf_samples, bins=bins, color=colors["hist_bar"])
+            n, bins, patches = ax.hist(leaf_sizes, bins=bins, color=colors["hist_bar"])
             for rect in patches:
                 rect.set_linewidth(.5)
                 rect.set_edgecolor(colors['rect_edge'])
@@ -1569,37 +1568,21 @@ class DTreeViz:
                                  fontsize: int = 14,
                                  fontname: str = "Arial",
                                  grid: bool = False):
-        """Visualize the number of data samples by class for each leaf.
+        """Visualize the distribution of classes for each leaf.
 
         It's a good way to see how classes are distributed in leaves. For example, you can observe that in some
         leaves all the samples belong only to one class, or that in other leaves the distribution of classes is almost
         50/50.
-        You could get all the samples from these leaves and look over/understand what they have in common. Now, you
-        can understand your data in a model driven way.
+        You could get all the samples from these leaves (using node_stats() function) and look over/understand what they have in common.
+        Now, you can understand your data in a model driven way.
         Right now it supports only binary classifications decision trees.
 
-        We can call this function in two ways :
-        1. by using shadow tree
-            ex. ctreeviz_leaf_samples(shadow_dtree)
-            - we need to initialize shadow_tree before this call
-                - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target, [0, 1])
-            - the main advantage is that we can use the shadow_tree for other visualisations methods as well
-        2. by using sklearn, xgboost tree
-            ex. ctreeviz_leaf_samples(tree_classifier, dataset[features], dataset[target], features)
-            - maintain backward compatibility
+        Usage example :
+        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+               target_name=target, class_names=[0, 1])
+        viz_model.ctree_leaf_distributions()
 
-        :param tree_model: tree.DecisionTreeClassifier, xgboost.core.Booster,
-                    dtreeviz.models.sklearn_decision_trees.ShadowSKDTree,
-                    dtreeviz.models.xgb_decision_trees.ShadowXGBDTree
-            The tree model or dtreeviz shadow tree model to interpret
-        :param x_data: pd.DataFrame, np.ndarray
-            The dataset based on which we want to make this visualisation.
-        :param y_data: pd.Series, np.ndarray
-            Target variable
-        :param feature_names: List[str], optional
-            The list of feature variable's name
-        :param tree_index: int, optional
-            Required in case of tree ensemble. Specify the tree index to interpret.
+
         :param figsize: tuple of int, optional
             The plot size
         :param display_type: str, optional
@@ -1663,7 +1646,7 @@ class DTreeViz:
              fancy: bool = True,
              histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
              highlight_path: List[int] = [],
-             X: np.ndarray = None,
+             x: np.ndarray = None,
              max_X_features_LR: int = 10,
              max_X_features_TD: int = 20,
              depth_range_to_display: tuple = None,
@@ -1678,27 +1661,15 @@ class DTreeViz:
              ) \
             -> DTreeVizRender:
         """
-        Given a decision tree regressor or classifier, create and return a tree visualization
-        using the graphviz (DOT) language.
+        Based on a decision tree regressor or classifier, create and return a tree visualization using the
+        graphviz (DOT) language.
 
-        We can call this function in two ways :
-        1. by using shadow tree
-            ex. dtreeviz(shadow_dtree)
-            - we need to initialize shadow_tree before this call
-                - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target, [0, 1]))
-            - the main advantage is that we can use the shadow_tree for other visualisations methods as well
-        2. by using sklearn, xgboost tree
-            ex. dtreeviz(tree_model, dataset[features], dataset[target], features, target, class_names=[0, 1])
-            - maintain backward compatibility
 
-        :param tree_model: A DecisionTreeRegressor or DecisionTreeClassifier that has been
-                           fit to X_train, y_data.
-        :param X_train: A data frame or 2-D matrix of feature vectors used to train the model.
-        :param y_data: A pandas Series or 1-D vector with target or classes values. These values should be numeric types.
-        :param feature_names: A list of the feature names.
-        :param target_name: The name of the target variable.
-        :param class_names: [For classifiers] A dictionary or list of strings mapping class
-                            value to class name.
+        Usage example :
+        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+               target_name=target, class_names=[0, 1])
+        viz_model.view()
+
         :param precision: When displaying floating-point numbers, how many digits to display
                           after the decimal point. Default is 2.
         :param orientation:  Is the tree top down, "TD", or left to right, "LR"?
@@ -1714,10 +1685,10 @@ class DTreeViz:
                                Useful for emphasizing node(s) in tree for discussion.
                                If X argument given then this is ignored.
         :type highlight_path: List[int]
-        :param X: Instance to run down the tree; derived path to highlight from this vector.
+        :param x: Instance to run down the tree; derived path to highlight from this vector.
                   Show feature vector with labels underneath leaf reached. highlight_path
                   is ignored if X is not None.
-        :type X: np.ndarray
+        :type x: np.ndarray
         :param label_fontsize: Size of the label font
         :param ticks_fontsize: Size of the tick font
         :param fontname: Font which is used for labels and text
@@ -1732,6 +1703,7 @@ class DTreeViz:
         :param depth_range_to_display: range of depth levels to be displayed. The range values are inclusive
         :param title: An optional title placed at the top of the tree.
         :param title_fontsize: Size of the text for the title.
+        :param colors: dict A custom set of colors for visualisations
         :param scale: Default is 1.0. Scale the width, height of the overall SVG preserving aspect ratio
         :return: A string in graphviz DOT language that describes the decision tree.
         """
@@ -1810,13 +1782,13 @@ class DTreeViz:
         def instance_html(path, instance_fontsize: int = 11):
             headers = []
             features_used = [node.feature() for node in path[:-1]]  # don't include leaf
-            display_X = X
+            display_X = x
             display_feature_names = self.shadow_tree.feature_names
             highlight_feature_indexes = features_used
-            if (orientation == 'TD' and len(X) > max_X_features_TD) or \
-                    (orientation == 'LR' and len(X) > max_X_features_LR):
+            if (orientation == 'TD' and len(x) > max_X_features_TD) or \
+                    (orientation == 'LR' and len(x) > max_X_features_LR):
                 # squash all features down to just those used
-                display_X = [X[i] for i in features_used] + ['...']
+                display_X = [x[i] for i in features_used] + ['...']
                 display_feature_names = [node.feature_name() for node in path[:-1]] + ['...']
                 highlight_feature_indexes = range(0, len(features_used))
 
@@ -1864,13 +1836,9 @@ class DTreeViz:
                         """
 
         def instance_gr():
-            if X is None:
+            if x is None:
                 return ""
-            path = self.shadow_tree.predict_path(X)
-            # print(f"path {[node.feature_name() for node in path]}")
-            # print(f"path id {[node.id() for node in path]}")
-            # print(f"path prediction {[node.prediction() for node in path]}")
-
+            path = self.shadow_tree.predict_path(x)
             leaf = f"leaf{path[-1].id}"
             if self.shadow_tree.is_classifier():
                 edge_label = f" &#160;Prediction<br/> {path[-1].prediction_name()}"
@@ -1887,7 +1855,7 @@ class DTreeViz:
                     """
 
         def get_internal_nodes():
-            if show_just_path and X is not None:
+            if show_just_path and x is not None:
                 _internal = []
                 for _node in self.shadow_tree.internal:
                     if _node.id in highlight_path:
@@ -1897,7 +1865,7 @@ class DTreeViz:
                 return self.shadow_tree.internal
 
         def get_leaves():
-            if show_just_path and X is not None:
+            if show_just_path and x is not None:
                 _leaves = []
                 for _node in self.shadow_tree.leaves:
                     if _node.id in highlight_path:
@@ -1922,8 +1890,8 @@ class DTreeViz:
                 nodesep = "0.09"
 
         tmp = tempfile.gettempdir()
-        if X is not None:
-            path = self.shadow_tree.predict_path(X)
+        if x is not None:
+            path = self.shadow_tree.predict_path(x)
             highlight_path = [n.id for n in path]
 
         color_values = colors['classes'][n_classes]
@@ -1970,7 +1938,7 @@ class DTreeViz:
                                     colors={**color_map, **colors},
                                     histtype=histtype,
                                     node_heights=node_heights,
-                                    X=X,
+                                    X=x,
                                     ticks_fontsize=ticks_fontsize,
                                     label_fontsize=label_fontsize,
                                     fontname=fontname,
@@ -1981,7 +1949,7 @@ class DTreeViz:
                                    target_name=self.shadow_tree.target_name,
                                    y_range=y_range,
                                    precision=precision,
-                                   X=X,
+                                   X=x,
                                    ticks_fontsize=ticks_fontsize,
                                    label_fontsize=label_fontsize,
                                    fontname=fontname,
@@ -2116,43 +2084,34 @@ class DTreeViz:
                     fontname: str = "Arial",
                     grid: bool = False,
                     bins: int = 10):
-        """Visualize leaves criterion.
+        """Visualize leaves criterion/purities.
 
-        The most common criterion/impurity for tree regressors is “mse”, “friedman_mse”, “mae” and for tree classifers are
+        The most common criterion/purity for tree regressors is “mse”, “friedman_mse”, “mae” and for tree classifers are
         "gini" and "entropy". This information shows the leaf performance/confidence for its predictions, namely how pure or
         impure are the samples from each leaf. Each leaf performance, in the end, will determine the general tree performance.
 
-        This visualisation can be used together with viz_leaf_samples() for a better leaf interpretation. For example,
+        This visualisation can be used together with leaf_sizes() for a better leaf interpretation. For example,
         a leaf with good confidence, but few samples, can be a sign of overfitting. The best scenario would be to have a
         leaf with good confidence and also a lot of samples.
 
-        We can call this function in two ways :
-        1. by using shadow tree
-            ex. viz_leaf_criterion(shadow_dtree)
-            - we need to initialize shadow_tree before this call
-                - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target, [0, 1])
-            - the main advantage is that we can use the shadow_tree for other visualisations methods as well
-        2. by using sklearn, xgboost tree
-            ex. viz_leaf_criterion(tree_model)
-            - maintain backward compatibility
+
+        Usage example :
+        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+               target_name=target, class_names=[0, 1])
+        viz_model.leaf_purity()
 
         This method contains three types of visualizations:
         - a plot bar visualisations for each leaf criterion, when we want to interpret individual leaves
         - a hist visualizations with leaf criterion, when we want to have a general overview for all leaves
         - a text visualisations, useful when number of leaves is very large and visual interpretation becomes difficult.
 
-        :param tree_model: tree.DecisionTreeRegressor, tree.DecisionTreeClassifier, xgboost.core.Booster,
-                    dtreeviz.models.sklearn_decision_trees.ShadowSKDTree,
-                    dtreeviz.models.xgb_decision_trees.ShadowXGBDTree
-            The tree model or dtreeviz shadow tree model to interpret
-        :param tree_index: int, optional
-            Required in case of tree ensemble. Specify the tree index to interpret.
+
         :param figsize: tuple of int
             The plot size
         :param display_type: str, optional
            'plot', 'text'. 'hist'
         :param colors: dict
-            The set of colors used for plotting
+            A custom set of colors for visualisations
         :param fontsize: int
             Plot labels font size
         :param fontname: str
@@ -2212,28 +2171,14 @@ class DTreeViz:
         This method is especially useful to investigate leaf samples from a decision tree. This is a way to discover data
         patterns, to better understand our tree model and to get new ideas for feature generation.
 
-        We can call this function in two ways :
-        1. by using shadow tree
-            ex. describe_node_sample(shadow_dtree, node_id=10)
-            - we need to initialize shadow_tree before this call
-                - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target)
-            - the main advantage is that we can use the shadow_tree for other visualisations methods as well
-        2. by using sklearn, xgboost tree
-            ex. describe_node_sample(tree_classifier, node_id=1, x_data=dataset[features], feature_names=features)
-            - maintain backward compatibility
 
-        :param tree_model: tree.DecisionTreeRegressor, tree.DecisionTreeClassifier, xgboost.core.Booster,
-                    dtreeviz.models.sklearn_decision_trees.ShadowSKDTree,
-                    dtreeviz.models.xgb_decision_trees.ShadowXGBDTree
-            The tree model or dtreeviz shadow tree model to interpret
+        Usage example :
+        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+               target_name=target, class_names=[0, 1])
+        viz_model.node_stats(node_id=10)
+
         :param node_id: int
             Node id to interpret
-        :param x_data: pd.DataFrame, np.ndarray
-            The dataset based on which we want to make this visualisation.
-        :param feature_names: List[str], optional
-            The list of feature variable's name
-        :param tree_index: int, optional
-            Required in case of tree ensemble. Specify the tree index to interpret.
         :return: pd.DataFrame
             Node training samples' stats
         """
@@ -2249,35 +2194,23 @@ class DTreeViz:
         There will be created a visualisation for feature importance, just like the popular one from sklearn library,
         but in this scencario, the feature importances will be calculated based only on the nodes from prediction path.
 
-        :param tree_model: tree.DecisionTreeRegressor, tree.DecisionTreeClassifier, xgboost.core.Booster,
-                    dtreeviz.models.sklearn_decision_trees.ShadowSKDTree,
-                    dtreeviz.models.xgb_decision_trees.ShadowXGBDTree
-            The tree model or dtreeviz shadow tree model to interpret
+
+        Usage example :
+        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+               target_name=target, class_names=[0, 1])
+        viz_model.instance_feature_importance(x)
+
         :param x: np.ndarray
             The data instance for which we want to investigate prediction path
-        :param y_data: pd.Series, np.ndarray
-            Target variable values
-        :param explanation_type: plain_english, sklearn_default
-            Specify the interpretation type
-        :param feature_names: List[str], optional
-            The list of feature variable's name
-        :param target_name: str, optional
-            The name of target variable
-        :param class_names: Mapping[Number, str], List[str], optional
-            The list of class names. Required only for classifier
-        :param tree_index: int, optional
-            Required in case of tree ensemble. Specify the tree index to interpret.
-
         """
 
         explainer = prediction_path.get_prediction_explainer("sklearn_default")
         explainer(self.shadow_tree, x)
 
     def explain_prediction_path(self, x: np.ndarray):
-        """Prediction path interpretation for a data instance.
+        """Prediction path interpretation for a data instance. There will be created a range of values for each feature,
+         based on data instance values and its tree prediction path.
 
-        In case explanation_type = 'plain_english', there will be created a range of values for each feature, based on data
-        instance values and its tree prediction path.
         A possible output for this method could be :
             1.5 <= Pclass
             3.5 <= Age < 44.5
@@ -2286,26 +2219,13 @@ class DTreeViz:
             Cabin_label < 3.5
             0.5 <= Embarked_label
 
+        Usage example :
+        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+               target_name=target, class_names=[0, 1])
+        viz_model.explain_prediction_path(x)
 
-        :param tree_model: tree.DecisionTreeRegressor, tree.DecisionTreeClassifier, xgboost.core.Booster,
-                    dtreeviz.models.sklearn_decision_trees.ShadowSKDTree,
-                    dtreeviz.models.xgb_decision_trees.ShadowXGBDTree
-            The tree model or dtreeviz shadow tree model to interpret
         :param x: np.ndarray
             The data instance for which we want to investigate prediction path
-        :param y_data: pd.Series, np.ndarray
-            Target variable values
-        :param explanation_type: plain_english, sklearn_default
-            Specify the interpretation type
-        :param feature_names: List[str], optional
-            The list of feature variable's name
-        :param target_name: str, optional
-            The name of target variable
-        :param class_names: Mapping[Number, str], List[str], optional
-            The list of class names. Required only for classifier
-        :param tree_index: int, optional
-            Required in case of tree ensemble. Specify the tree index to interpret.
-
         """
 
         explainer = prediction_path.get_prediction_explainer("plain_english")
@@ -2321,37 +2241,25 @@ class DTreeViz:
                                  figsize: tuple = None,
                                  grid: bool = False,
                                  prediction_line_width: int = 2):
-        """Visualize leaf target distribution for regression decision trees.
-
-        We can call this function in two ways :
-        1. by using shadow tree
-            ex. viz_leaf_target(shadow_dtree)
-            - we need to initialize shadow_tree before this call
-                - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target)
-            - the main advantage is that we can use the shadow_tree for other visualisations methods as well
-        2. by using sklearn, xgboost tree
-            ex. viz_leaf_target(tree_model, dataset[features], dataset[target], features, target)
-            - maintain backward compatibility
+        """Visualize leaf target distributions for regression decision trees.
 
 
-        :param tree_model: tree.DecisionTreeRegressor, xgboost.core.Booster,
-                    dtreeviz.models.sklearn_decision_trees.ShadowSKDTree,
-                    dtreeviz.models.xgb_decision_trees.ShadowXGBDTree
-            The tree model or dtreeviz shadow tree model to interpret
-        :param x_data: pd.DataFrame, np.ndarray
-            The dataset based on which we want to make this visualisation.
-        :param y_data: pd.Series, np.ndarray
-            Target variable values
-        :param feature_names: List[str], optional
-            The list of feature variable's name
-        :param target_name: str, optional
-            The name of target variable
-        :param tree_index: int, optional
-            Required in case of tree ensemble. Specify the tree index to interpret.
+        Usage example :
+        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+               target_name=target, class_names=[0, 1])
+        viz_model.rtree_leaf_distributions()
+
+
         :param show_leaf_labels: bool
             True if the plot should contains the leaf labels on x ax, False otherwise.
+        :param colors: dict
+            A custom set of colors for visualisations
         :param markersize: int
             Marker size in points.
+        :param label_fontsize: int
+            Size of the label font
+        :param fontname: str
+            Font which is used for labels and text
         :param precision: int
             When displaying floating-point numbers, how many digits to display after the decimal point. Default is 1.
         :param figsize: tuple
