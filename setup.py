@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='dtreeviz',
-    version='1.4.0',
+    version='1.4.1',
     url='https://github.com/parrt/dtreeviz',
     license='MIT',
     packages=find_packages(),

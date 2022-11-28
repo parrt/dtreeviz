@@ -1047,9 +1047,6 @@ def class_split_viz(node: ShadowDecTreeNode,
 
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
-    overall_feature_range_wide = (overall_feature_range[0] - 0.05*(overall_feature_range[1]-overall_feature_range[0]),
-                                  overall_feature_range[1] + 0.05*(overall_feature_range[1]-overall_feature_range[0]))
-
     ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'], labelpad=10)
     ax.spines['top'].set_linewidth(.3)
     ax.spines['right'].set_linewidth(.3)
@@ -1093,6 +1090,10 @@ def class_split_viz(node: ShadowDecTreeNode,
         y_max = max([max(h) for h in hist])
         ax.set_yticks([0, y_max])
         ax.set_ylim(0, 1.05*y_max)
+
+    # set an empty space at the beginning and the end of the node visualisation for better clarity
+    bin_length = bins[1] - bins[0]
+    overall_feature_range_wide = (bins[0] - 2 * bin_length, bins[len(bins) - 1] + 2 * bin_length)
 
     ax.set_xlim(*overall_feature_range_wide)
     ax.set_xticks(overall_feature_range)
