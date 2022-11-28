@@ -25,12 +25,12 @@ from dtreeviz.utils import inline_svg_images, myround, scale_SVG
 # How many bins should we have based upon number of classes
 NUM_BINS = [
     0, 0, 10, 9, 8, 6,
-    6, 6, 5, 5, 5, 5, 
+    6, 6, 5, 5, 5, 5,
     5, 5, 5, 5, 5, 5,
     5, 5, 5, 5, 5, 5,
     5, 5, 5, 5, 5, 5,
     5, 5, 5, 5, 5, 5,
-    5, 5, 5, 5, 5, 
+    5, 5, 5, 5, 5,
     ] # support for 40 classes
 
 
@@ -541,6 +541,7 @@ def dtreeviz(tree_model,
              orientation: ('TD', 'LR') = "TD",
              instance_orientation: ("TD", "LR") = "LR",
              leaf_plot_type: ('pie', 'barh') = 'pie',
+             leaf_predictions: dict = None,
              show_root_edge_labels: bool = True,
              show_node_labels: bool = False,
              show_just_path: bool = False,
@@ -894,7 +895,9 @@ def dtreeviz(tree_model,
                            filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
                            graph_colors=colors,
                            fontname=fontname,
-                           leaf_plot_type=leaf_plot_type)
+                           precision=precision,
+                           leaf_plot_type=leaf_plot_type,
+                           leaf_predictions=leaf_predictions)
             leaves.append(class_leaf_node(node))
         else:
             # for now, always gen leaf
@@ -1151,7 +1154,9 @@ def class_leaf_viz(node: ShadowDecTreeNode,
                    filename: str,
                    graph_colors=None,
                    fontname: str = "Arial",
-                   leaf_plot_type: ('pie', 'barh') = "pie"):
+                   precision: int = 2,
+                   leaf_plot_type: ('pie', 'barh') = "pie",
+                   leaf_predictions: dict = None):
     graph_colors = adjust_colors(graph_colors)
     # size = prop_size(node.nsamples(), counts=node.shadow_tree.leaf_sample_counts(),
     #                  output_range=(.2, 1.5))
@@ -1167,6 +1172,13 @@ def class_leaf_viz(node: ShadowDecTreeNode,
     # size = np.sqrt(np.log(size))
     counts = node.class_counts()
     prediction = node.prediction_name()
+    if leaf_predictions is not None:
+        leaf_prediction = leaf_predictions.get(node.id, None)
+        if leaf_prediction is not None:
+            prediction = myround(leaf_prediction, precision)
+        else:
+            print(f'Could not load leaf prediction value from leaf_predictions dict for node.id = {node.id}!\nFalling back to argmax class label prediction')
+
     if leaf_plot_type == 'pie':
         draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
