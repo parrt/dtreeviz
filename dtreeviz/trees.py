@@ -1745,7 +1745,7 @@ def ctreeviz_leaf_samples(tree_model,
                           fontsize: int = 14,
                           fontname: str = "Arial",
                           grid: bool = False,
-                          label_all_leafs: bool = True):
+                          label_all_leaves: bool = True):
     """Visualize the number of data samples by class for each leaf.
 
     It's a good way to see how classes are distributed in leaves. For example, you can observe that in some
@@ -1792,8 +1792,8 @@ def ctreeviz_leaf_samples(tree_model,
         Plot labels font name
     :param grid: bool
         True if we want to display the grid lines on the visualization
-    :param label_all_leafs: bool
-        True if we want to label all leafs IDs on the x axis
+    :param label_all_leaves: bool
+        True if we want to label all leaves IDs on the x axis
     """
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, None, None,
@@ -1811,8 +1811,8 @@ def ctreeviz_leaf_samples(tree_model,
         ax.spines['bottom'].set_linewidth(.3)
         ax.tick_params(axis='x', which='major', labelcolor=colors['tick_label'], top=False, bottom=True)
         ax.tick_params(axis='y', which='both', labelcolor=colors['tick_label'], left=True, right=False)
-        ax.tick_params(axis='x', which='minor', labelcolor=colors['tick_label'], top=False, bottom=not label_all_leafs)
-        if label_all_leafs:
+        ax.tick_params(axis='x', which='minor', labelcolor=colors['tick_label'], top=False, bottom=not label_all_leaves)
+        if label_all_leaves:
             ax.set_xticks(range(0, len(index)))
             ax.set_xticklabels(index)
         else:
