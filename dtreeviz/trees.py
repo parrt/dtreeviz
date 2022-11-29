@@ -590,6 +590,7 @@ def dtreeviz(tree_model,
     :param orientation:  Is the tree top down, "TD", or left to right, "LR"?
     :param instance_orientation: table orientation (TD, LR) for showing feature prediction's values.
     :param leaf_plot_type: leaf plot type ('pie', 'barh')
+    :param leaf_predictions: optional leaf predictions dictionary of {node_id: value}, used to show predicted values for classifiers
     :param show_root_edge_labels: Include < and >= on the edges emanating from the root?
     :param show_node_labels: Add "Node id" to top of each node in graph for educational purposes
     :param show_just_path: If True, it shows only the sample(X) prediction path
@@ -761,7 +762,14 @@ def dtreeviz(tree_model,
 
         leaf = f"leaf{path[-1].id}"
         if shadow_tree.is_classifier():
-            edge_label = f" &#160;Prediction<br/> {path[-1].prediction_name()}"
+            prediction = path[-1].prediction_name()
+            if leaf_predictions is not None:
+                leaf_prediction = leaf_predictions.get(path[-1].id, None)
+                if leaf_prediction is not None:
+                    prediction = myround(leaf_prediction, precision)
+                else:
+                    print(f'Could not load leaf prediction value from leaf_predictions dict for node.id = {node.id}!\nFalling back to argmax class label prediction')
+            edge_label = f" &#160;Prediction<br/> {prediction}"
         else:
             edge_label = f" &#160;Prediction<br/> {myround(path[-1].prediction(), precision)}"
         return f"""
