@@ -306,6 +306,30 @@ def rtreeviz_bivar_3D(tree_model,
     return None
 
 
+def ctree_feature_space(tree_model,
+                    x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                    y_data: (pd.Series, np.ndarray) = None,
+                    feature_names: (List[str], str) = None,
+                    target_name: str = None,
+                    class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
+                    tree_index: int = None,  # required in case of tree ensemble
+                    ax=None,
+                    fontsize=14, fontname="Arial", nbins=25, gtype='strip',
+                    show={'title', 'legend', 'splits'},
+                    colors=None):
+    if ax is None:
+        fig, ax = plt.subplots(1, 1)
+
+    viz_univar = isinstance(feature_names, str)
+    if viz_univar:
+        ctreeviz_univar(tree_model, x_data, y_data, feature_names,
+                        target_name, class_names, tree_index, ax,
+                        fontsize, fontname, nbins, gtype, show, colors)
+    elif isinstance(feature_names, list) and len(feature_names) == 2:
+        ctreeviz_bivar(tree_model, x_data, y_data, feature_names,
+                       target_name, class_names, tree_index, ax, fontsize, fontname, show, colors)
+
+
 def ctreeviz_univar(tree_model,
                     x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
                     y_data: (pd.Series, np.ndarray) = None,
@@ -317,90 +341,17 @@ def ctreeviz_univar(tree_model,
                     fontsize=14, fontname="Arial", nbins=25, gtype='strip',
                     show={'title', 'legend', 'splits'},
                     colors=None):
-    if ax is None:
-        fig, ax = plt.subplots(1, 1)
 
+    warnings.warn("ctreeviz_univar() function is deprecated starting from version 2.0. \n "
+                  "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.ctree_feature_space(...)",
+                  DeprecationWarning, stacklevel=2)
+
+    if isinstance(feature_names, str):
+        feature_names = [feature_names]
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
                                                 tree_index)
-    x_data = shadow_tree.x_data.reshape(-1, )
-    y_data = shadow_tree.y_data
-    colors = adjust_colors(colors)
-    n_classes = shadow_tree.nclasses()
-    overall_feature_range = (np.min(x_data), np.max(x_data))
-    class_values = shadow_tree.classes()
-    color_values = colors['classes'][n_classes]
-    color_map = {v: color_values[i] for i, v in enumerate(class_values)}
-    X_colors = [color_map[cl] for cl in class_values]
-
-    ax.set_xlabel(f"{shadow_tree.feature_names}", fontsize=fontsize, fontname=fontname,
-                  color=colors['axis_label'])
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.yaxis.set_visible(False)
-    ax.spines['left'].set_visible(False)
-    ax.spines['bottom'].set_linewidth(.3)
-
-    X_hist = [x_data[y_data == cl] for cl in class_values]
-
-    if gtype == 'barstacked':
-        bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
-        hist, bins, barcontainers = ax.hist(X_hist,
-                                            color=X_colors,
-                                            align='mid',
-                                            histtype='barstacked',
-                                            bins=bins,
-                                            label=shadow_tree.class_names)
-
-        for patch in barcontainers:
-            for rect in patch.patches:
-                rect.set_linewidth(.5)
-                rect.set_edgecolor(colors['edge'])
-        ax.set_xlim(*overall_feature_range)
-        ax.set_xticks(overall_feature_range)
-        ax.set_yticks([0, max([max(h) for h in hist])])
-    elif gtype == 'strip':
-        # user should pass in short and wide fig
-        sigma = .013
-        mu = .08
-        class_step = .08
-        dot_w = 20
-        ax.set_ylim(0, mu + n_classes * class_step)
-        for i, bucket in enumerate(X_hist):
-            y_noise = np.random.normal(mu + i * class_step, sigma, size=len(bucket))
-            ax.scatter(bucket, y_noise, alpha=colors['scatter_marker_alpha'], marker='o', s=dot_w, c=color_map[i],
-                       edgecolors=colors['scatter_edge'], lw=.3)
-
-    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
-                   labelsize=fontsize)
-
-    splits = [node.split() for node in shadow_tree.internal]
-    splits = sorted(splits)
-    bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
-
-    if 'splits' in show:  # this gets the horiz bars showing prediction region
-        pred_box_height = .07 * ax.get_ylim()[1]
-        for i in range(len(bins) - 1):
-            left = bins[i]
-            right = bins[i + 1]
-            inrange = y_data[(x_data >= left) & (x_data <= right)]
-            values, counts = np.unique(inrange, return_counts=True)
-            pred = values[np.argmax(counts)]
-            rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
-                                     edgecolor=colors['edge'], facecolor=color_map[pred])
-            ax.add_patch(rect)
-
-    if 'legend' in show:
-        add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors,
-                              fontname=fontname)
-
-    if 'title' in show:
-        accur = shadow_tree.get_score()
-        title = f"Classifier tree depth {shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
-        ax.set_title(title, fontsize=fontsize, color=colors['title'])
-
-    if 'splits' in show:
-        for split in splits:
-            ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
+    model = DTreeViz(shadow_tree)
+    model.ctree_feature_space(ax, fontsize, fontname, nbins, gtype, show, colors)
 
 
 def ctreeviz_bivar(tree_model,
@@ -419,53 +370,18 @@ def ctreeviz_bivar(tree_model,
     Show tesselated 2D feature space for bivariate classification tree. X_train can
     have lots of features but features lists indexes of 2 features to train tree with.
     """
-    # ax as first arg is not good now that it's optional but left for compatibility reasons
-    if ax is None:
-        fig, ax = plt.subplots(1, 1)
 
+
+    warnings.warn("ctreeviz_bivar() function is deprecated starting from version 2.0. \n "
+                  "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.ctree_feature_space(...)",
+                  DeprecationWarning, stacklevel=2)
+
+    if isinstance(feature_names, str):
+        feature_names = [feature_names]
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
                                                 tree_index)
-    x_data = shadow_tree.x_data
-    y_data = shadow_tree.y_data
-    colors = adjust_colors(colors)
-    tesselation = shadow_tree.tesselation()
-    n_classes = shadow_tree.nclasses()
-    class_values = shadow_tree.classes()
-    color_values = colors['classes'][n_classes]
-    color_map = {v: color_values[i] for i, v in enumerate(class_values)}
-
-    if 'splits' in show:
-        for node, bbox in tesselation:
-            x = bbox[0]
-            y = bbox[1]
-            w = bbox[2] - bbox[0]
-            h = bbox[3] - bbox[1]
-            rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
-                                     edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
-            ax.add_patch(rect)
-
-    dot_w = 25
-    X_hist = [x_data[y_data == cl] for cl in class_values]
-    for i, h in enumerate(X_hist):
-        ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
-                   edgecolors=colors['scatter_edge'], lw=.3)
-
-    ax.set_xlabel(f"{shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_ylabel(f"{shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_linewidth(.3)
-
-    if 'legend' in show:
-        add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors,
-                              fontname=fontname)
-
-    if 'title' in show:
-        accur = shadow_tree.get_score()
-        title = f"Classifier tree depth {shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
-        ax.set_title(title, fontsize=fontsize, color=colors['title'], )
-
-    return None
+    model = DTreeViz(shadow_tree)
+    model.ctree_feature_space(ax, fontsize, fontname, show, colors)
 
 
 def add_classifier_legend(ax, class_names, class_values, facecolors, target_name,
@@ -2298,3 +2214,167 @@ class DTreeViz:
 
         for i in range(len(means)):
             ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
+
+    def ctree_feature_space(self,
+                            ax=None,
+                            fontsize=14,
+                            fontname="Arial",
+                            nbins=25,
+                            gtype='strip',
+                            show={'title', 'legend', 'splits'},
+                            colors=None):
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+
+        # TODO check if we can find some common functionality between univar and bivar visualisations and refactor
+        #  to a single method.
+        if len(self.shadow_tree.feature_names) == 1:     # univar example
+            self._ctreeviz_univar(ax,
+                            fontsize, fontname, nbins, gtype, show, colors)
+        elif len(self.shadow_tree.feature_names) == 2:   # bivar example
+            self._ctreeviz_bivar(ax, fontsize, fontname, show, colors)
+        else:
+            raise ValueError(f"ctree_feature_space supports a dataset with only one or two features."
+                             f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
+
+    def _ctreeviz_univar(self, ax=None,
+                        fontsize=14, fontname="Arial", nbins=25, gtype='strip',
+                        show={'title', 'legend', 'splits'},
+                        colors=None):
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+
+        x_data = self.shadow_tree.x_data.reshape(-1, )
+        y_data = self.shadow_tree.y_data
+        colors = adjust_colors(colors)
+        n_classes = self.shadow_tree.nclasses()
+        overall_feature_range = (np.min(x_data), np.max(x_data))
+        class_values = self.shadow_tree.classes()
+        color_values = colors['classes'][n_classes]
+        color_map = {v: color_values[i] for i, v in enumerate(class_values)}
+        X_colors = [color_map[cl] for cl in class_values]
+
+        ax.set_xlabel(f"{self.shadow_tree.feature_names}", fontsize=fontsize, fontname=fontname,
+                      color=colors['axis_label'])
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.yaxis.set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_linewidth(.3)
+
+        X_hist = [x_data[y_data == cl] for cl in class_values]
+
+        if gtype == 'barstacked':
+            bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
+            hist, bins, barcontainers = ax.hist(X_hist,
+                                                color=X_colors,
+                                                align='mid',
+                                                histtype='barstacked',
+                                                bins=bins,
+                                                label=self.shadow_tree.class_names)
+
+            for patch in barcontainers:
+                for rect in patch.patches:
+                    rect.set_linewidth(.5)
+                    rect.set_edgecolor(colors['edge'])
+            ax.set_xlim(*overall_feature_range)
+            ax.set_xticks(overall_feature_range)
+            ax.set_yticks([0, max([max(h) for h in hist])])
+        elif gtype == 'strip':
+            # user should pass in short and wide fig
+            sigma = .013
+            mu = .08
+            class_step = .08
+            dot_w = 20
+            ax.set_ylim(0, mu + n_classes * class_step)
+            for i, bucket in enumerate(X_hist):
+                y_noise = np.random.normal(mu + i * class_step, sigma, size=len(bucket))
+                ax.scatter(bucket, y_noise, alpha=colors['scatter_marker_alpha'], marker='o', s=dot_w, c=color_map[i],
+                           edgecolors=colors['scatter_edge'], lw=.3)
+
+        ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
+                       labelsize=fontsize)
+
+        splits = [node.split() for node in self.shadow_tree.internal]
+        splits = sorted(splits)
+        bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
+
+        if 'splits' in show:  # this gets the horiz bars showing prediction region
+            pred_box_height = .07 * ax.get_ylim()[1]
+            for i in range(len(bins) - 1):
+                left = bins[i]
+                right = bins[i + 1]
+                inrange = y_data[(x_data >= left) & (x_data <= right)]
+                values, counts = np.unique(inrange, return_counts=True)
+                pred = values[np.argmax(counts)]
+                rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
+                                         edgecolor=colors['edge'], facecolor=color_map[pred])
+                ax.add_patch(rect)
+
+        if 'legend' in show:
+            add_classifier_legend(ax, self.shadow_tree.class_names, class_values, color_map, self.shadow_tree.target_name, colors,
+                                  fontname=fontname)
+
+        if 'title' in show:
+            accur = self.shadow_tree.get_score()
+            title = f"Classifier tree depth {self.shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
+            ax.set_title(title, fontsize=fontsize, color=colors['title'])
+
+        if 'splits' in show:
+            for split in splits:
+                ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
+
+    def _ctreeviz_bivar(self, ax=None, fontsize=14, fontname="Arial", show={'title', 'legend', 'splits'},
+                       colors=None):
+        """
+        Show tesselated 2D feature space for bivariate classification tree. X_train can
+        have lots of features but features lists indexes of 2 features to train tree with.
+        """
+        # ax as first arg is not good now that it's optional but left for compatibility reasons
+
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+
+        x_data = self.shadow_tree.x_data
+        y_data = self.shadow_tree.y_data
+        colors = adjust_colors(colors)
+        tesselation = self.shadow_tree.tesselation()
+        n_classes = self.shadow_tree.nclasses()
+        class_values = self.shadow_tree.classes()
+        color_values = colors['classes'][n_classes]
+        color_map = {v: color_values[i] for i, v in enumerate(class_values)}
+
+        if 'splits' in show:
+            for node, bbox in tesselation:
+                x = bbox[0]
+                y = bbox[1]
+                w = bbox[2] - bbox[0]
+                h = bbox[3] - bbox[1]
+                rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
+                                         edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
+                ax.add_patch(rect)
+
+        dot_w = 25
+        X_hist = [x_data[y_data == cl] for cl in class_values]
+        for i, h in enumerate(X_hist):
+            ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
+                       edgecolors=colors['scatter_edge'], lw=.3)
+
+        ax.set_xlabel(f"{self.shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname,
+                      color=colors['axis_label'])
+        ax.set_ylabel(f"{self.shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname,
+                      color=colors['axis_label'])
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_linewidth(.3)
+
+        if 'legend' in show:
+            add_classifier_legend(ax, self.shadow_tree.class_names, class_values, color_map, self.shadow_tree.target_name, colors,
+                                  fontname=fontname)
+
+        if 'title' in show:
+            accur = self.shadow_tree.get_score()
+            title = f"Classifier tree depth {self.shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
+            ax.set_title(title, fontsize=fontsize, color=colors['title'], )
+
+        return None
