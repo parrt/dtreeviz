@@ -179,15 +179,15 @@ def rtreeviz_bivar_3D(tree_model,
     """
 
     warnings.warn("rtreeviz_bivar_3D() function is deprecated starting from version 2.0. \n "
-                  "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.rtree_feature_space(...)",
+                  "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.rtree_feature_space3D(...)",
                   DeprecationWarning, stacklevel=2)
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
                                                 tree_index)
 
     model = DTreeViz(shadow_tree)
-    model.rtree_feature_space(ax=ax, fontsize=fontsize, ticks_fontsize=ticks_fontsize, fontname=fontname, show=show,
-                              n_colors_in_map=n_colors_in_map, colors=colors, markersize=markersize, azim=azim, elev=elev, dist=dist, display_3D=True)
+    model.rtree_feature_space3D(ax, fontsize, ticks_fontsize, fontname,
+                      azim, elev, dist, show, colors, markersize, n_colors_in_map)
 
 def ctreeviz_univar(tree_model,
                     x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
@@ -2098,17 +2098,27 @@ class DTreeViz:
 
     def rtree_feature_space(self,  ax=None, fontsize: int = 14, show={'title', 'splits'}, split_linewidth=.5,
                     mean_linewidth=2, markersize=15, colors=None, ticks_fontsize=12, fontname = "Arial",
-                    n_colors_in_map=100, azim=0, elev=0, dist=7, display_3D=False):
+                    n_colors_in_map=100, azim=0, elev=0, dist=7):
         if len(self.shadow_tree.feature_names) == 1:     # univar example
             self._rtreeviz_univar(ax, fontsize, show, split_linewidth, mean_linewidth, markersize, colors)
         elif len(self.shadow_tree.feature_names) == 2:   # bivar example
-            if display_3D is False:
                 self._rtreeviz_bivar_heatmap(ax, fontsize, ticks_fontsize, fontname, show, n_colors_in_map, colors, markersize)
-            else:
-                self._rtreeviz_bivar_3D(ax, fontsize, ticks_fontsize, fontname, azim, elev, dist, show, colors, markersize, n_colors_in_map)
         else:
             raise ValueError(f"rtree_feature_space() supports a dataset with only one or two features."
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
+
+    def rtree_feature_space3D(self,ax=None,
+                      fontsize=14, ticks_fontsize=10, fontname="Arial",
+                      azim=0, elev=0, dist=7,
+                      show={'title'}, colors=None, markersize=15,
+                      n_colors_in_map=100):
+        """
+        Show 3D feature space for bivariate regression tree. X_train should have
+        just the 2 variables used for training.
+        """
+
+        self._rtreeviz_bivar_3D(ax, fontsize, ticks_fontsize, fontname, azim, elev, dist, show, colors, markersize,
+                                n_colors_in_map)
 
 
     def _ctreeviz_univar(self, ax=None,
@@ -2367,10 +2377,6 @@ class DTreeViz:
                           azim=0, elev=0, dist=7,
                           show={'title'}, colors=None, markersize=15,
                           n_colors_in_map=100):
-        """
-        Show 3D feature space for bivariate regression tree. X_train should have
-        just the 2 variables used for training.
-        """
 
         x_data = self.shadow_tree.x_data
         y_data = self.shadow_tree.y_data
