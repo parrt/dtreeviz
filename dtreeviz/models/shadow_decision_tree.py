@@ -473,7 +473,7 @@ class ShadowDecTree(ABC):
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
                                                     feature_names, target_name, class_names)
         elif (str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>") or
-              str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>")):
+              str(type(tree_model)).endswith("pyspark.ml.regression.DecisionTreeRegressionModel'>")):
             from dtreeviz.models import spark_decision_tree
             return spark_decision_tree.ShadowSparkTree(tree_model, x_data, y_data,
                                                        feature_names, target_name, class_names)
