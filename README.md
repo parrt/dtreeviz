@@ -1,172 +1,41 @@
 # dtreeviz : Decision Tree Visualization
 
 ## Description
-A python library for decision tree visualization and model interpretation.  Currently supports the following decision-tree libraries:
 
-* [scikit-learn](https://scikit-learn.org/stable)
-* [XGBoost](https://xgboost.readthedocs.io/en/latest)
-* [Spark MLlib](https://spark.apache.org/mllib/)
-* [LightGBM](https://lightgbm.readthedocs.io/en/latest/)
-* [Tensorflow](https://www.tensorflow.org/decision_forests)
+A python library for decision tree visualization and model interpretation.  Decision trees are the fundamental building block of [gradient boosting machines](http://explained.ai/gradient-boosting/index.html) and [Random Forests](https://en.wikipedia.org/wiki/Random_forest)(tm), probably the two most popular machine learning models for structured data.  Visualizing decision trees is a tremendous aid when learning how these models work and when interpreting models. The visualizations are inspired by an educational animation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). Please see [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made.
 
-With 1.3, we now provide one- and two-dimensional feature space illustrations for classifiers (any model that can answer `predict_probab()`); see [below](README.md#classification-boundaries-in-feature-space).
+Currently dtreeviz supports: [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest), [Spark MLlib](https://spark.apache.org/mllib/), [LightGBM](https://lightgbm.readthedocs.io/en/latest/), and [Tensorflow](https://www.tensorflow.org/decision_forests).  See [Installation instructions](README.md#Install).
 
-Authors:
+### Authors
 
-* [Terence Parr](https://explained.ai/), a tech lead at Google and until 2022 was a professor of data science / computer science at Univ. of San Francisco, where he was founding director of the [University of San Francisco's MS in data science program](https://www.usfca.edu/arts-sciences/graduate-programs/data-science) in 2012.
+* [Terence Parr](https://explained.ai/), a tech lead at Google, and until 2022 was a professor of data science / computer science at Univ. of San Francisco, where he was founding director of the [University of San Francisco's MS in data science program](https://www.usfca.edu/arts-sciences/graduate-programs/data-science) in 2012.
 * [Tudor Lapusan](https://www.linkedin.com/in/tudor-lapusan-5902593b/)
 * [Prince Grover](https://www.linkedin.com/in/groverpr)
 
-See [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made. 
-
-### Feedback
-
-We welcome info from users on how they use dtreeviz, what features they'd like, etc... via [email (to parrt)](mailto:parrt@antlr.org) or via an [issue](https://github.com/parrt/dtreeviz/issues).
-
 ## Quick start
 
-Jump right into the examples using this [Colab notebook](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/examples.ipynb)
+See [Installation instructions](README.md#Install) then take a look at the specific [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks) for the supported ML library you're using:
 
-Take a look in [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks)! Here we have a specific notebook for all supported ML libraries and more.
+* [sklearn-based examples](notebooks/dtreeviz_sklearn_visualisations.ipynb) ([colab](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/dtreeviz_sklearn_visualisations.ipynb))
+* [LightGBM-based examples](notebooks/dtreeviz_lightgbm_visualisations.ipynb) ([colab](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/dtreeviz_lightgbm_visualisations.ipynb))
+* [Spark-based examples](notebooks/dtreeviz_spark_visualisations.ipynb) ([colab](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/dtreeviz_spark_visualisations.ipynb))
+* [TensorFlow-based examples](notebooks/dtreeviz_tensorflow_visualisations.ipynb) ([colab](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/dtreeviz_tensorflow_visualisations.ipynb))
+* [XGBoost-based examples](notebooks/dtreeviz_xgboost_visualisations.ipynb) ([colab](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/dtreeviz_xgboost_visualisations.ipynb))
 
-## Discussion
 
-Decision trees are the fundamental building block of [gradient boosting machines](http://explained.ai/gradient-boosting/index.html) and [Random Forests](https://en.wikipedia.org/wiki/Random_forest)(tm), probably the two most popular machine learning models for structured data.  Visualizing decision trees is a tremendous aid when learning how these models work and when interpreting models.  Unfortunately, current visualization packages are rudimentary and not immediately helpful to the novice. For example, we couldn't find a library that visualizes how decision nodes split up the feature space. It is also uncommon for libraries to support visualizing a specific feature vector as it weaves down through a tree's decision nodes; we could only find one image showing this.
+The four categories of dtreeviz functionality are:
 
-So, we've created a general package for decision tree visualization and model interpretation, which we'll be using heavily in an upcoming [machine learning book](https://mlbook.explained.ai/) (written with [Jeremy Howard](http://www.fast.ai/about/#jeremy)).
+<table style="border: none; width=100%">
+<tr>
+<td><img src="testing/samples/iris-TD-2.svg" width="150"></td>
+<td><img src="testing/samples/boston-TD-2.svg" width="150"></td>
+</tr>
+</table>
 
-The visualizations are inspired by an educational animation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). With `dtreeviz`, you can visualize how the feature space is split up at decision nodes, how the training samples get distributed in leaf nodes, how the tree makes predictions for a specific observation and more. These operations are critical to for  understanding how classification or regression decision trees work. If you're not familiar with decision trees, check out [fast.ai's Introduction to Machine Learning for Coders MOOC](https://course18.fast.ai/ml.html).
-
-## Install
-
-Install anaconda3 on your system, if not already done.
-
-You might verify that you do not have conda-installed graphviz-related packages installed because dtreeviz needs the pip versions; you can remove them from conda space by doing:
-
-```bash
-conda uninstall python-graphviz
-conda uninstall graphviz
-```
-
-To install (Python >=3.6 only), do this (from Anaconda Prompt on Windows!):
-
-```bash
-pip install dtreeviz             # install dtreeviz for sklearn
-pip install dtreeviz[xgboost]    # install XGBoost related dependency
-pip install dtreeviz[pyspark]    # install pyspark related dependency
-pip install dtreeviz[lightgbm]   # install LightGBM related dependency
-```
-
-This should also pull in the `graphviz` Python library (>=0.9), which we are using for platform specific stuff.
-
-**Limitations.** Only svg files can be generated at this time, which reduces dependencies and dramatically simplifies install process.
-
-Please email [Terence](mailto:parrt@cs.usfca.edu) with any helpful notes on making dtreeviz work (better) on other platforms. Thanks! 
-
-For your specific platform, please see the following subsections.
-
-### Mac
-
-Make sure to have the latest XCode installed and command-line tools installed. You can run `xcode-select --install` from the command-line to install those if XCode is already installed. You also have to sign the XCode license agreement, which you can do with `sudo xcodebuild -license` from command-line. The brew install shown next needs to build graphviz, so you need XCode set up properly.
-
-You need the graphviz binary for `dot`. Make sure you have latest version (verified on 10.13, 10.14):
-
-```bash
-brew reinstall graphviz
-```
-
-Just to be sure, remove `dot` from any anaconda installation, for example:
-
-```bash
-rm ~/anaconda3/bin/dot
-```
-
-From command line, this command
-
-```bash
-dot -Tsvg
-```
-
-should work, in the sense that it just stares at you without giving an error. You can hit control-C to escape back to the shell.  Make sure that you are using the right `dot` as installed by brew:
-
-```bash
-$ which dot
-/usr/local/bin/dot
-$ ls -l $(which dot)
-lrwxr-xr-x  1 parrt  wheel  33 May 26 11:04 /usr/local/bin/dot@ -> ../Cellar/graphviz/2.40.1/bin/dot
-$
-```
-
-**Limitations.** Jupyter notebook has a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
-
-### Linux (Ubuntu 18.04)
-
-To get the `dot` binary do:
- 
-```bash
-sudo apt install graphviz
-```
-
-**Limitations.** The `view()` method works to pop up a new window and images appear inline for jupyter notebook but not jupyter lab (It gets an error parsing the SVG XML.)  The notebook images also have a font substitution from the Arial we use and so some text overlaps. Only .svg files can be generated on this platform.
-
-### Windows 10
-
-(Make sure to `pip install graphviz`, which is common to all platforms, and make sure to do this from Anaconda Prompt on Windows!)
-
-[Download graphviz-2.38.msi](https://graphviz.gitlab.io/_pages/Download/Download_windows.html) and update your `Path` environment variable.  Add `C:\Program Files (x86)\Graphviz2.38\bin` to User path and `C:\Program Files (x86)\Graphviz2.38\bin\dot.exe` to System Path. It's windows so you might need a reboot after updating that environment variable.  You should see this from the Anaconda Prompt:
-
-```
-(base) C:\Users\Terence Parr>where dot
-C:\Program Files (x86)\Graphviz2.38\bin\dot.exe
-```
-
-(Do not use `conda install -c conda-forge python-graphviz` as you get an old version of `graphviz` python library.)
-
-Verify from the Anaconda Prompt that this works (capital `-V` not lowercase `-v`):
-
-```
-dot -V
-```
-
-If it doesn't work, you have a `Path` problem. I found the following test programs useful. The first one sees if Python can find `dot`:
-
-```python
-import os
-import subprocess
-proc = subprocess.Popen(['dot','-V'])
-print( os.getenv('Path') )
-```
-
-The following version does the same thing except uses `graphviz` Python libraries backend support utilities, which is what we use in dtreeviz:
-
-```python
-import graphviz.backend as be
-cmd = ["dot", "-V"]
-stdout, stderr = be.run(cmd, capture_output=True, check=True, quiet=False)
-print( stderr )
-```
-
-If you are having issues with run command you can try copying the following files from: https://github.com/xflr6/graphviz/tree/master/graphviz.
-
-Place them in the AppData\Local\Continuum\anaconda3\Lib\site-packages\graphviz folder. 
-
-Clean out the __pycache__ directory too.
-
-Jupyter Lab and Jupyter notebook both show the inline .svg images well.
-
-### Verify graphviz installation
-
-Try making text file `t.dot` with content `digraph T { A -> B }` (paste that into a text editor, for example) and then running this from the command line:
-
-```
-dot -Tsvg -o t.svg t.dot
-```
-
-That should give a simple `t.svg` file that opens properly.  If you get errors from `dot`, it will not work from the dtreeviz python code.  If it can't find `dot` then you didn't update your `PATH` environment variable or there is some other install issue with `graphviz`.
-
-### Limitations
-
-Finally, don't use IE to view .svg files. Use Edge as they look much better. I suspect that IE is displaying them as a rasterized not vector images. Only .svg files can be generated on this platform.
+Tree visualizations
+Prediction path explanations
+Leaf information
+Feature space exploration
 
 ## Usage
 
@@ -623,6 +492,141 @@ The color needs be in a format [matplotlib](https://matplotlib.org/2.0.2/api/col
 
 `classes` needs to be a list of lists of colors with a minimum length of your number of colors. The index is the number of classes and the list with this index needs to have the same amount of colors.  
 
+## Installation
+
+Install anaconda3 on your system, if not already done.
+
+You might verify that you do not have conda-installed graphviz-related packages installed because dtreeviz needs the pip versions; you can remove them from conda space by doing:
+
+```bash
+conda uninstall python-graphviz
+conda uninstall graphviz
+```
+
+To install (Python >=3.6 only), do this (from Anaconda Prompt on Windows!):
+
+```bash
+pip install dtreeviz             # install dtreeviz for sklearn
+pip install dtreeviz[xgboost]    # install XGBoost related dependency
+pip install dtreeviz[pyspark]    # install pyspark related dependency
+pip install dtreeviz[lightgbm]   # install LightGBM related dependency
+```
+
+This should also pull in the `graphviz` Python library (>=0.9), which we are using for platform specific stuff.
+
+**Limitations.** Only svg files can be generated at this time, which reduces dependencies and dramatically simplifies install process.
+
+Please email [Terence](mailto:parrt@cs.usfca.edu) with any helpful notes on making dtreeviz work (better) on other platforms. Thanks! 
+
+For your specific platform, please see the following subsections.
+
+### Mac
+
+Make sure to have the latest XCode installed and command-line tools installed. You can run `xcode-select --install` from the command-line to install those if XCode is already installed. You also have to sign the XCode license agreement, which you can do with `sudo xcodebuild -license` from command-line. The brew install shown next needs to build graphviz, so you need XCode set up properly.
+
+You need the graphviz binary for `dot`. Make sure you have latest version (verified on 10.13, 10.14):
+
+```bash
+brew reinstall graphviz
+```
+
+Just to be sure, remove `dot` from any anaconda installation, for example:
+
+```bash
+rm ~/anaconda3/bin/dot
+```
+
+From command line, this command
+
+```bash
+dot -Tsvg
+```
+
+should work, in the sense that it just stares at you without giving an error. You can hit control-C to escape back to the shell.  Make sure that you are using the right `dot` as installed by brew:
+
+```bash
+$ which dot
+/usr/local/bin/dot
+$ ls -l $(which dot)
+lrwxr-xr-x  1 parrt  wheel  33 May 26 11:04 /usr/local/bin/dot@ -> ../Cellar/graphviz/2.40.1/bin/dot
+$
+```
+
+**Limitations.** Jupyter notebook has a bug where they do not show .svg files correctly, but Juypter Lab has no problem.
+
+### Linux (Ubuntu 18.04)
+
+To get the `dot` binary do:
+ 
+```bash
+sudo apt install graphviz
+```
+
+**Limitations.** The `view()` method works to pop up a new window and images appear inline for jupyter notebook but not jupyter lab (It gets an error parsing the SVG XML.)  The notebook images also have a font substitution from the Arial we use and so some text overlaps. Only .svg files can be generated on this platform.
+
+### Windows 10
+
+(Make sure to `pip install graphviz`, which is common to all platforms, and make sure to do this from Anaconda Prompt on Windows!)
+
+[Download graphviz-2.38.msi](https://graphviz.gitlab.io/_pages/Download/Download_windows.html) and update your `Path` environment variable.  Add `C:\Program Files (x86)\Graphviz2.38\bin` to User path and `C:\Program Files (x86)\Graphviz2.38\bin\dot.exe` to System Path. It's windows so you might need a reboot after updating that environment variable.  You should see this from the Anaconda Prompt:
+
+```
+(base) C:\Users\Terence Parr>where dot
+C:\Program Files (x86)\Graphviz2.38\bin\dot.exe
+```
+
+(Do not use `conda install -c conda-forge python-graphviz` as you get an old version of `graphviz` python library.)
+
+Verify from the Anaconda Prompt that this works (capital `-V` not lowercase `-v`):
+
+```
+dot -V
+```
+
+If it doesn't work, you have a `Path` problem. I found the following test programs useful. The first one sees if Python can find `dot`:
+
+```python
+import os
+import subprocess
+proc = subprocess.Popen(['dot','-V'])
+print( os.getenv('Path') )
+```
+
+The following version does the same thing except uses `graphviz` Python libraries backend support utilities, which is what we use in dtreeviz:
+
+```python
+import graphviz.backend as be
+cmd = ["dot", "-V"]
+stdout, stderr = be.run(cmd, capture_output=True, check=True, quiet=False)
+print( stderr )
+```
+
+If you are having issues with run command you can try copying the following files from: https://github.com/xflr6/graphviz/tree/master/graphviz.
+
+Place them in the AppData\Local\Continuum\anaconda3\Lib\site-packages\graphviz folder. 
+
+Clean out the __pycache__ directory too.
+
+Jupyter Lab and Jupyter notebook both show the inline .svg images well.
+
+### Verify graphviz installation
+
+Try making text file `t.dot` with content `digraph T { A -> B }` (paste that into a text editor, for example) and then running this from the command line:
+
+```
+dot -Tsvg -o t.svg t.dot
+```
+
+That should give a simple `t.svg` file that opens properly.  If you get errors from `dot`, it will not work from the dtreeviz python code.  If it can't find `dot` then you didn't update your `PATH` environment variable or there is some other install issue with `graphviz`.
+
+### Limitations
+
+Finally, don't use IE to view .svg files. Use Edge as they look much better. I suspect that IE is displaying them as a rasterized not vector images. Only .svg files can be generated on this platform.
+
+## Feedback
+
+We welcome info from users on how they use dtreeviz, what features they'd like, etc... via [email (to parrt)](mailto:parrt@antlr.org) or via an [issue](https://github.com/parrt/dtreeviz/issues).
+
 ## Useful Resources
 
 * [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html)
@@ -637,14 +641,6 @@ Visualization of Decision Trees](http://alexandria.tue.nl/extra1/afstversl/wsk-i
 * [Beautiful Decisions: Inside BigML’s Decision Trees](https://blog.bigml.com/2012/01/23/beautiful-decisions-inside-bigmls-decision-trees/)
 * "SunBurst" approach to tree visualization: [An evaluation of space-filling information visualizations
 for depicting hierarchical structures](https://www.cc.gatech.edu/~john.stasko/papers/ijhcs00.pdf)
-
-## Authors
-
-* [**Terence Parr**](http://parrt.cs.usfca.edu/) 
-* [Tudor Lapusan](https://www.linkedin.com/in/tudor-lapusan-5902593b/)
-* [**Prince Grover**](https://www.linkedin.com/in/groverpr/)
-
-See also the list of [contributors](https://github.com/parrt/dtreeviz/graphs/contributors) who participated in this project.
 
 ## License
 
