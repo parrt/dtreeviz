@@ -25,23 +25,54 @@ See [Installation instructions](README.md#Install) then take a look at the speci
 
 The four categories of dtreeviz functionality are:
 
+### Tree visualizations
+
 <table cellpadding="0" cellspacing="0">
-<tr>
-	<td colspan="5">Tree visualizations</td>
-</tr>
 <tr>
 <td><img src="testing/samples/iris-TD-2.svg" width="150"></td>
 <td><img src="testing/samples/boston-TD-2.svg" width="150"></td>
-<td><img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="150"></td>
-<td><img src="testing/samples/diabetes-LR-2-X.svg" width="300"></td>
-<td colspan="3"><img src="testing/samples/breast_cancer-TD-4-simple.svg" width="300"></td>
+<td><img src="testing/samples/knowledge-TD-4-simple.svg" width="150"></td>
 </tr>
 </table>
 
-Tree visualizations
-Prediction path explanations
-Leaf information
-Feature space exploration
+### Prediction path explanations
+
+<table cellpadding="0" cellspacing="0">
+<tr>
+<td><img src="testing/samples/breast_cancer-TD-3-X.svg" width="150"></td>
+<td><img src="testing/samples/diabetes-LR-2-X.svg" width="300"></td>
+<td><img src="testing/samples/knowledge-TD-15-X-simple.svg" width="200"></td>
+</tr>
+</table>
+
+### Leaf information
+
+<table cellpadding="0" cellspacing="0">
+<tr>
+<td><img src="testing/samples/titanic-leaf-regression.png" width="150"></td>
+<td><img src="testing/samples/titanic-leaf-samples-by-class.png" width="150"></td>
+</tr>
+</table>
+
+### Feature space exploration
+
+<table cellpadding="0" cellspacing="0">
+<tr>
+<td><img src="testing/samples/cars-univar-2.svg" width="200"></td>
+<td><img src="https://user-images.githubusercontent.com/178777/49104999-4edb0d80-f234-11e8-9010-73b7c0ba5fb9.png" width="150"></td>
+<td><img src="https://user-images.githubusercontent.com/178777/49107627-08d57800-f23b-11e8-85a2-ab5894055092.png" width="150"></td>
+</tr>
+</table>
+
+<table cellpadding="0" cellspacing="0">
+<tr>
+<td><img src="https://user-images.githubusercontent.com/178777/49105084-9497d600-f234-11e8-9097-56835558c1a6.png" width="150"></td>
+<td><img src="https://user-images.githubusercontent.com/178777/49105085-9792c680-f234-11e8-8af5-bc2fde950ab1.png" width="150"></td>
+</tr>
+</table>
+
+
+
 
 ## Usage
 
