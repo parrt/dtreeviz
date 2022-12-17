@@ -25,10 +25,16 @@ See [Installation instructions](README.md#Install) then take a look at the speci
 
 The four categories of dtreeviz functionality are:
 
-<table>
+<table cellpadding="0" cellspacing="0">
+<tr>
+	<td colspan="5">Tree visualizations</td>
+</tr>
 <tr>
 <td><img src="testing/samples/iris-TD-2.svg" width="150"></td>
 <td><img src="testing/samples/boston-TD-2.svg" width="150"></td>
+<td><img src="https://user-images.githubusercontent.com/12815158/94368231-b17ce900-00eb-11eb-8e2d-89a0e927e494.png" width="150"></td>
+<td><img src="testing/samples/diabetes-LR-2-X.svg" width="300"></td>
+<td colspan="3"><img src="testing/samples/breast_cancer-TD-4-simple.svg" width="300"></td>
 </tr>
 </table>
 
