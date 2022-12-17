@@ -25,16 +25,10 @@ See [Installation instructions](README.md#Install) then take a look at the speci
 
 The four categories of dtreeviz functionality are:
 
-<style>
-td, th {
-   border: none!important;
-}
-</style>
-
-<table style="border: none; width=100%">
+<table>
 <tr>
-<td style="border: none;"><img src="testing/samples/iris-TD-2.svg" width="150"></td>
-<td style="border: none;"><img src="testing/samples/boston-TD-2.svg" width="150"></td>
+<td><img src="testing/samples/iris-TD-2.svg" width="150"></td>
+<td><img src="testing/samples/boston-TD-2.svg" width="150"></td>
 </tr>
 </table>
 
