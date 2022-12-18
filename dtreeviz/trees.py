@@ -196,10 +196,10 @@ def ctreeviz_univar(tree_model,
                     target_name: str = None,
                     class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                     tree_index: int = None,  # required in case of tree ensemble
-                    ax=None,
                     fontsize=14, fontname="Arial", nbins=25, gtype='strip',
                     show={'title', 'legend', 'splits'},
-                    colors=None):
+                    colors=None,
+                    ax=None):
 
     warnings.warn("ctreeviz_univar() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.ctree_feature_space(...)",
@@ -210,7 +210,7 @@ def ctreeviz_univar(tree_model,
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
-    model.ctree_feature_space(ax, fontsize, fontname, nbins, gtype, show, colors)
+    model.ctree_feature_space(fontsize, fontname, nbins, gtype, show, colors, ax)
 
 
 def ctreeviz_bivar(tree_model,
@@ -220,17 +220,15 @@ def ctreeviz_bivar(tree_model,
                    target_name: str = None,
                    class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                    tree_index: int = None,  # required in case of tree ensemble
-                   ax=None,
                    fontsize=14,
                    fontname="Arial",
                    show={'title', 'legend', 'splits'},
-                   colors=None):
+                   colors=None,
+                   ax=None):
     """
     Show tesselated 2D feature space for bivariate classification tree. X_train can
     have lots of features but features lists indexes of 2 features to train tree with.
     """
-
-
     warnings.warn("ctreeviz_bivar() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.ctree_feature_space(...)",
                   DeprecationWarning, stacklevel=2)
@@ -240,7 +238,11 @@ def ctreeviz_bivar(tree_model,
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
-    model.ctree_feature_space(ax, fontsize, fontname, show=show, colors=colors)
+    model.ctree_feature_space(fontsize=fontsize,
+                            fontname=fontname,
+                            show=show,
+                            colors=colors,
+                            ax=None)
 
 
 def add_classifier_legend(ax, class_names, class_values, facecolors, target_name,
@@ -2076,34 +2078,31 @@ class DTreeViz:
             ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
 
     def ctree_feature_space(self,
-                            ax=None,
                             fontsize=14,
                             fontname="Arial",
                             nbins=25,
                             gtype='strip',
                             show={'title', 'legend', 'splits'},
-                            colors=None):
-        if ax is None:
-            fig, ax = plt.subplots(1, 1)
-
-        # TODO check if we can find some common functionality between univar and bivar visualisations and refactor
+                            colors=None,
+                            figsize=None,
+                            ax=None):
+        # TODO: check if we can find some common functionality between univar and bivar visualisations and refactor
         #  to a single method.
         if len(self.shadow_tree.feature_names) == 1:     # univar example
-            self._ctreeviz_univar(ax,
-                            fontsize, fontname, nbins, gtype, show, colors)
+            self._ctreeviz_univar(fontsize, fontname, nbins, gtype, show, colors, figsize, ax)
         elif len(self.shadow_tree.feature_names) == 2:   # bivar example
-            self._ctreeviz_bivar(ax, fontsize, fontname, show, colors)
+            self._ctreeviz_bivar(fontsize, fontname, show, colors, figsize, ax)
         else:
             raise ValueError(f"ctree_feature_space supports a dataset with only one or two features."
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
 
-    def rtree_feature_space(self,  ax=None, fontsize: int = 14, show={'title', 'splits'}, split_linewidth=.5,
+    def rtree_feature_space(self,  fontsize: int = 14, show={'title', 'splits'}, split_linewidth=.5,
                     mean_linewidth=2, markersize=15, colors=None, ticks_fontsize=12, fontname = "Arial",
-                    n_colors_in_map=100, azim=0, elev=0, dist=7):
+                    n_colors_in_map=100, figsize=None, ax=None):
         if len(self.shadow_tree.feature_names) == 1:     # univar example
-            self._rtreeviz_univar(ax, fontsize, show, split_linewidth, mean_linewidth, markersize, colors)
+            self._rtreeviz_univar(fontsize, show, split_linewidth, mean_linewidth, markersize, colors, figsize, ax)
         elif len(self.shadow_tree.feature_names) == 2:   # bivar example
-                self._rtreeviz_bivar_heatmap(ax, fontsize, ticks_fontsize, fontname, show, n_colors_in_map, colors, markersize)
+                self._rtreeviz_bivar_heatmap(fontsize, ticks_fontsize, fontname, show, n_colors_in_map, colors, markersize, figsize, ax)
         else:
             raise ValueError(f"rtree_feature_space() supports a dataset with only one or two features."
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
@@ -2112,22 +2111,23 @@ class DTreeViz:
                               fontsize=14, ticks_fontsize=10, fontname="Arial",
                               azim=0, elev=0, dist=7,
                               show={'title'}, colors=None, markersize=15,
-                              n_colors_in_map=100):
+                              n_colors_in_map=100, figsize=None, ax=None):
         """
         Show 3D feature space for bivariate regression tree. X_train should have
         just the 2 variables used for training.
         """
+        self._rtreeviz_bivar_3D(fontsize, ticks_fontsize, fontname, azim, elev, dist, show, colors, markersize,
+                                n_colors_in_map, figsize, ax)
 
-        self._rtreeviz_bivar_3D(ax, fontsize, ticks_fontsize, fontname, azim, elev, dist, show, colors, markersize,
-                                n_colors_in_map)
 
-
-    def _ctreeviz_univar(self, ax=None,
+    def _ctreeviz_univar(self,
                         fontsize=14, fontname="Arial", nbins=25, gtype='strip',
                         show={'title', 'legend', 'splits'},
-                        colors=None):
+                        colors=None,
+                        figsize=None,
+                        ax=None):
         if ax is None:
-            fig, ax = plt.subplots(1, 1)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
 
         x_data = self.shadow_tree.x_data.reshape(-1, )
         y_data = self.shadow_tree.y_data
@@ -2209,16 +2209,16 @@ class DTreeViz:
             for split in splits:
                 ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
 
-    def _ctreeviz_bivar(self, ax=None, fontsize=14, fontname="Arial", show={'title', 'legend', 'splits'},
-                       colors=None):
+    def _ctreeviz_bivar(self, fontsize=14, fontname="Arial", show={'title', 'legend', 'splits'},
+                        colors=None,
+                        figsize=None,
+                        ax=None):
         """
         Show tesselated 2D feature space for bivariate classification tree. X_train can
         have lots of features but features lists indexes of 2 features to train tree with.
         """
-        # ax as first arg is not good now that it's optional but left for compatibility reasons
-
         if ax is None:
-            fig, ax = plt.subplots(1, 1)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
 
         x_data = self.shadow_tree.x_data
         y_data = self.shadow_tree.y_data
@@ -2264,15 +2264,15 @@ class DTreeViz:
 
         return None
 
-    def _rtreeviz_univar(self, ax=None, fontsize: int = 14, show={'title', 'splits'},
-                        split_linewidth=.5, mean_linewidth=2, markersize=15, colors=None):
-
+    def _rtreeviz_univar(self, fontsize: int = 14, show={'title', 'splits'},
+                        split_linewidth=.5, mean_linewidth=2, markersize=15, colors=None,
+                        figsize=None, ax=None):
         x_data = self.shadow_tree.x_data.reshape(-1, )
         y_data = self.shadow_tree.y_data
 
         # ax as first arg is not good now that it's optional but left for compatibility reasons
         if ax is None:
-            fig, ax = plt.subplots(1, 1)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
 
         if x_data is None or y_data is None:
             raise ValueError(f"x_train and y_train must not be none")
@@ -2320,18 +2320,19 @@ class DTreeViz:
         ax.set_xlabel(self.shadow_tree.feature_names, fontsize=fontsize, color=colors['axis_label'])
         ax.set_ylabel(self.shadow_tree.target_name, fontsize=fontsize, color=colors['axis_label'])
 
-    def _rtreeviz_bivar_heatmap(self, ax=None, fontsize=14, ticks_fontsize=12, fontname="Arial",
-                               show={'title'},
-                               n_colors_in_map=100,
-                               colors=None,
-                               markersize=15
-                               ) -> tree.DecisionTreeClassifier:
+    def _rtreeviz_bivar_heatmap(self, fontsize=14, ticks_fontsize=12, fontname="Arial",
+                                show={'title'},
+                                n_colors_in_map=100,
+                                colors=None,
+                                markersize=15,
+                                figsize=None,
+                                ax=None) -> tree.DecisionTreeClassifier:
         """
         Show tesselated 2D feature space for bivariate regression tree. X_train can
         have lots of features but features lists indexes of 2 features to train tree with.
         """
         if ax is None:
-            fig, ax = plt.subplots(1, 1)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
 
         x_data = self.shadow_tree.x_data
         y_data = self.shadow_tree.y_data
@@ -2374,16 +2375,19 @@ class DTreeViz:
 
         return None
 
-    def _rtreeviz_bivar_3D(self, ax=None, fontsize=14, ticks_fontsize=10, fontname="Arial",
+    def _rtreeviz_bivar_3D(self, fontsize=14, ticks_fontsize=10, fontname="Arial",
                           azim=0, elev=0, dist=7,
                           show={'title'}, colors=None, markersize=15,
-                          n_colors_in_map=100):
+                          n_colors_in_map=100, figsize=None, ax=None):
 
         x_data = self.shadow_tree.x_data
         y_data = self.shadow_tree.y_data
 
         if ax is None:
-            fig = plt.figure()
+            if figsize:
+                fig = plt.figure(figsize=figsize)
+            else:
+                fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
         colors = adjust_colors(colors)
         ax.view_init(elev=elev, azim=azim)
