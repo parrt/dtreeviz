@@ -13,20 +13,20 @@ from dtreeviz.trees import add_classifier_legend
 from dtreeviz import utils
 
 
-def clfviz(model, X: np.ndarray, y: np.ndarray,
-           ntiles=50, tile_fraction=.9,
-           binary_threshold=0.5,
-           show=['instances', 'boundaries', 'probabilities', 'misclassified', 'legend'],
-           feature_names=None, target_name=None, class_names=None,
-           markers=None,
-           boundary_marker='o', boundary_markersize=.8,
-           fontsize=9, fontname="Arial",
-           dot_w=25,
-           yshift=.08,
-           sigma=.013,
-           colors: dict = None,
-           ranges: Tuple = None,
-           ax=None) -> None:
+def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
+                        ntiles=50, tile_fraction=.9,
+                        binary_threshold=0.5,
+                        show=['instances', 'boundaries', 'probabilities', 'misclassified', 'legend'],
+                        feature_names=None, target_name=None, class_names=None,
+                        markers=None,
+                        boundary_marker='o', boundary_markersize=.8,
+                        fontsize=9, fontname="Arial",
+                        dot_w=25,
+                        yshift=.08,
+                        sigma=.013,
+                        colors: dict = None,
+                        ranges: Tuple = None,
+                        ax=None) -> None:
     """
     Two-variable case:
     Draw a tiled grid over a 2D classifier feature space where each tile is colored by
@@ -129,7 +129,7 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
                  ranges=None,
                  ax=None) -> None:
     """
-    See comment and parameter descriptions for clfviz() above.
+    See comment and parameter descriptions for decision_boundaries() above.
     """
     if isinstance(X, pd.DataFrame):
         X = X.values
@@ -377,7 +377,7 @@ def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
                   colors: dict = None,
                   ax=None) -> None:
     """
-    See comment and parameter descriptions for clfviz() above.
+    See comment and parameter descriptions for decision_boundaries() above.
     """
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(5, 1.2))

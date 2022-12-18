@@ -66,7 +66,7 @@ Currently dtreeviz supports: [scikit-learn](https://scikit-learn.org/stable), [X
 
 #### Classification boundaries
 
-As a utility function, dtreeviz provides `dtreeviz.clfviz()` that illustrates one and two-dimensional feature space for classifiers, including colors that represent probabilities, decision boundaries, and misclassified entities. This method is not limited to tree models, by the way, and should work with any model that answers method `predict_proba()`. That means any model from scikit-learn or Keras should work. (As it does not work with trees specifically, the function does not use adaptors obtained from `dtreeviz.model()`.) See [classifier-decision-boundaries.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-decision-boundaries.ipynb).
+As a utility function, dtreeviz provides `dtreeviz.decision_boundaries()` that illustrates one and two-dimensional feature space for classifiers, including colors that represent probabilities, decision boundaries, and misclassified entities. This method is not limited to tree models, by the way, and should work with any model that answers method `predict_proba()`. That means any model from scikit-learn or Keras should work. (As it does not work with trees specifically, the function does not use adaptors obtained from `dtreeviz.model()`.) See [classifier-decision-boundaries.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-decision-boundaries.ipynb).
 
 <table cellpadding="0" cellspacing="0">
 <tr>
