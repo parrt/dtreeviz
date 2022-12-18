@@ -44,7 +44,7 @@ def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
 
     TODO: assumes classes are contiguous and 0..k-1
 
-    :param model: an sklearn classifier model or any other model that can answer
+    :param model: an sklearn or Keras classifier model or any other model that can answer
                   method predict_proba(X)
     :param X: A 1- or 2-column dataframe or numpy array with the one or two features to plot
     :param y: The target column with integers indicating the true instance classes;
@@ -84,8 +84,15 @@ def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
     if isinstance(y, pd.Series):
         y = y.values
 
+    if model.__class__.__module__.startswith('tensorflow.python.keras') or \
+            model.__class__.__module__.startswith('keras'):
+        if not (hasattr(model, 'predict') and callable(getattr(model, 'predict'))):
+            raise ValueError("Keras model argument must implement method `predict()`")
+    elif not(hasattr(model, 'predict_proba') and callable(getattr(model, 'predict_proba'))):
+        raise ValueError("model argument must implement method `predict_proba()`")
+
     if len(X.shape) == 1 or (len(X.shape)==2 and X.shape[1] == 1):
-        clfviz_univar(model=model, x=X, y=y,
+        decision_boundaries_univar(model=model, x=X, y=y,
                       ntiles=ntiles,
                       binary_threshold=binary_threshold,
                       show=show,
@@ -100,7 +107,7 @@ def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
                       colors=colors,
                       ax=ax)
     elif len(X.shape) == 2 and X.shape[1] == 2:
-        clfviz_bivar(model=model, X=X, y=y,
+        decision_boundaries_bivar(model=model, X=X, y=y,
                      ntiles=ntiles, tile_fraction=tile_fraction,
                      binary_threshold=binary_threshold,
                      show=show,
@@ -117,7 +124,7 @@ def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
         raise ValueError(f"Expecting 2D data not {X.shape}")
 
 
-def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
+def decision_boundaries_bivar(model, X:np.ndarray, y:np.ndarray,
                  ntiles=50, tile_fraction=.9,
                  binary_threshold=0.5,
                  show=['instances','boundaries','probabilities','misclassified','legend'],
@@ -364,7 +371,7 @@ def _draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, 
             markersize=boundary_markersize, c=colors['class_boundary'], alpha=1.0)
 
 
-def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
+def decision_boundaries_univar(model, x: np.ndarray, y: np.ndarray,
                   ntiles=100,
                   binary_threshold=0.5,
                   show=['instances', 'boundaries', 'probabilities', 'misclassified', 'legend'],
