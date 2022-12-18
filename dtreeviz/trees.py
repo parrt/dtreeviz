@@ -1480,7 +1480,8 @@ class DTreeViz:
         :param title_fontsize: Size of the text for the title.
         :param colors: dict A custom set of colors for visualisations
         :param scale: Default is 1.0. Scale the width, height of the overall SVG preserving aspect ratio
-        :return: A string in graphviz DOT language that describes the decision tree.
+        :return: A DTreeVizRender object containing string in graphviz DOT language that
+                describes the decision tree.
         """
 
         def node_name(node: ShadowDecTreeNode) -> str:
@@ -2107,11 +2108,11 @@ class DTreeViz:
             raise ValueError(f"rtree_feature_space() supports a dataset with only one or two features."
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
 
-    def rtree_feature_space3D(self,ax=None,
-                      fontsize=14, ticks_fontsize=10, fontname="Arial",
-                      azim=0, elev=0, dist=7,
-                      show={'title'}, colors=None, markersize=15,
-                      n_colors_in_map=100):
+    def rtree_feature_space3D(self,
+                              fontsize=14, ticks_fontsize=10, fontname="Arial",
+                              azim=0, elev=0, dist=7,
+                              show={'title'}, colors=None, markersize=15,
+                              n_colors_in_map=100):
         """
         Show 3D feature space for bivariate regression tree. X_train should have
         just the 2 variables used for training.
