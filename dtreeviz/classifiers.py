@@ -134,6 +134,7 @@ def decision_boundaries_bivar(model, X:np.ndarray, y:np.ndarray,
                  fontsize=9, fontname="Arial",
                  dot_w=25, colors:dict=None,
                  ranges=None,
+                 figsize=(5, 3.5),
                  ax=None) -> None:
     """
     See comment and parameter descriptions for decision_boundaries() above.
@@ -147,7 +148,7 @@ def decision_boundaries_bivar(model, X:np.ndarray, y:np.ndarray,
         raise ValueError(f"Expecting 2D data not {X.shape}")
 
     if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(5, 3.5))
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     # Created grid over the range of x1 and x2 variables, get probabilities, predictions
     grid_points, grid_proba, grid_pred_as_matrix, w, x_, class_X, class_values = \
@@ -382,12 +383,13 @@ def decision_boundaries_univar(model, x: np.ndarray, y: np.ndarray,
                   yshift=.09,
                   sigma=.09,
                   colors: dict = None,
+                  figsize=(5, 1.2),
                   ax=None) -> None:
     """
     See comment and parameter descriptions for decision_boundaries() above.
     """
     if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(5, 1.2))
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     if isinstance(x, pd.Series):
         x = x.values

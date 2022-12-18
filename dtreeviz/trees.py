@@ -19,6 +19,7 @@ from dtreeviz.colors import adjust_colors
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
 from dtreeviz.utils import inline_svg_images, myround, scale_SVG
+from dtreeviz.interpretation import explain_prediction_plain_english, explain_prediction_sklearn_default
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [
@@ -109,7 +110,7 @@ def rtreeviz_univar(tree_model,
                     target_name: str = None,
                     tree_index: int = None,  # required in case of tree ensemble
                     ax=None,
-                    fontsize: int = 14,
+                    fontsize: int = 10,
                     show={'title', 'splits'},
                     split_linewidth=.5,
                     mean_linewidth=2,
@@ -136,7 +137,7 @@ def rtreeviz_bivar_heatmap(tree_model,
                            target_name: str = None,
                            tree_index: int = None,  # required in case of tree ensemble
                            ax=None,
-                           fontsize=14, ticks_fontsize=12, fontname="Arial",
+                           fontsize=10, ticks_fontsize=12, fontname="Arial",
                            show={'title'},
                            n_colors_in_map=100,
                            colors=None,
@@ -166,7 +167,7 @@ def rtreeviz_bivar_3D(tree_model,
                       class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                       tree_index: int = None,  # required in case of tree ensemble
                       ax=None,
-                      fontsize=14, ticks_fontsize=10, fontname="Arial",
+                      fontsize=10, ticks_fontsize=10, fontname="Arial",
                       azim=0, elev=0, dist=7,
                       show={'title'},
                       colors=None,
@@ -196,7 +197,7 @@ def ctreeviz_univar(tree_model,
                     target_name: str = None,
                     class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                     tree_index: int = None,  # required in case of tree ensemble
-                    fontsize=14, fontname="Arial", nbins=25, gtype='strip',
+                    fontsize=10, fontname="Arial", nbins=25, gtype='strip',
                     show={'title', 'legend', 'splits'},
                     colors=None,
                     ax=None):
@@ -220,7 +221,7 @@ def ctreeviz_bivar(tree_model,
                    target_name: str = None,
                    class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
                    tree_index: int = None,  # required in case of tree ensemble
-                   fontsize=14,
+                   fontsize=10,
                    fontname="Arial",
                    show={'title', 'legend', 'splits'},
                    colors=None,
@@ -300,7 +301,7 @@ def dtreeviz(tree_model,
              ticks_fontsize: int = 8,
              fontname: str = "Arial",
              title: str = None,
-             title_fontsize: int = 14,
+             title_fontsize: int = 10,
              colors: dict = None,
              cmap: str = "RdYlBu",
              scale=1.0
@@ -799,15 +800,16 @@ def viz_leaf_samples(tree_model,
                      x_data: (pd.DataFrame, np.ndarray) = None,
                      feature_names: List[str] = None,
                      tree_index: int = None,  # required in case of tree ensemble
-                     figsize: tuple = (10, 5),
                      display_type: str = "plot",
                      colors: dict = None,
-                     fontsize: int = 14,
+                     fontsize: int = 10,
                      fontname: str = "Arial",
                      grid: bool = False,
                      bins: int = 10,
                      min_samples: int = 0,
-                     max_samples: int = None):
+                     max_samples: int = None,
+                     figsize: tuple = (4, 3),
+                     ax=None):
     """Visualize the number of data samples from each leaf.
 
     Interpreting leaf samples can help us to see how the data is spread over the tree:
@@ -857,8 +859,6 @@ def viz_leaf_samples(tree_model,
         The list of feature variable's name
     :param tree_index: int, optional
         Required in case of tree ensemble. Specify the tree index to interpret.
-    :param figsize: tuple of int
-        The plot size
     :param display_type: str, optional
        'plot', 'text'. 'hist'
     :param colors: dict
@@ -875,6 +875,9 @@ def viz_leaf_samples(tree_model,
         Min number of samples for a leaf
     :param max_samples: int
         Max number of samples for a leaf
+    :param figsize: tuple of int
+        The plot size
+    :param ax: optional matplotlib "axes" to draw into
     """
 
     warnings.warn("viz_leaf_samples() function is deprecated starting from version 2.0. \n "
@@ -884,19 +887,20 @@ def viz_leaf_samples(tree_model,
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, None, feature_names, None, None,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
-    model.leaf_sizes(figsize, display_type, colors, fontsize,
-                     fontname, grid, bins, min_samples, max_samples)
+    model.leaf_sizes(display_type, colors, fontsize,
+                     fontname, grid, bins, min_samples, max_samples, figsize, ax)
 
 
 def viz_leaf_criterion(tree_model,
                        tree_index: int = None,  # required in case of tree ensemble,
-                       figsize: tuple = (10, 5),
                        display_type: str = "plot",
                        colors: dict = None,
-                       fontsize: int = 14,
+                       fontsize: int = 10,
                        fontname: str = "Arial",
                        grid: bool = False,
-                       bins: int = 10):
+                       bins: int = 10,
+                       figsize: tuple = (5, 3),
+                       ax=None):
     """Visualize leaves criterion.
 
     The most common criterion/impurity for tree regressors is “mse”, “friedman_mse”, “mae” and for tree classifers are
@@ -942,9 +946,11 @@ def viz_leaf_criterion(tree_model,
         True if we want to display the grid lines on the visualization
     :param bins:  int
         Number of histogram bins
+    :param figsize: tuple of int
+        The plot size
+    :param ax: optional matplotlib "axes" to draw into
     :return:
     """
-
     warnings.warn("viz_leaf_criterion() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.leaf_purity()",
                   DeprecationWarning, stacklevel=2)
@@ -952,7 +958,7 @@ def viz_leaf_criterion(tree_model,
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, None, None, None, None, None,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
-    model.leaf_purity(figsize, display_type, colors, fontsize, fontname, grid, bins)
+    model.leaf_purity(display_type, colors, fontsize, fontname, grid, bins, figsize, ax)
 
 
 def ctreeviz_leaf_samples(tree_model,
@@ -960,13 +966,14 @@ def ctreeviz_leaf_samples(tree_model,
                           y_data: (pd.DataFrame, np.ndarray) = None,
                           feature_names: List[str] = None,
                           tree_index: int = None,  # required in case of tree ensemble,
-                          figsize: tuple = (10, 5),
                           display_type: str = "plot",
                           plot_ylim: int = None,
                           colors: dict = None,
-                          fontsize: int = 14,
+                          fontsize: int = 10,
                           fontname: str = "Arial",
-                          grid: bool = False):
+                          grid: bool = False,
+                          figsize: tuple = (5, 3),
+                          ax=None):
     """Visualize the number of data samples by class for each leaf.
 
     It's a good way to see how classes are distributed in leaves. For example, you can observe that in some
@@ -998,8 +1005,6 @@ def ctreeviz_leaf_samples(tree_model,
         The list of feature variable's name
     :param tree_index: int, optional
         Required in case of tree ensemble. Specify the tree index to interpret.
-    :param figsize: tuple of int, optional
-        The plot size
     :param display_type: str, optional
        'plot' or 'text'
     :param plot_ylim: int, optional
@@ -1013,8 +1018,10 @@ def ctreeviz_leaf_samples(tree_model,
         Plot labels font name
     :param grid: bool
         True if we want to display the grid lines on the visualization
+    :param figsize: tuple of int
+        The plot size
+    :param ax: optional matplotlib "axes" to draw into
     """
-
     warnings.warn("ctreeviz_leaf_samples() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.ctree_leaf_distributions()",
                   DeprecationWarning, stacklevel=2)
@@ -1022,7 +1029,7 @@ def ctreeviz_leaf_samples(tree_model,
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, None, None,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
-    model.ctree_leaf_distributions(figsize, display_type, plot_ylim, colors, fontsize, fontname, grid)
+    model.ctree_leaf_distributions(display_type, plot_ylim, colors, fontsize, fontname, grid, figsize, ax)
 
 
 def _get_leaf_target_input(shadow_tree: ShadowDecTree,
@@ -1058,12 +1065,13 @@ def viz_leaf_target(tree_model,
                     show_leaf_labels: bool = True,
                     colors: dict = None,
                     markersize: int = 50,
-                    label_fontsize: int = 14,
+                    label_fontsize: int = 10,
                     fontname: str = "Arial",
                     precision: int = 1,
-                    figsize: tuple = None,
                     grid: bool = False,
-                    prediction_line_width: int = 2):
+                    prediction_line_width: int = 2,
+                    figsize: tuple = None,
+                    ax=None):
     """Visualize leaf target distribution for regression decision trees.
 
     We can call this function in two ways :
@@ -1097,14 +1105,14 @@ def viz_leaf_target(tree_model,
         Marker size in points.
     :param precision: int
         When displaying floating-point numbers, how many digits to display after the decimal point. Default is 1.
-    :param figsize: tuple
-        Sets the (width, height) of the plot.
     :param grid: bool
         True if we want to display the grid lines on the visualization
     :param prediction_line_width: int
         The width of prediction line.
+    :param figsize: tuple of int
+        The plot size
+    :param ax: optional matplotlib "axes" to draw into
     """
-
     warnings.warn("viz_leaf_target() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.rtree_leaf_distributions()",
                   DeprecationWarning, stacklevel=2)
@@ -1113,8 +1121,8 @@ def viz_leaf_target(tree_model,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
     model.rtree_leaf_distributions(show_leaf_labels,
-                                   colors, markersize, label_fontsize, fontname, precision, figsize, grid,
-                                   prediction_line_width)
+                                   colors, markersize, label_fontsize, fontname, precision, grid,
+                                   prediction_line_width, figsize, ax)
 
 
 def describe_node_sample(tree_model,
@@ -1235,22 +1243,24 @@ def model(model,
     shadow_tree = ShadowDecTree.get_shadow_tree(model, x_data, y_data, feature_names, target_name, class_names,
                                                 tree_index)
     dtreeviz_model = DTreeViz(shadow_tree)
-    return dtreeviz_model;
+    return dtreeviz_model
 
 
 class DTreeViz:
     def __init__(self, shahdow_tree: ShadowDecTree):
         self.shadow_tree = shahdow_tree
 
-    def leaf_sizes(self, figsize: tuple = (10, 5),
+    def leaf_sizes(self,
                    display_type: str = "plot",
                    colors: dict = None,
-                   fontsize: int = 14,
+                   fontsize: int = 10,
                    fontname: str = "Arial",
                    grid: bool = False,
                    bins: int = 10,
                    min_size: int = 0,
-                   max_size: int = None):
+                   max_size: int = None,
+                   figsize: tuple = (5, 3),
+                   ax=None):
         """Visualize leaf sizes.
 
         Interpreting leaf sizes can help us to see how the data is spread over the tree:
@@ -1278,8 +1288,6 @@ class DTreeViz:
                target_name=target, class_names=[0, 1])
         viz_model.leaf_sizes()
 
-        :param figsize: tuple of int
-            The plot size
         :param display_type: str, optional
            'plot', 'text'. 'hist'
         :param colors: dict
@@ -1296,14 +1304,17 @@ class DTreeViz:
             Min size for a leaf
         :param max_size: int
             Max size for a leaf
+        :param figsize: tuple of int
+            The plot size
+        :param ax: optional matplotlib "axes" to draw into
         """
 
         leaf_id, leaf_sizes = self.shadow_tree.get_leaf_sample_counts(min_size, max_size)
 
         if display_type == "plot":
             colors = adjust_colors(colors)
-
-            fig, ax = plt.subplots(figsize=figsize)
+            if ax is None:
+                fig, ax = plt.subplots(figsize=figsize)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
@@ -1324,8 +1335,8 @@ class DTreeViz:
                 print(f"leaf {leaf} has {samples} samples")
         elif display_type == "hist":
             colors = adjust_colors(colors)
-
-            fig, ax = plt.subplots(figsize=figsize)
+            if ax is None:
+             fig, ax = plt.subplots(figsize=figsize)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
@@ -1338,13 +1349,15 @@ class DTreeViz:
             ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.grid(b=grid)
 
-    def ctree_leaf_distributions(self, figsize: tuple = (10, 5),
+    def ctree_leaf_distributions(self,
                                  display_type: str = "plot",
                                  plot_ylim: int = None,
                                  colors: dict = None,
-                                 fontsize: int = 14,
+                                 fontsize: int = 10,
                                  fontname: str = "Arial",
-                                 grid: bool = False):
+                                 grid: bool = False,
+                                 figsize: tuple = (5, 3),
+                                 ax=None):
         """Visualize the distribution of classes for each leaf.
 
         It's a good way to see how classes are distributed in leaves. For example, you can observe that in some
@@ -1360,8 +1373,6 @@ class DTreeViz:
         viz_model.ctree_leaf_distributions()
 
 
-        :param figsize: tuple of int, optional
-            The plot size
         :param display_type: str, optional
            'plot' or 'text'
         :param plot_ylim: int, optional
@@ -1375,6 +1386,9 @@ class DTreeViz:
             Plot labels font name
         :param grid: bool
             True if we want to display the grid lines on the visualization
+        :param figsize: tuple of int
+            The plot size
+        :param ax: optional matplotlib "axes" to draw into
         """
 
         index, leaf_samples_0, leaf_samples_1 = self.shadow_tree.get_leaf_sample_counts_by_class()
@@ -1383,7 +1397,8 @@ class DTreeViz:
             colors = adjust_colors(colors)
             colors_classes = colors['classes'][self.shadow_tree.nclasses()]
 
-            fig, ax = plt.subplots(figsize=figsize)
+            if ax is None:
+                fig, ax = plt.subplots(figsize=figsize)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
@@ -1431,7 +1446,7 @@ class DTreeViz:
              ticks_fontsize: int = 8,
              fontname: str = "Arial",
              title: str = None,
-             title_fontsize: int = 14,
+             title_fontsize: int = 10,
              colors: dict = None,
              cmap: str = "RdYlBu",
              scale=1.0
@@ -1855,13 +1870,14 @@ class DTreeViz:
         return DTreeVizRender(dot, scale)
 
     def leaf_purity(self,
-                    figsize: tuple = (10, 5),
                     display_type: str = "plot",
                     colors: dict = None,
-                    fontsize: int = 14,
+                    fontsize: int = 10,
                     fontname: str = "Arial",
                     grid: bool = False,
-                    bins: int = 10):
+                    bins: int = 10,
+                    figsize: tuple = (5, 3),
+                    ax=None):
         """Visualize leaves criterion/purities.
 
         The most common criterion/purity for tree regressors is “mse”, “friedman_mse”, “mae” and for tree classifers are
@@ -1883,9 +1899,6 @@ class DTreeViz:
         - a hist visualizations with leaf criterion, when we want to have a general overview for all leaves
         - a text visualisations, useful when number of leaves is very large and visual interpretation becomes difficult.
 
-
-        :param figsize: tuple of int
-            The plot size
         :param display_type: str, optional
            'plot', 'text'. 'hist'
         :param colors: dict
@@ -1898,15 +1911,17 @@ class DTreeViz:
             True if we want to display the grid lines on the visualization
         :param bins:  int
             Number of histogram bins
+        :param figsize: tuple of int
+            The plot size
+        :param ax: optional matplotlib "axes" to draw into
         :return:
         """
-
         leaf_id, leaf_criteria = self.shadow_tree.get_leaf_criterion()
 
         if display_type == "plot":
             colors = adjust_colors(colors)
-
-            fig, ax = plt.subplots(figsize=figsize)
+            if ax is None:
+                fig, ax = plt.subplots(figsize=figsize)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
@@ -1928,8 +1943,8 @@ class DTreeViz:
                 print(f"leaf {leaf} has {criteria} {self.shadow_tree.criterion()}")
         elif display_type == "hist":
             colors = adjust_colors(colors)
-
-            fig, ax = plt.subplots(figsize=figsize)
+            if ax is None:
+                fig, ax = plt.subplots(figsize=figsize)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
@@ -1965,7 +1980,13 @@ class DTreeViz:
         return pd.DataFrame(self.shadow_tree.x_data, columns=self.shadow_tree.feature_names).iloc[
             node_samples[node_id]].describe()
 
-    def instance_feature_importance(self, x: np.ndarray):
+    def instance_feature_importance(self, x,
+                                   colors: dict = None,
+                                   fontsize: int = 10,
+                                   fontname: str = "Arial",
+                                   grid: bool = False,
+                                   figsize: tuple = (5, 3),
+                                   ax=None):
         """Prediction feature importance for a data instance.
 
 
@@ -1978,12 +1999,29 @@ class DTreeViz:
                target_name=target, class_names=[0, 1])
         viz_model.instance_feature_importance(x)
 
-        :param x: np.ndarray
-            The data instance for which we want to investigate prediction path
+        :param x: Instance example to make prediction
+        :param figsize: tuple of int, optional
+            The plot size
+        :param colors: dict, optional
+            The set of colors used for plotting
+        :param fontsize: int, optional
+            Plot labels fontsize
+        :param fontname: str, optional
+            Plot labels font name
+        :param grid: bool
+            True if we want to display the grid lines on the visualization
+        :param figsize: tuple of int
+            The plot size
+        :param ax: optional matplotlib "axes" to draw into
         """
+        explain_prediction_sklearn_default(self.shadow_tree, x,
+                                           colors,
+                                           fontsize,
+                                           fontname,
+                                           grid,
+                                           figsize,
+                                           ax)
 
-        explainer = prediction_path.get_prediction_explainer("sklearn_default")
-        explainer(self.shadow_tree, x)
 
     def explain_prediction_path(self, x: np.ndarray):
         """Prediction path interpretation for a data instance. There will be created a range of values for each feature,
@@ -2005,20 +2043,19 @@ class DTreeViz:
         :param x: np.ndarray
             The data instance for which we want to investigate prediction path
         """
-
-        explainer = prediction_path.get_prediction_explainer("plain_english")
-        return explainer(self.shadow_tree, x)
+        return explain_prediction_plain_english(self.shadow_tree, x)
 
     def rtree_leaf_distributions(self,
                                  show_leaf_labels: bool = True,
                                  colors: dict = None,
                                  markersize: int = 50,
-                                 label_fontsize: int = 14,
+                                 label_fontsize: int = 10,
                                  fontname: str = "Arial",
                                  precision: int = 1,
-                                 figsize: tuple = None,
                                  grid: bool = False,
-                                 prediction_line_width: int = 2):
+                                 prediction_line_width: int = 2,
+                                 figsize: tuple = None,
+                                 ax=None):
         """Visualize leaf target distributions for regression decision trees.
 
 
@@ -2040,18 +2077,20 @@ class DTreeViz:
             Font which is used for labels and text
         :param precision: int
             When displaying floating-point numbers, how many digits to display after the decimal point. Default is 1.
-        :param figsize: tuple
-            Sets the (width, height) of the plot.
         :param grid: bool
             True if we want to display the grid lines on the visualization
         :param prediction_line_width: int
             The width of prediction line.
+        :param figsize: tuple of int
+            The plot size
+        :param ax: optional matplotlib "axes" to draw into
         """
-
         x, y, means, means_range, y_labels = _get_leaf_target_input(self.shadow_tree, precision)
         colors = adjust_colors(colors)
-        figsize = (np.log(len(y_labels)), np.log(len(y_labels)) * 1.5) if figsize is None else figsize
-        fig, ax = plt.subplots(1, 1, figsize=figsize)
+        if ax is None:
+            if figsize is None:
+                figsize = (np.log(len(y_labels)), np.log(len(y_labels)) * 1.5) if figsize is None else figsize
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['bottom'].set_linewidth(.3)
@@ -2078,7 +2117,7 @@ class DTreeViz:
             ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
 
     def ctree_feature_space(self,
-                            fontsize=14,
+                            fontsize=10,
                             fontname="Arial",
                             nbins=25,
                             gtype='strip',
@@ -2096,7 +2135,7 @@ class DTreeViz:
             raise ValueError(f"ctree_feature_space supports a dataset with only one or two features."
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
 
-    def rtree_feature_space(self,  fontsize: int = 14, show={'title', 'splits'}, split_linewidth=.5,
+    def rtree_feature_space(self,  fontsize: int = 10, show={'title', 'splits'}, split_linewidth=.5,
                     mean_linewidth=2, markersize=15, colors=None, ticks_fontsize=12, fontname = "Arial",
                     n_colors_in_map=100, figsize=None, ax=None):
         if len(self.shadow_tree.feature_names) == 1:     # univar example
@@ -2108,7 +2147,7 @@ class DTreeViz:
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
 
     def rtree_feature_space3D(self,
-                              fontsize=14, ticks_fontsize=10, fontname="Arial",
+                              fontsize=10, ticks_fontsize=10, fontname="Arial",
                               azim=0, elev=0, dist=7,
                               show={'title'}, colors=None, markersize=15,
                               n_colors_in_map=100, figsize=None, ax=None):
@@ -2121,13 +2160,16 @@ class DTreeViz:
 
 
     def _ctreeviz_univar(self,
-                        fontsize=14, fontname="Arial", nbins=25, gtype='strip',
+                        fontsize=10, fontname="Arial", nbins=25, gtype='strip',
                         show={'title', 'legend', 'splits'},
                         colors=None,
                         figsize=None,
                         ax=None):
         if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=figsize)
+            if figsize:
+                fig, ax = plt.subplots(figsize=figsize)
+            else:
+                fig, ax = plt.subplots()
 
         x_data = self.shadow_tree.x_data.reshape(-1, )
         y_data = self.shadow_tree.y_data
@@ -2209,7 +2251,7 @@ class DTreeViz:
             for split in splits:
                 ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
 
-    def _ctreeviz_bivar(self, fontsize=14, fontname="Arial", show={'title', 'legend', 'splits'},
+    def _ctreeviz_bivar(self, fontsize=10, fontname="Arial", show={'title', 'legend', 'splits'},
                         colors=None,
                         figsize=None,
                         ax=None):
@@ -2218,7 +2260,10 @@ class DTreeViz:
         have lots of features but features lists indexes of 2 features to train tree with.
         """
         if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=figsize)
+            if figsize:
+                fig, ax = plt.subplots(figsize=figsize)
+            else:
+                fig, ax = plt.subplots()
 
         x_data = self.shadow_tree.x_data
         y_data = self.shadow_tree.y_data
@@ -2264,15 +2309,17 @@ class DTreeViz:
 
         return None
 
-    def _rtreeviz_univar(self, fontsize: int = 14, show={'title', 'splits'},
+    def _rtreeviz_univar(self, fontsize: int = 10, show={'title', 'splits'},
                         split_linewidth=.5, mean_linewidth=2, markersize=15, colors=None,
                         figsize=None, ax=None):
         x_data = self.shadow_tree.x_data.reshape(-1, )
         y_data = self.shadow_tree.y_data
 
-        # ax as first arg is not good now that it's optional but left for compatibility reasons
         if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=figsize)
+            if figsize:
+                fig, ax = plt.subplots(figsize=figsize)
+            else:
+                fig, ax = plt.subplots()
 
         if x_data is None or y_data is None:
             raise ValueError(f"x_train and y_train must not be none")
@@ -2320,7 +2367,7 @@ class DTreeViz:
         ax.set_xlabel(self.shadow_tree.feature_names, fontsize=fontsize, color=colors['axis_label'])
         ax.set_ylabel(self.shadow_tree.target_name, fontsize=fontsize, color=colors['axis_label'])
 
-    def _rtreeviz_bivar_heatmap(self, fontsize=14, ticks_fontsize=12, fontname="Arial",
+    def _rtreeviz_bivar_heatmap(self, fontsize=10, ticks_fontsize=12, fontname="Arial",
                                 show={'title'},
                                 n_colors_in_map=100,
                                 colors=None,
@@ -2332,7 +2379,10 @@ class DTreeViz:
         have lots of features but features lists indexes of 2 features to train tree with.
         """
         if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=figsize)
+            if figsize:
+                fig, ax = plt.subplots(figsize=figsize)
+            else:
+                fig, ax = plt.subplots()
 
         x_data = self.shadow_tree.x_data
         y_data = self.shadow_tree.y_data
@@ -2375,7 +2425,7 @@ class DTreeViz:
 
         return None
 
-    def _rtreeviz_bivar_3D(self, fontsize=14, ticks_fontsize=10, fontname="Arial",
+    def _rtreeviz_bivar_3D(self, fontsize=10, ticks_fontsize=10, fontname="Arial",
                           azim=0, elev=0, dist=7,
                           show={'title'}, colors=None, markersize=15,
                           n_colors_in_map=100, figsize=None, ax=None):

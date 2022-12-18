@@ -95,11 +95,12 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
 
 def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
                                        x: (pandas.core.series.Series, np.ndarray),
-                                       figsize: tuple = (10, 5),
                                        colors: dict = None,
-                                       fontsize: int = 14,
+                                       fontsize: int = 10,
                                        fontname: str = "Arial",
-                                       grid: bool = False):
+                                       grid: bool = False,
+                                       figsize: tuple = (10, 5),
+                                       ax=None):
     """
     Explain prediction calculating features importance using sklearn default algorithm : mean decrease in impurity
     (or gini importance) mechanism.
@@ -119,24 +120,32 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         Plot labels font name
     :param grid: bool
         True if we want to display the grid lines on the visualization
+    :param figsize: tuple of int
+        The plot size
+    :param ax: optional matplotlib "axes" to draw into
     :return:
         Prediction feature's importance plot
     """
-
     decision_node_path = shadow_tree.predict_path(x)
     decision_node_path = [node.id for node in decision_node_path]
 
     feature_path_importance = shadow_tree.get_feature_path_importance(decision_node_path)
-    return _get_feature_path_importance_sklearn_plot(shadow_tree.feature_names, feature_path_importance, figsize,
+    return _get_feature_path_importance_sklearn_plot(shadow_tree.feature_names, feature_path_importance,
                                                      colors, fontsize,
                                                      fontname,
-                                                     grid)
+                                                     grid,
+                                                     figsize,
+                                                     ax)
 
 
-def _get_feature_path_importance_sklearn_plot(features, feature_path_importance, figsize, colors, fontsize, fontname,
-                                              grid):
+def _get_feature_path_importance_sklearn_plot(features, feature_path_importance, colors, fontsize, fontname,
+                                              grid, figsize, ax):
     colors = adjust_colors(colors)
-    fig, ax = plt.subplots(figsize=figsize)
+    if ax is None:
+        if figsize:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig, ax = plt.subplots()
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_linewidth(.3)
