@@ -122,6 +122,7 @@ pip install dtreeviz             # install dtreeviz for sklearn
 pip install dtreeviz[xgboost]    # install XGBoost related dependency
 pip install dtreeviz[pyspark]    # install pyspark related dependency
 pip install dtreeviz[lightgbm]   # install LightGBM related dependency
+pip install dtreeviz[tensorflow_decision_forests]   # install tensorflow_decision_forests related dependency
 ```
 
 This should also pull in the `graphviz` Python library (>=0.9), which we are using for platform specific stuff.
