@@ -1,6 +1,9 @@
 from setuptools import setup, find_packages
 
-# python setup.py sdist upload
+# To RELEASE:
+#
+# $ python3 -m build
+# $ twine upload dist/dtreeviz-1.4.0.tar.gz dist/dtreeviz-1.4.0-py3-none-any.whl
 
 setup(
     name='dtreeviz',
