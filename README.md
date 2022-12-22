@@ -86,7 +86,7 @@ Sometimes it's helpful to see animations that change some of the hyper parameter
 
 ## Quick start
 
-See [Installation instructions](README.md#Install) then take a look at the specific [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks) for the supported ML library you're using:
+See [Installation instructions](README.md#Installation) then take a look at the specific [notebooks](https://github.com/parrt/dtreeviz/tree/master/notebooks) for the supported ML library you're using:
 
 * [sklearn-based examples](notebooks/dtreeviz_sklearn_visualisations.ipynb) ([colab](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/dtreeviz_sklearn_visualisations.ipynb))
 * [LightGBM-based examples](notebooks/dtreeviz_lightgbm_visualisations.ipynb) ([colab](https://colab.research.google.com/github/parrt/dtreeviz/blob/master/notebooks/dtreeviz_lightgbm_visualisations.ipynb))
