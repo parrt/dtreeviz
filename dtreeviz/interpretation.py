@@ -153,14 +153,17 @@ def _get_feature_path_importance_sklearn_plot(features, feature_path_importance,
     ax.set_xticks(range(0, len(features)))
     ax.set_xticklabels(features)
 
-    barcontainers = ax.bar(range(0, len(features)), feature_path_importance, color=colors["hist_bar"], lw=.3,
-                           align='center',
-                           width=1)
+    barcontainers = ax.barh(y=features,
+                            width=feature_path_importance,
+                            color=colors["hist_bar"],
+                            lw=.3,
+                            align='center',
+                            height=1)
     for rect in barcontainers.patches:
         rect.set_linewidth(.5)
         rect.set_edgecolor(colors['rect_edge'])
-    ax.set_xlabel("features", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_ylabel("feature importance", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel("features", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_xlabel("feature importance", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(b=grid)
 
     return ax
