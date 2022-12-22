@@ -2003,10 +2003,8 @@ class DTreeViz:
                                    ax=None):
         """Prediction feature importance for a data instance.
 
-
         There will be created a visualisation for feature importance, just like the popular one from sklearn library,
         but in this scencario, the feature importances will be calculated based only on the nodes from prediction path.
-
 
         Usage example :
         viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
