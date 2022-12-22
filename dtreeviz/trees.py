@@ -1314,7 +1314,10 @@ class DTreeViz:
         if display_type == "plot":
             colors = adjust_colors(colors)
             if ax is None:
-                fig, ax = plt.subplots(figsize=figsize)
+                if figsize:
+                    fig, ax = plt.subplots(figsize=figsize)
+                else:
+                    fig, ax = plt.subplots()
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
@@ -1336,7 +1339,10 @@ class DTreeViz:
         elif display_type == "hist":
             colors = adjust_colors(colors)
             if ax is None:
-             fig, ax = plt.subplots(figsize=figsize)
+                if figsize:
+                    fig, ax = plt.subplots(figsize=figsize)
+                else:
+                    fig, ax = plt.subplots()
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
@@ -1398,7 +1404,10 @@ class DTreeViz:
             colors_classes = colors['classes'][self.shadow_tree.nclasses()]
 
             if ax is None:
-                fig, ax = plt.subplots(figsize=figsize)
+                if figsize:
+                    fig, ax = plt.subplots(figsize=figsize)
+                else:
+                    fig, ax = plt.subplots()
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
@@ -1921,7 +1930,10 @@ class DTreeViz:
         if display_type == "plot":
             colors = adjust_colors(colors)
             if ax is None:
-                fig, ax = plt.subplots(figsize=figsize)
+                if figsize:
+                    fig, ax = plt.subplots(figsize=figsize)
+                else:
+                    fig, ax = plt.subplots()
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
@@ -1944,7 +1956,10 @@ class DTreeViz:
         elif display_type == "hist":
             colors = adjust_colors(colors)
             if ax is None:
-                fig, ax = plt.subplots(figsize=figsize)
+                if figsize:
+                    fig, ax = plt.subplots(figsize=figsize)
+                else:
+                    fig, ax = plt.subplots()
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
