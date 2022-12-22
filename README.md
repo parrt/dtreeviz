@@ -4,7 +4,7 @@
 
 A python library for decision tree visualization and model interpretation.  Decision trees are the fundamental building block of [gradient boosting machines](http://explained.ai/gradient-boosting/index.html) and [Random Forests](https://en.wikipedia.org/wiki/Random_forest)(tm), probably the two most popular machine learning models for structured data.  Visualizing decision trees is a tremendous aid when learning how these models work and when interpreting models. The visualizations are inspired by an educational animation by [R2D3](http://www.r2d3.us/); [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/). Please see [How to visualize decision trees](http://explained.ai/decision-tree-viz/index.html) for deeper discussion of our decision tree visualization library and the visual design decisions we made.
 
-Currently dtreeviz supports: [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest), [Spark MLlib](https://spark.apache.org/mllib/), [LightGBM](https://lightgbm.readthedocs.io/en/latest/), and [Tensorflow](https://www.tensorflow.org/decision_forests).  See [Installation instructions](README.md#Installation).
+Currently dtreeviz supports: [scikit-learn](https://scikit-learn.org/stable), [XGBoost](https://xgboost.readthedocs.io/en/latest), [Spark MLlib](https://spark.apache.org/mllib/), [LightGBM](https://lightgbm.readthedocs.io/en/latest/), and [Tensorflow](https://www.tensorflow.org/decision_forests).  See [Installation instructions](README.md#Install).
 
 ### Authors
 
@@ -66,7 +66,7 @@ Currently dtreeviz supports: [scikit-learn](https://scikit-learn.org/stable), [X
 
 #### Classification boundaries
 
-As a utility function, dtreeviz provides `dtreeviz.decision_boundaries()` that illustrates one and two-dimensional feature space for classifiers, including colors that represent probabilities, decision boundaries, and misclassified entities. This method is not limited to tree models, by the way, and should work with any model that answers method `predict_proba()`. That means any model from scikit-learn should work (but we also made it work with Keras models that define `predict()`). (As it does not work with trees specifically, the function does not use adaptors obtained from `dtreeviz.model()`.) See [classifier-decision-boundaries.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-decision-boundaries.ipynb).
+As part of dtreeviz, you can illustrate one and two-dimensional feature space for classifiers, including colors that represent probabilities, decision boundaries, and misclassified entities. This method works with any model that answers method `predict_proba()`, so any model from scikit-learn and Keras should work. See [classifier-decision-boundaries.ipynb](https://github.com/parrt/dtreeviz/tree/master/notebooks/classifier-decision-boundaries.ipynb).
 
 <table cellpadding="0" cellspacing="0">
 <tr>
@@ -271,6 +271,8 @@ for depicting hierarchical structures](https://www.cc.gatech.edu/~john.stasko/pa
 This project is licensed under the terms of the MIT license, see [LICENSE](LICENSE).
 
 ## Deploy
+
+Notes for parrt.
 
 OLD:
 
