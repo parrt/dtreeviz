@@ -1457,7 +1457,6 @@ class DTreeViz:
              title: str = None,
              title_fontsize: int = 10,
              colors: dict = None,
-             cmap: str = "RdYlBu",
              scale=1.0
              ) \
             -> DTreeVizRender:
