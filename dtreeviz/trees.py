@@ -104,8 +104,8 @@ warnings.formatwarning = _warning_on_one_line
 
 
 def rtreeviz_univar(tree_model,
-                    x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
-                    y_data: (pd.Series, np.ndarray) = None,
+                    X_train: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                    y_train: (pd.Series, np.ndarray) = None,
                     feature_names: List[str] = None,
                     target_name: str = None,
                     tree_index: int = None,  # required in case of tree ensemble
@@ -123,7 +123,7 @@ def rtreeviz_univar(tree_model,
 
     if isinstance(feature_names, str):
         feature_names = [feature_names]
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, None, tree_index)
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, None, tree_index)
 
     model = DTreeViz(shadow_tree)
     model.rtree_feature_space(ax=ax, fontsize=fontsize, show=show, split_linewidth=split_linewidth,
@@ -131,8 +131,8 @@ def rtreeviz_univar(tree_model,
 
 
 def rtreeviz_bivar_heatmap(tree_model,
-                           x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
-                           y_data: (pd.Series, np.ndarray) = None,
+                           X_train: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                           y_train: (pd.Series, np.ndarray) = None,
                            feature_names: List[str] = None,
                            target_name: str = None,
                            tree_index: int = None,  # required in case of tree ensemble
@@ -152,7 +152,7 @@ def rtreeviz_bivar_heatmap(tree_model,
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.rtree_feature_space(...)",
                   DeprecationWarning, stacklevel=2)
 
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, None,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, None,
                                                 tree_index)
 
     model = DTreeViz(shadow_tree)
@@ -160,8 +160,8 @@ def rtreeviz_bivar_heatmap(tree_model,
                               n_colors_in_map=n_colors_in_map, colors=colors, markersize=markersize)
 
 def rtreeviz_bivar_3D(tree_model,
-                      x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
-                      y_data: (pd.Series, np.ndarray) = None,
+                      X_train: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                      y_train: (pd.Series, np.ndarray) = None,
                       feature_names: List[str] = None,
                       target_name: str = None,
                       class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
@@ -183,7 +183,7 @@ def rtreeviz_bivar_3D(tree_model,
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.rtree_feature_space3D(...)",
                   DeprecationWarning, stacklevel=2)
 
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
 
     model = DTreeViz(shadow_tree)
@@ -191,8 +191,8 @@ def rtreeviz_bivar_3D(tree_model,
                       azim, elev, dist, show, colors, markersize, n_colors_in_map)
 
 def ctreeviz_univar(tree_model,
-                    x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
-                    y_data: (pd.Series, np.ndarray) = None,
+                    X_train: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                    y_train: (pd.Series, np.ndarray) = None,
                     feature_names: List[str] = None,
                     target_name: str = None,
                     class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
@@ -208,15 +208,15 @@ def ctreeviz_univar(tree_model,
 
     if isinstance(feature_names, str):
         feature_names = [feature_names]
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
     model.ctree_feature_space(fontsize, fontname, nbins, gtype, show, colors, ax)
 
 
 def ctreeviz_bivar(tree_model,
-                   x_data: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
-                   y_data: (pd.Series, np.ndarray) = None,
+                   X_train: (pd.DataFrame, np.ndarray) = None,  # dataframe with only one column
+                   y_train: (pd.Series, np.ndarray) = None,
                    feature_names: List[str] = None,
                    target_name: str = None,
                    class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
@@ -236,7 +236,7 @@ def ctreeviz_bivar(tree_model,
 
     if isinstance(feature_names, str):
         feature_names = [feature_names]
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
     model.ctree_feature_space(fontsize=fontsize,
@@ -278,8 +278,8 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
 
 
 def dtreeviz(tree_model,
-             x_data: (pd.DataFrame, np.ndarray) = None,
-             y_data: (pd.DataFrame, np.ndarray) = None,
+             X_train: (pd.DataFrame, np.ndarray) = None,
+             y_train: (pd.DataFrame, np.ndarray) = None,
              feature_names: List[str] = None,
              target_name: str = None,
              class_names: (Mapping[Number, str], List[str]) = None,  # required if classifier,
@@ -322,9 +322,9 @@ def dtreeviz(tree_model,
         - maintain backward compatibility
 
     :param tree_model: A DecisionTreeRegressor or DecisionTreeClassifier that has been
-                       fit to X_train, y_data.
+                       fit to X_train, y_train.
     :param X_train: A data frame or 2-D matrix of feature vectors used to train the model.
-    :param y_data: A pandas Series or 1-D vector with target or classes values. These values should be numeric types.
+    :param y_train: A pandas Series or 1-D vector with target or classes values. These values should be numeric types.
     :param feature_names: A list of the feature names.
     :param target_name: The name of the target variable.
     :param class_names: [For classifiers] A dictionary or list of strings mapping class
@@ -370,7 +370,7 @@ def dtreeviz(tree_model,
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.view()",
                   DeprecationWarning, stacklevel=2)
 
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
     return model.view(precision, orientation,
@@ -797,7 +797,7 @@ def get_num_bins(histtype, n_classes):
 
 
 def viz_leaf_samples(tree_model,
-                     x_data: (pd.DataFrame, np.ndarray) = None,
+                     X_train: (pd.DataFrame, np.ndarray) = None,
                      feature_names: List[str] = None,
                      tree_index: int = None,  # required in case of tree ensemble
                      display_type: str = "plot",
@@ -845,15 +845,15 @@ def viz_leaf_samples(tree_model,
     - If display_type = 'hist' it will show leaf sample histogram. Useful when you want to easily see the general
     distribution of leaf samples.
 
-    Note : If the x_data and y_data are the datasets used to trained the model, then we will investigate the tree model
-    as it was trained. We can give other x_data and y_data datasets, ex. validation dataset, to see how the new data is
+    Note : If the X_train and y_train are the datasets used to trained the model, then we will investigate the tree model
+    as it was trained. We can give other X_train and y_train datasets, ex. validation dataset, to see how the new data is
     spread over the tree.
 
     :param tree_model: tree.DecisionTreeRegressor, tree.DecisionTreeClassifier, xgboost.core.Booster,
                 dtreeviz.models.sklearn_decision_trees.ShadowSKDTree,
                 dtreeviz.models.xgb_decision_trees.ShadowXGBDTree
         The tree model or dtreeviz shadow tree model to interpret
-    :param x_data: pd.DataFrame, np.ndarray
+    :param X_train: pd.DataFrame, np.ndarray
         The dataset based on which we want to make this visualisation.
     :param feature_names: List[str], optional
         The list of feature variable's name
@@ -884,7 +884,7 @@ def viz_leaf_samples(tree_model,
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.leaf_sizes()",
                   DeprecationWarning, stacklevel=2)
 
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, None, feature_names, None, None,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, None, feature_names, None, None,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
     model.leaf_sizes(display_type, colors, fontsize,
@@ -962,8 +962,8 @@ def viz_leaf_criterion(tree_model,
 
 
 def ctreeviz_leaf_samples(tree_model,
-                          x_data: (pd.DataFrame, np.ndarray) = None,
-                          y_data: (pd.DataFrame, np.ndarray) = None,
+                          X_train: (pd.DataFrame, np.ndarray) = None,
+                          y_train: (pd.DataFrame, np.ndarray) = None,
                           feature_names: List[str] = None,
                           tree_index: int = None,  # required in case of tree ensemble,
                           display_type: str = "plot",
@@ -997,9 +997,9 @@ def ctreeviz_leaf_samples(tree_model,
                 dtreeviz.models.sklearn_decision_trees.ShadowSKDTree,
                 dtreeviz.models.xgb_decision_trees.ShadowXGBDTree
         The tree model or dtreeviz shadow tree model to interpret
-    :param x_data: pd.DataFrame, np.ndarray
+    :param X_train: pd.DataFrame, np.ndarray
         The dataset based on which we want to make this visualisation.
-    :param y_data: pd.Series, np.ndarray
+    :param y_train: pd.Series, np.ndarray
         Target variable
     :param feature_names: List[str], optional
         The list of feature variable's name
@@ -1026,7 +1026,7 @@ def ctreeviz_leaf_samples(tree_model,
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.ctree_leaf_distributions()",
                   DeprecationWarning, stacklevel=2)
 
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, None, None,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, None, None,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
     model.ctree_leaf_distributions(display_type, plot_ylim, colors, fontsize, fontname, grid, figsize, ax)
@@ -1042,7 +1042,7 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
     sigma = .05
     for i, node in enumerate(shadow_tree.leaves):
         leaf_index_sample = node.samples()
-        leaf_target = shadow_tree.y_data[leaf_index_sample]
+        leaf_target = shadow_tree.y_train[leaf_index_sample]
         leaf_target_mean = np.mean(leaf_target)
         np.random.seed(0)  # generate the same list of random values for each call
         X = np.random.normal(i, sigma, size=len(leaf_target))
@@ -1057,8 +1057,8 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
 
 
 def viz_leaf_target(tree_model,
-                    x_data: (pd.DataFrame, np.ndarray) = None,
-                    y_data: (pd.DataFrame, np.ndarray) = None,
+                    X_train: (pd.DataFrame, np.ndarray) = None,
+                    y_train: (pd.DataFrame, np.ndarray) = None,
                     feature_names: List[str] = None,
                     target_name: str = None,
                     tree_index: int = None,  # required in case of tree ensemble,
@@ -1089,9 +1089,9 @@ def viz_leaf_target(tree_model,
                 dtreeviz.models.sklearn_decision_trees.ShadowSKDTree,
                 dtreeviz.models.xgb_decision_trees.ShadowXGBDTree
         The tree model or dtreeviz shadow tree model to interpret
-    :param x_data: pd.DataFrame, np.ndarray
+    :param X_train: pd.DataFrame, np.ndarray
         The dataset based on which we want to make this visualisation.
-    :param y_data: pd.Series, np.ndarray
+    :param y_train: pd.Series, np.ndarray
         Target variable values
     :param feature_names: List[str], optional
         The list of feature variable's name
@@ -1117,7 +1117,7 @@ def viz_leaf_target(tree_model,
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.rtree_leaf_distributions()",
                   DeprecationWarning, stacklevel=2)
 
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, None,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, None,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
     model.rtree_leaf_distributions(show_leaf_labels,
@@ -1127,7 +1127,7 @@ def viz_leaf_target(tree_model,
 
 def describe_node_sample(tree_model,
                          node_id: int,
-                         x_data: (pd.DataFrame, np.ndarray) = None,
+                         X_train: (pd.DataFrame, np.ndarray) = None,
                          feature_names: List[str] = None,
                          tree_index: int = None,  # required in case of tree ensemble
                          ):
@@ -1143,7 +1143,7 @@ def describe_node_sample(tree_model,
             - ex. shadow_dtree = ShadowSKDTree(tree_model, dataset[features], dataset[target], features, target)
         - the main advantage is that we can use the shadow_tree for other visualisations methods as well
     2. by using sklearn, xgboost tree
-        ex. describe_node_sample(tree_classifier, node_id=1, x_data=dataset[features], feature_names=features)
+        ex. describe_node_sample(tree_classifier, node_id=1, X_train=dataset[features], feature_names=features)
         - maintain backward compatibility
 
     :param tree_model: tree.DecisionTreeRegressor, tree.DecisionTreeClassifier, xgboost.core.Booster,
@@ -1152,7 +1152,7 @@ def describe_node_sample(tree_model,
         The tree model or dtreeviz shadow tree model to interpret
     :param node_id: int
         Node id to interpret
-    :param x_data: pd.DataFrame, np.ndarray
+    :param X_train: pd.DataFrame, np.ndarray
         The dataset based on which we want to make this visualisation.
     :param feature_names: List[str], optional
         The list of feature variable's name
@@ -1166,15 +1166,15 @@ def describe_node_sample(tree_model,
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.node_stats()",
                   DeprecationWarning, stacklevel=2)
 
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, None, feature_names, None, None,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, None, feature_names, None, None,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
     return model.node_stats(node_id)
 
 def explain_prediction_path(tree_model,
                             x: np.ndarray,
-                            x_data=None,
-                            y_data=None,  # required for XGBoost
+                            X_train=None,
+                            y_train=None,  # required for XGBoost
                             explanation_type: ('plain_english', 'sklearn_default') = "plain_english",
                             feature_names: List[str] = None,
                             target_name: str = None,
@@ -1200,7 +1200,7 @@ def explain_prediction_path(tree_model,
         The tree model or dtreeviz shadow tree model to interpret
     :param x: np.ndarray
         The data instance for which we want to investigate prediction path
-    :param y_data: pd.Series, np.ndarray
+    :param y_train: pd.Series, np.ndarray
         Target variable values
     :param explanation_type: plain_english, sklearn_default
         Specify the interpretation type
@@ -1215,7 +1215,7 @@ def explain_prediction_path(tree_model,
 
     """
 
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, x_data, y_data, feature_names, None, class_names,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, None, class_names,
                                                 tree_index)
     model = DTreeViz(shadow_tree)
 
@@ -1233,14 +1233,14 @@ def explain_prediction_path(tree_model,
 
 
 def model(model,
-          x_data,
-          y_data,
+          X_train,
+          y_train,
           tree_index: int = None,
           feature_names: List[str] = None,
           target_name: str = None,
           class_names: (List[str], Mapping[int, str]) = None
           ):
-    shadow_tree = ShadowDecTree.get_shadow_tree(model, x_data, y_data, feature_names, target_name, class_names,
+    shadow_tree = ShadowDecTree.get_shadow_tree(model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
     dtreeviz_model = DTreeViz(shadow_tree)
     return dtreeviz_model
@@ -1284,7 +1284,7 @@ class DTreeViz:
         distribution of leaf sizes.
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
                target_name=target, class_names=[0, 1])
         viz_model.leaf_sizes()
 
@@ -1374,7 +1374,7 @@ class DTreeViz:
         Right now it supports only binary classifications decision trees.
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
                target_name=target, class_names=[0, 1])
         viz_model.ctree_leaf_distributions()
 
@@ -1466,7 +1466,7 @@ class DTreeViz:
 
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
                target_name=target, class_names=[0, 1])
         viz_model.view()
 
@@ -1705,26 +1705,26 @@ class DTreeViz:
                         colors=colors,
                         fontname=fontname)
 
-        X_data = self.shadow_tree.x_data
-        y_data = self.shadow_tree.y_data
-        if isinstance(X_data, pd.DataFrame):
-            X_data = X_data.values
-        if isinstance(y_data, pd.Series):
-            y_data = y_data.values
-        if y_data.dtype == np.dtype(object):
+        X_train = self.shadow_tree.X_train
+        y_train = self.shadow_tree.y_train
+        if isinstance(X_train, pd.DataFrame):
+            X_train = X_train.values
+        if isinstance(y_train, pd.Series):
+            y_train = y_train.values
+        if y_train.dtype == np.dtype(object):
             try:
-                y_data = y_data.astype('float')
+                y_train = y_train.astype('float')
             except ValueError as e:
-                raise ValueError('y_data needs to consist only of numerical values. {}'.format(e))
-            if len(y_data.shape) != 1:
-                raise ValueError('y_data must a one-dimensional list or Pandas Series, got: {}'.format(y_data.shape))
+                raise ValueError('y_train needs to consist only of numerical values. {}'.format(e))
+            if len(y_train.shape) != 1:
+                raise ValueError('y_train must a one-dimensional list or Pandas Series, got: {}'.format(y_train.shape))
 
-        y_range = (min(y_data) * 1.03, max(y_data) * 1.03)  # same y axis for all
+        y_range = (min(y_train) * 1.03, max(y_train) * 1.03)  # same y axis for all
 
         # Find max height (count) for any bar in any node
         if self.shadow_tree.is_classifier():
             nbins = get_num_bins(histtype, n_classes)
-            node_heights = self.shadow_tree.get_split_node_heights(X_data, y_data, nbins=nbins)
+            node_heights = self.shadow_tree.get_split_node_heights(X_train, y_train, nbins=nbins)
 
         internal = []
         for node in get_internal_nodes():
@@ -1733,7 +1733,7 @@ class DTreeViz:
                     continue
             if fancy:
                 if self.shadow_tree.is_classifier():
-                    class_split_viz(node, X_data, y_data,
+                    class_split_viz(node, X_train, y_train,
                                     filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
                                     precision=precision,
                                     colors={**color_map, **colors},
@@ -1745,7 +1745,7 @@ class DTreeViz:
                                     fontname=fontname,
                                     highlight_node=node.id in highlight_path)
                 else:
-                    regr_split_viz(node, X_data, y_data,
+                    regr_split_viz(node, X_train, y_train,
                                    filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
                                    target_name=self.shadow_tree.target_name,
                                    y_range=y_range,
@@ -1778,7 +1778,7 @@ class DTreeViz:
             else:
                 # for now, always gen leaf
                 regr_leaf_viz(node,
-                              y_data,
+                              y_train,
                               target_name=self.shadow_tree.target_name,
                               filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
                               y_range=y_range,
@@ -1898,7 +1898,7 @@ class DTreeViz:
 
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
                target_name=target, class_names=[0, 1])
         viz_model.leaf_purity()
 
@@ -1980,7 +1980,7 @@ class DTreeViz:
 
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
                target_name=target, class_names=[0, 1])
         viz_model.node_stats(node_id=10)
 
@@ -1991,7 +1991,7 @@ class DTreeViz:
         """
 
         node_samples = self.shadow_tree.get_node_samples()
-        return pd.DataFrame(self.shadow_tree.x_data, columns=self.shadow_tree.feature_names).iloc[
+        return pd.DataFrame(self.shadow_tree.X_train, columns=self.shadow_tree.feature_names).iloc[
             node_samples[node_id]].describe()
 
     def instance_feature_importance(self, x,
@@ -2007,7 +2007,7 @@ class DTreeViz:
         but in this scencario, the feature importances will be calculated based only on the nodes from prediction path.
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
                target_name=target, class_names=[0, 1])
         viz_model.instance_feature_importance(x)
 
@@ -2048,7 +2048,7 @@ class DTreeViz:
             0.5 <= Embarked_label
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
                target_name=target, class_names=[0, 1])
         viz_model.explain_prediction_path(x)
 
@@ -2072,7 +2072,7 @@ class DTreeViz:
 
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, x_data=dataset[features], y_data=dataset[target], feature_names=features,
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
                target_name=target, class_names=[0, 1])
         viz_model.rtree_leaf_distributions()
 
@@ -2183,11 +2183,11 @@ class DTreeViz:
             else:
                 fig, ax = plt.subplots()
 
-        x_data = self.shadow_tree.x_data.reshape(-1, )
-        y_data = self.shadow_tree.y_data
+        X_train = self.shadow_tree.X_train.reshape(-1, )
+        y_train = self.shadow_tree.y_train
         colors = adjust_colors(colors)
         n_classes = self.shadow_tree.nclasses()
-        overall_feature_range = (np.min(x_data), np.max(x_data))
+        overall_feature_range = (np.min(X_train), np.max(X_train))
         class_values = self.shadow_tree.classes()
         color_values = colors['classes'][n_classes]
         color_map = {v: color_values[i] for i, v in enumerate(class_values)}
@@ -2201,7 +2201,7 @@ class DTreeViz:
         ax.spines['left'].set_visible(False)
         ax.spines['bottom'].set_linewidth(.3)
 
-        X_hist = [x_data[y_data == cl] for cl in class_values]
+        X_hist = [X_train[y_train == cl] for cl in class_values]
 
         if gtype == 'barstacked':
             bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
@@ -2243,7 +2243,7 @@ class DTreeViz:
             for i in range(len(bins) - 1):
                 left = bins[i]
                 right = bins[i + 1]
-                inrange = y_data[(x_data >= left) & (x_data <= right)]
+                inrange = y_train[(X_train >= left) & (X_train <= right)]
                 values, counts = np.unique(inrange, return_counts=True)
                 pred = values[np.argmax(counts)]
                 rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
@@ -2277,8 +2277,8 @@ class DTreeViz:
             else:
                 fig, ax = plt.subplots()
 
-        x_data = self.shadow_tree.x_data
-        y_data = self.shadow_tree.y_data
+        X_train = self.shadow_tree.X_train
+        y_train = self.shadow_tree.y_train
         colors = adjust_colors(colors)
         tesselation = self.shadow_tree.tesselation()
         n_classes = self.shadow_tree.nclasses()
@@ -2297,7 +2297,7 @@ class DTreeViz:
                 ax.add_patch(rect)
 
         dot_w = 25
-        X_hist = [x_data[y_data == cl] for cl in class_values]
+        X_hist = [X_train[y_train == cl] for cl in class_values]
         for i, h in enumerate(X_hist):
             ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
                        edgecolors=colors['scatter_edge'], lw=.3)
@@ -2324,8 +2324,8 @@ class DTreeViz:
     def _rtreeviz_univar(self, fontsize: int = 10, show={'title', 'splits'},
                         split_linewidth=.5, mean_linewidth=2, markersize=15, colors=None,
                         figsize=None, ax=None):
-        x_data = self.shadow_tree.x_data.reshape(-1, )
-        y_data = self.shadow_tree.y_data
+        X_train = self.shadow_tree.X_train.reshape(-1, )
+        y_train = self.shadow_tree.y_train
 
         if ax is None:
             if figsize:
@@ -2333,13 +2333,13 @@ class DTreeViz:
             else:
                 fig, ax = plt.subplots()
 
-        if x_data is None or y_data is None:
+        if X_train is None or y_train is None:
             raise ValueError(f"x_train and y_train must not be none")
 
         colors = adjust_colors(colors)
 
-        y_range = (min(y_data), max(y_data))  # same y axis for all
-        overall_feature_range = (np.min(x_data), np.max(x_data))
+        y_range = (min(y_train), max(y_train))  # same y axis for all
+        overall_feature_range = (np.min(X_train), np.max(X_train))
 
         splits = []
         for node in self.shadow_tree.internal:
@@ -2351,10 +2351,10 @@ class DTreeViz:
         for i in range(len(bins) - 1):
             left = bins[i]
             right = bins[i + 1]
-            inrange = y_data[(x_data >= left) & (x_data <= right)]
+            inrange = y_train[(X_train >= left) & (X_train <= right)]
             means.append(np.mean(inrange))
 
-        ax.scatter(x_data, y_data, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'],
+        ax.scatter(X_train, y_train, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'],
                    s=markersize,
                    edgecolor=colors['scatter_edge'], lw=.3)
 
@@ -2396,12 +2396,12 @@ class DTreeViz:
             else:
                 fig, ax = plt.subplots()
 
-        x_data = self.shadow_tree.x_data
-        y_data = self.shadow_tree.y_data
+        X_train = self.shadow_tree.X_train
+        y_train = self.shadow_tree.y_train
 
         colors = adjust_colors(colors)
 
-        y_lim = np.min(y_data), np.max(y_data)
+        y_lim = np.min(y_train), np.max(y_train)
         y_range = y_lim[1] - y_lim[0]
         color_map = [rgb2hex(c.rgb, force_long=True) for c in
                      Color(colors['color_map_min']).range_to(Color(colors['color_map_max']),
@@ -2419,8 +2419,8 @@ class DTreeViz:
                                      edgecolor=colors['edge'], facecolor=color)
             ax.add_patch(rect)
 
-        color_map = [color_map[int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))] for y in y_data]
-        x, y, z = x_data[:, 0], x_data[:, 1], y_data
+        color_map = [color_map[int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))] for y in y_train]
+        x, y, z = X_train[:, 0], X_train[:, 1], y_train
         ax.scatter(x, y, marker='o', c=color_map, edgecolor=colors['scatter_edge'], lw=.3, s=markersize)
 
         ax.set_xlabel(f"{self.shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname,
@@ -2442,8 +2442,8 @@ class DTreeViz:
                           show={'title'}, colors=None, markersize=15,
                           n_colors_in_map=100, figsize=None, ax=None):
 
-        x_data = self.shadow_tree.x_data
-        y_data = self.shadow_tree.y_data
+        X_train = self.shadow_tree.X_train
+        y_train = self.shadow_tree.y_train
 
         if ax is None:
             if figsize:
@@ -2468,16 +2468,16 @@ class DTreeViz:
                             color=color_spectrum[y_to_color_index(node.prediction())],
                             edgecolor=colors['edge'], lw=.3)
 
-        y_lim = np.min(y_data), np.max(y_data)
+        y_lim = np.min(y_train), np.max(y_train)
         color_spectrum = Color(colors['color_map_min']).range_to(Color(colors['color_map_max']), n_colors_in_map)
         color_spectrum = [rgb2hex(c.rgb, force_long=True) for c in color_spectrum]
-        y_colors = [color_spectrum[y_to_color_index(y)] for y in y_data]
+        y_colors = [color_spectrum[y_to_color_index(y)] for y in y_train]
         tesselation = self.shadow_tree.tesselation()
 
         for node, bbox in tesselation:
             plane(node, bbox, color_spectrum)
 
-        x, y, z = x_data[:, 0], x_data[:, 1], y_data
+        x, y, z = X_train[:, 0], X_train[:, 1], y_train
         ax.scatter(x, y, z, marker='o', alpha=colors['scatter_marker_alpha'], edgecolor=colors['scatter_edge'],
                    lw=.3, c=y_colors, s=markersize)
 

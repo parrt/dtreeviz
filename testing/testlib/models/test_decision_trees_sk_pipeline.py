@@ -38,15 +38,15 @@ def shadow_dec_tree(dec_tree_pipeline, dataset) -> ShadowSKDTree:
     features = ["Pclass", "Age", "Fare", "Sex_label", "Cabin_label", "Embarked_label"]
     target = "Survived"
 
-    tree_model, x_data, feature_names = extract_params_from_pipeline(
+    tree_model, X_train, feature_names = extract_params_from_pipeline(
         pipeline=dec_tree_pipeline,
-        x_data=dataset[features],
+        X_train=dataset[features],
         feature_names=features
     )
 
     return ShadowSKDTree(
         tree_model=tree_model,
-        x_data=x_data,
+        X_train=X_train,
         y_data=dataset[target],
         feature_names=feature_names,
         class_names=list(dec_tree_pipeline.classes_)

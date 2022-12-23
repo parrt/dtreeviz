@@ -9,14 +9,14 @@ from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 
 class ShadowSKDTree(ShadowDecTree):
     def __init__(self, tree_model,
-                 x_data,
-                 y_data,
+                 X_train,
+                 y_train,
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
 
         self.node_to_samples = None
-        super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
+        super().__init__(tree_model, X_train, y_train, feature_names, target_name, class_names)
 
     def is_fit(self):
         return getattr(self.tree_model, 'tree_') is not None
@@ -26,8 +26,8 @@ class ShadowSKDTree(ShadowDecTree):
 
     def get_class_weights(self):
         if self.is_classifier():
-            unique_target_values = np.unique(self.y_data)
-            return compute_class_weight(self.tree_model.class_weight, classes=unique_target_values, y=self.y_data)
+            unique_target_values = np.unique(self.y_train)
+            return compute_class_weight(self.tree_model.class_weight, classes=unique_target_values, y=self.y_train)
 
     def get_thresholds(self):
         return self.tree_model.tree_.threshold
@@ -52,7 +52,7 @@ class ShadowSKDTree(ShadowDecTree):
         if self.node_to_samples is not None:
             return self.node_to_samples
 
-        dec_paths = self.tree_model.decision_path(self.x_data)
+        dec_paths = self.tree_model.decision_path(self.X_train)
 
         # each sample has path taken down tree
         node_to_samples = defaultdict(list)
@@ -66,7 +66,7 @@ class ShadowSKDTree(ShadowDecTree):
 
     def get_split_samples(self, id):
         samples = np.array(self.get_node_samples()[id])
-        node_X_data = self.x_data[samples, self.get_node_feature(id)]
+        node_X_data = self.X_train[samples, self.get_node_feature(id)]
         split = self.get_node_split(id)
 
         left = np.nonzero(node_X_data <= split)[0]
@@ -129,7 +129,7 @@ class ShadowSKDTree(ShadowDecTree):
         return self.tree_model.max_depth
 
     def get_score(self):
-        return self.tree_model.score(self.x_data, self.y_data)
+        return self.tree_model.score(self.X_train, self.y_train)
 
     def get_min_samples_leaf(self):
         return self.tree_model.min_samples_leaf
