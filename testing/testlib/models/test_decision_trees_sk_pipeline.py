@@ -47,7 +47,7 @@ def shadow_dec_tree(dec_tree_pipeline, dataset) -> ShadowSKDTree:
     return ShadowSKDTree(
         tree_model=tree_model,
         X_train=X_train,
-        y_data=dataset[target],
+        y_train=dataset[target],
         feature_names=feature_names,
         class_names=list(dec_tree_pipeline.classes_)
     )
