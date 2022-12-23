@@ -129,7 +129,7 @@ This should also pull in the `graphviz` Python library (>=0.9), which we are usi
 
 **Limitations.** Only svg files can be generated at this time, which reduces dependencies and dramatically simplifies install process.
 
-Please email [Terence](mailto:parrt@cs.usfca.edu) with any helpful notes on making dtreeviz work (better) on other platforms. Thanks! 
+Please email [Terence](mailto:parrt@antlr.org) with any helpful notes on making dtreeviz work (better) on other platforms. Thanks! 
 
 For your specific platform, please see the following subsections.
 

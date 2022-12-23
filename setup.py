@@ -19,7 +19,7 @@ setup(
                     'tensorflow_decision_forests':['tensorflow_decision_forests']},
     python_requires='>=3.6',
     author='Terence Parr, Tudor Lapusan, and Prince Grover',
-    author_email='parrt@cs.usfca.edu',
+    author_email='parrt@antlr.org',
     description='A Python 3 library for sci-kit learn, XGBoost, LightGBM, Spark, and TensorFlow decision tree visualization',
     long_description='README.md',
     keywords='machine-learning data structures trees visualization',
