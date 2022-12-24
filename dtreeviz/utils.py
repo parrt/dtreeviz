@@ -1,6 +1,7 @@
 import re
 import xml.etree.cElementTree as ET
 import pandas as pd
+from numpy import ndarray
 from numbers import Number
 from typing import Tuple, Sequence
 
@@ -156,6 +157,8 @@ def _normalize_class_names(class_names, nclasses):
         return class_names
     elif isinstance(class_names, Sequence):
         return {i: n for i, n in enumerate(class_names)}
+    elif isinstance(class_names, ndarray):
+        return list(class_names)
     else:
         raise Exception(f"class_names must be dict or sequence, not {class_names.__class__.__name__}")
 

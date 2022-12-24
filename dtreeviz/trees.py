@@ -62,7 +62,7 @@ class DTreeVizRender:
         self.show()
 
     def show(self):
-        """Pop up a new window to display the (SVG) dtreeview view; images appear inline for jupyter notebooks."""
+        """Pop up a new window to display the (SVG) dtreeview view."""
         svgfilename = self.save_svg()
         graphviz.backend.view(svgfilename)
 
