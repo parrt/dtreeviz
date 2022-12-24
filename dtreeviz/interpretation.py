@@ -99,7 +99,7 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
                                        fontsize: int = 10,
                                        fontname: str = "Arial",
                                        grid: bool = False,
-                                       figsize: tuple = (10, 5),
+                                       figsize: tuple = None,
                                        ax=None):
     """
     Explain prediction calculating features importance using sklearn default algorithm : mean decrease in impurity

@@ -815,7 +815,7 @@ def viz_leaf_samples(tree_model,
                      bins: int = 10,
                      min_samples: int = 0,
                      max_samples: int = None,
-                     figsize: tuple = (4, 3),
+                     figsize: tuple = None,
                      ax=None):
     """Visualize the number of data samples from each leaf.
 
@@ -906,7 +906,7 @@ def viz_leaf_criterion(tree_model,
                        fontname: str = "Arial",
                        grid: bool = False,
                        bins: int = 10,
-                       figsize: tuple = (5, 3),
+                       figsize: tuple = None,
                        ax=None):
     """Visualize leaves criterion.
 
@@ -979,7 +979,7 @@ def ctreeviz_leaf_samples(tree_model,
                           fontsize: int = 10,
                           fontname: str = "Arial",
                           grid: bool = False,
-                          figsize: tuple = (5, 3),
+                          figsize: tuple = None,
                           ax=None):
     """Visualize the number of data samples by class for each leaf.
 
@@ -1266,7 +1266,7 @@ class DTreeViz:
                    bins: int = 10,
                    min_size: int = 0,
                    max_size: int = None,
-                   figsize: tuple = (5, 3),
+                   figsize: tuple = None,
                    ax=None):
         """Visualize leaf sizes.
 
@@ -1369,7 +1369,7 @@ class DTreeViz:
                                  fontsize: int = 10,
                                  fontname: str = "Arial",
                                  grid: bool = False,
-                                 figsize: tuple = (5, 3),
+                                 figsize: tuple = None,
                                  ax=None):
         """Visualize the distribution of classes for each leaf.
 
@@ -1891,7 +1891,7 @@ class DTreeViz:
                     fontname: str = "Arial",
                     grid: bool = False,
                     bins: int = 10,
-                    figsize: tuple = (5, 3),
+                    figsize: tuple = None,
                     ax=None):
         """Visualize leaves criterion/purities.
 
@@ -2006,7 +2006,7 @@ class DTreeViz:
                                    fontsize: int = 10,
                                    fontname: str = "Arial",
                                    grid: bool = False,
-                                   figsize: tuple = (5, 3),
+                                   figsize: tuple = None,
                                    ax=None):
         """Prediction feature importance for a data instance.
 
