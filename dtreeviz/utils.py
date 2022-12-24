@@ -160,15 +160,15 @@ def _normalize_class_names(class_names, nclasses):
         raise Exception(f"class_names must be dict or sequence, not {class_names.__class__.__name__}")
 
 
-def extract_params_from_pipeline(pipeline, x_data, feature_names):
+def extract_params_from_pipeline(pipeline, X_train, feature_names):
     """
     Extracts necessary parameters from an :py:class:`sklearn.pipeline.Pipeline` to pass into
     :py:class:`dtreeviz.models.sklearn_decision_trees.ShadowSKDTree`.
 
     Args:
         pipeline (sklearn.pipeline.Pipeline): An SKlearn pipeline whose last component is a decision tree model.
-        x_data (numpy.ndarray): The (X)-input data on which the pipeline was fitted on.
-        feature_names (list): List of names of the features in `x_data`.
+        X_train (numpy.ndarray): The (X)-input data on which the pipeline was fitted on.
+        feature_names (list): List of names of the features in `X_train`.
 
     Returns:
         tuple: Tuple consisting of the tree model, the transformed input data, and a list of feature
@@ -182,11 +182,11 @@ def extract_params_from_pipeline(pipeline, x_data, feature_names):
         pipeline=pipeline,
         features=feature_names
     )
-    x_data = pd.DataFrame(
-        data=pipeline[:-1].transform(x_data),
+    X_train = pd.DataFrame(
+        data=pipeline[:-1].transform(X_train),
         columns=feature_names
     )
-    return tree_model, x_data, feature_names
+    return tree_model, X_train, feature_names
 
 
 def check_tree_index(tree_index, nr_of_trees):

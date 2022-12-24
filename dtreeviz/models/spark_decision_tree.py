@@ -14,8 +14,8 @@ from pyspark.ml.regression import DecisionTreeRegressionModel
 class ShadowSparkTree(ShadowDecTree):
 
     def __init__(self, tree_model: (DecisionTreeClassificationModel, DecisionTreeRegressionModel),
-                 x_data,
-                 y_data,
+                 X_train,
+                 y_train,
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
@@ -24,7 +24,7 @@ class ShadowSparkTree(ShadowDecTree):
         self.features = None  # lazy initialization
         self.thresholds = None  # lazy initialization
         self.node_to_samples = None  # lazy initialization
-        super().__init__(tree_model, x_data, y_data, feature_names, target_name, class_names)
+        super().__init__(tree_model, X_train, y_train, feature_names, target_name, class_names)
 
     def _get_nodes_info(self, tree_model):
         tree_nodes = [None] * tree_model.numNodes
@@ -110,10 +110,10 @@ class ShadowSparkTree(ShadowDecTree):
         return self.tree_model.numClasses
 
     # TODO
-    # for this we need y_dataset to be specified, think how to solve it without specifing the y_data
+    # for this we need y_dataset to be specified, think how to solve it without specifing the y_train
     def classes(self) -> np.ndarray:
         if self.is_classifier():
-            return np.unique(self.y_data)
+            return np.unique(self.y_train)
 
     def get_node_samples(self):
         # TODO check if we can put this method in the shadow tree
@@ -122,8 +122,8 @@ class ShadowSparkTree(ShadowDecTree):
             return self.node_to_samples
 
         node_to_samples = defaultdict(list)
-        for i in range(self.x_data.shape[0]):
-            path = self.predict_path(self.x_data[i])
+        for i in range(self.X_train.shape[0]):
+            path = self.predict_path(self.X_train[i])
             for node in path:
                 node_to_samples[node.id].append(i)
 
@@ -132,7 +132,7 @@ class ShadowSparkTree(ShadowDecTree):
 
     def get_split_samples(self, id):
         samples = np.array(self.get_node_samples()[id])
-        node_X_data = self.x_data[samples, self.get_node_feature(id)]
+        node_X_data = self.X_train[samples, self.get_node_feature(id)]
         split = self.get_node_split(id)
 
         if self.is_categorical_split(id):

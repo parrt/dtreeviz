@@ -24,8 +24,8 @@ class ShadowXGBDTree(ShadowDecTree):
 
     def __init__(self, booster: Booster,
                  tree_index: int,
-                 x_data,
-                 y_data,
+                 X_train,
+                 y_train,
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None
@@ -42,7 +42,7 @@ class ShadowXGBDTree(ShadowDecTree):
         self.node_to_samples = None  # lazy initialized
         self.features = None  # lazy initialized
 
-        super().__init__(booster, x_data, y_data, feature_names, target_name, class_names)
+        super().__init__(booster, X_train, y_train, feature_names, target_name, class_names)
 
     def is_fit(self):
         return isinstance(self.booster, Booster)
@@ -96,7 +96,7 @@ class ShadowXGBDTree(ShadowDecTree):
         if self.node_to_samples is not None:
             return self.node_to_samples
 
-        prediction_leaves = self.booster.predict(xgb.DMatrix(self.x_data, feature_names=self.feature_names),
+        prediction_leaves = self.booster.predict(xgb.DMatrix(self.X_train, feature_names=self.feature_names),
                                                  pred_leaf=True)
 
         if len(prediction_leaves.shape) > 1:
@@ -113,7 +113,7 @@ class ShadowXGBDTree(ShadowDecTree):
 
     def get_split_samples(self, id):
         samples = np.array(self.get_node_samples()[id])
-        node_X_data = self.x_data[samples, self.get_node_feature(id)]
+        node_X_data = self.X_train[samples, self.get_node_feature(id)]
         split = self.get_node_split(id)
 
         left = np.nonzero(node_X_data < split)[0]
@@ -209,7 +209,7 @@ class ShadowXGBDTree(ShadowDecTree):
             return np.argmax((node_value[0][0], node_value[0][1]))
         elif not self.is_classifier():
             node_samples = [node.samples() for node in all_nodes if node.id == id][0]
-            return np.mean(self.y_data[node_samples])
+            return np.mean(self.y_train[node_samples])
 
     def is_classifier(self):
         objective_name = self.config["learner"]["objective"]["name"].split(":")[0]
@@ -226,11 +226,11 @@ class ShadowXGBDTree(ShadowDecTree):
         if not self.is_classifier():
             return 1
         else:
-            return len(np.unique(self.y_data))
+            return len(np.unique(self.y_train))
 
     def classes(self):
         if self.is_classifier():
-            return np.unique(self.y_data)
+            return np.unique(self.y_train)
 
     def get_max_depth(self):
         return int(self.config["learner"]["gradient_booster"]["updater"]["prune"]["train_param"]["max_depth"])

@@ -28,8 +28,8 @@ class ShadowDecTree(ABC):
 
     def __init__(self,
                  tree_model,
-                 x_data: (pd.DataFrame, np.ndarray),
-                 y_data: (pd.Series, np.ndarray),
+                 X_train: (pd.DataFrame, np.ndarray),
+                 y_train: (pd.Series, np.ndarray),
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
@@ -38,9 +38,9 @@ class ShadowDecTree(ABC):
         ----------
         :param tree_model: sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier, xgboost.core.Booster
             The decision tree to be interpreted
-        :param x_data: pd.DataFrame, np.ndarray
+        :param X_train: pd.DataFrame, np.ndarray
             Features values on which the shadow tree will be build.
-        :param y_data: pd.Series, np.ndarray
+        :param y_train: pd.Series, np.ndarray
             Target values on which the shadow tree will be build.
         :param feature_names: List[str]
             Features' names
@@ -57,8 +57,8 @@ class ShadowDecTree(ABC):
 
         self.feature_names = feature_names
         self.target_name = target_name
-        self.x_data = ShadowDecTree._get_x_data(x_data)
-        self.y_data = ShadowDecTree._get_y_data(y_data)
+        self.X_train = ShadowDecTree._get_x_data(X_train)
+        self.y_train = ShadowDecTree._get_y_data(y_train)
         self.root, self.leaves, self.internal = self._get_tree_nodes()
         if self.is_classifier():
             self.class_names = utils._normalize_class_names(class_names, self.nclasses())
@@ -363,8 +363,8 @@ class ShadowDecTree(ABC):
                 walk(t.right, (bbox[0], s, bbox[2], bbox[3]))
 
         # create bounding box in feature space (not zeroed)
-        f1_values = self.x_data[:, 0]
-        f2_values = self.x_data[:, 1]
+        f1_values = self.X_train[:, 0]
+        f2_values = self.X_train[:, 1]
         overall_bbox = (np.min(f1_values), np.min(f2_values),  # x,y of lower left edge
                         np.max(f1_values), np.max(f2_values))  # x,y of upper right edge
         walk(self.root, overall_bbox)
@@ -440,19 +440,19 @@ class ShadowDecTree(ABC):
         return root, leaves, internal
 
     @staticmethod
-    def _get_x_data(x_data):
-        if isinstance(x_data, pd.DataFrame):
-            x_data = x_data.values  # We recommend using :meth:`DataFrame.to_numpy` instead.
-        return x_data
+    def _get_x_data(X_train):
+        if isinstance(X_train, pd.DataFrame):
+            X_train = X_train.values  # We recommend using :meth:`DataFrame.to_numpy` instead.
+        return X_train
 
     @staticmethod
-    def _get_y_data(y_data):
-        if isinstance(y_data, pd.Series):
-            y_data = y_data.values
-        return y_data
+    def _get_y_data(y_train):
+        if isinstance(y_train, pd.Series):
+            y_train = y_train.values
+        return y_train
 
     @staticmethod
-    def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
+    def get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names=None, tree_index=None):
         """
         To check to which library the tree_model belongs we are using string checks instead of isinstance()
         because we don't want all the libraries to be installed as mandatory, except sklearn.
@@ -466,24 +466,24 @@ class ShadowDecTree(ABC):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
             from dtreeviz.models import sklearn_decision_trees
-            return sklearn_decision_trees.ShadowSKDTree(tree_model, x_data, y_data, feature_names,
+            return sklearn_decision_trees.ShadowSKDTree(tree_model, X_train, y_train, feature_names,
                                                         target_name, class_names)
         elif str(type(tree_model)).endswith("xgboost.core.Booster'>"):
             from dtreeviz.models import xgb_decision_tree
-            return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
+            return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, X_train, y_train,
                                                     feature_names, target_name, class_names)
         elif (str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>") or
               str(type(tree_model)).endswith("pyspark.ml.regression.DecisionTreeRegressionModel'>")):
             from dtreeviz.models import spark_decision_tree
-            return spark_decision_tree.ShadowSparkTree(tree_model, x_data, y_data,
+            return spark_decision_tree.ShadowSparkTree(tree_model, X_train, y_train,
                                                        feature_names, target_name, class_names)
         elif "lightgbm.basic.Booster" in str(type(tree_model)):
             from dtreeviz.models import lightgbm_decision_tree
-            return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, x_data, y_data,
+            return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, X_train, y_train,
                                                              feature_names, target_name, class_names)
         elif "tensorflow_decision_forests.keras.RandomForestModel" in str(type(tree_model)):
             from dtreeviz.models import tensorflow_decision_tree
-            return tensorflow_decision_tree.ShadowTensorflowTree(tree_model, tree_index, x_data, y_data,
+            return tensorflow_decision_tree.ShadowTensorflowTree(tree_model, tree_index, X_train, y_train,
                                                                  feature_names, target_name, class_names)
         else:
             raise ValueError(
@@ -551,7 +551,7 @@ class ShadowDecTreeNode():
         if samples.size == 0:
             return [0, 0]
 
-        node_y_data = self.shadow_tree.y_data[samples]
+        node_y_data = self.shadow_tree.y_train[samples]
         unique, counts = np.unique(node_y_data, return_counts=True)
 
         if len(unique) == 2:

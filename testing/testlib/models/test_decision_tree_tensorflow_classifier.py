@@ -32,8 +32,8 @@ def tf_shadow_clf(tf_rf_model, dataset_spark_tensorflow, features_clf):
 
     tf_shadow = ShadowTensorflowTree(tf_rf_model,
                                        tree_index=0,
-                                       x_data=dataset_spark_tensorflow[features_clf],
-                                       y_data=dataset_spark_tensorflow[target_clf],
+                                       X_train=dataset_spark_tensorflow[features_clf],
+                                       y_train=dataset_spark_tensorflow[target_clf],
                                        feature_names=features_clf,
                                        target_name=target_clf,
                                        class_names=[0, 1])
