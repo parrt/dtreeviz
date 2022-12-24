@@ -104,6 +104,43 @@ To interopt with these different libraries, dtreeviz uses an adaptor object, obt
 4. Obtain a dtreeviz adaptor model using<br>`viz_model = dtreeviz.model(your_trained_model,...)`
 5. Call dtreeviz functions, such as<br>`viz_model.view()` or `viz_model.explain_prediction_path(sample_x)`
 
+**Example**
+
+Here's a complete example Python file that displays the following tree in a popup window:
+
+<img src="testing/samples/iris-TD-4.svg" width="200">
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
+
+import dtreeviz
+
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+clf = DecisionTreeClassifier(max_depth=4)
+clf.fit(X, y)
+
+viz_model = dtreeviz.model(clf,
+                           X_train=X, y_train=y,
+                           feature_names=iris.feature_names,
+                           target_name='iris',
+                           class_names=iris.target_names)
+
+v = viz_model.view()     # render as SVG into internal object 
+v.show()                 # pop up window
+v.save("/tmp/iris.svg")  # optionally save as svg
+```
+
+In a notebook, you can render inline without calling `show()`. Just call `view()`:
+
+```
+viz_model.view()       # in notebook, displays inline
+```
+
+
 ## Installation
 
 Install anaconda3 on your system, if not already done.
