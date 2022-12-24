@@ -136,7 +136,7 @@ v.save("/tmp/iris.svg")  # optionally save as svg
 
 In a notebook, you can render inline without calling `show()`. Just call `view()`:
 
-```
+```python
 viz_model.view()       # in notebook, displays inline
 ```
 
