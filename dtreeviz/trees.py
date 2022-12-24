@@ -33,6 +33,13 @@ NUM_BINS = [
 ]  # support for 40 classes
 
 
+def _warning_on_one_line(message, category, filename, lineno, file=None, line=None):
+    return '%s:%s: %s: %s\n' % (filename, lineno, category.__name__, message)
+
+
+warnings.formatwarning = _warning_on_one_line
+
+
 class DTreeVizRender:
     def __init__(self, dot, scale=1.0):
         self.dot = dot
@@ -49,6 +56,13 @@ class DTreeVizRender:
         return svg
 
     def view(self):
+        warnings.warn("DTreeVizRender.view() function is deprecated starting from version 2.0. \n "
+                      "Please use display() instead",
+                      DeprecationWarning, stacklevel=2)
+        self.show()
+
+    def show(self):
+        """Pop up a new window to display the (SVG) dtreeview view; images appear inline for jupyter notebooks."""
         svgfilename = self.save_svg()
         graphviz.backend.view(svgfilename)
 
@@ -94,13 +108,6 @@ class DTreeVizRender:
             svg = scale_SVG(svg, self.scale)
             with open(filename, "w", encoding='UTF-8') as f:
                 f.write(svg)
-
-
-def _warning_on_one_line(message, category, filename, lineno, file=None, line=None):
-    return '%s:%s: %s: %s\n' % (filename, lineno, category.__name__, message)
-
-
-warnings.formatwarning = _warning_on_one_line
 
 
 def rtreeviz_univar(tree_model,
