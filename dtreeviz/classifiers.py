@@ -77,8 +77,7 @@ def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
     :param ranges: Tuple for ranges of plot. One range per input dimension also specified as tuple, 
                    e.g. ((10, 100), (500, 600)).
                    Ranges of plot are determined by min, max of X vector if not specified. 
-    :param figsize: tuple of int
-        The plot size
+    :param figsize: optional (width, height) in inches for the entire plot
     :param ax: An optional matplotlib "axes" upon which this method should draw. If you
                send in your own figure, it should be wide but not tall like shape 4,1
     """

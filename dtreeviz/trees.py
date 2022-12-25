@@ -14,7 +14,6 @@ import pandas as pd
 from colour import Color, rgb2hex
 from sklearn import tree
 
-from dtreeviz import interpretation as prediction_path
 from dtreeviz.colors import adjust_colors
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
@@ -882,8 +881,7 @@ def viz_leaf_samples(tree_model,
         Min number of samples for a leaf
     :param max_samples: int
         Max number of samples for a leaf
-    :param figsize: tuple of int
-        The plot size
+    :param figsize: optional (width, height) in inches for the entire plot
     :param ax: optional matplotlib "axes" to draw into
     """
 
@@ -939,8 +937,6 @@ def viz_leaf_criterion(tree_model,
         The tree model or dtreeviz shadow tree model to interpret
     :param tree_index: int, optional
         Required in case of tree ensemble. Specify the tree index to interpret.
-    :param figsize: tuple of int
-        The plot size
     :param display_type: str, optional
        'plot', 'text'. 'hist'
     :param colors: dict
@@ -953,8 +949,7 @@ def viz_leaf_criterion(tree_model,
         True if we want to display the grid lines on the visualization
     :param bins:  int
         Number of histogram bins
-    :param figsize: tuple of int
-        The plot size
+    :param figsize: optional (width, height) in inches for the entire plot
     :param ax: optional matplotlib "axes" to draw into
     :return:
     """
@@ -1025,8 +1020,7 @@ def ctreeviz_leaf_samples(tree_model,
         Plot labels font name
     :param grid: bool
         True if we want to display the grid lines on the visualization
-    :param figsize: tuple of int
-        The plot size
+    :param figsize: optional (width, height) in inches for the entire plot
     :param ax: optional matplotlib "axes" to draw into
     """
     warnings.warn("ctreeviz_leaf_samples() function is deprecated starting from version 2.0. \n "
@@ -1116,8 +1110,7 @@ def viz_leaf_target(tree_model,
         True if we want to display the grid lines on the visualization
     :param prediction_line_width: int
         The width of prediction line.
-    :param figsize: tuple of int
-        The plot size
+    :param figsize: optional (width, height) in inches for the entire plot
     :param ax: optional matplotlib "axes" to draw into
     """
     warnings.warn("viz_leaf_target() function is deprecated starting from version 2.0. \n "
@@ -1247,6 +1240,18 @@ def model(model,
           target_name: str = None,
           class_names: (List[str], Mapping[int, str]) = None
           ):
+    """
+    Given a decision tree model, training data, and information about the data, create a model adaptor that
+    provides a consistent interface for the overall dtreeviz lib to the various supported tree libraries.
+    :param model:
+    :param X_train:
+    :param y_train:
+    :param tree_index:
+    :param feature_names:
+    :param target_name:
+    :param class_names:
+    :return: a DTreeViz object that can render as SVG
+    """
     shadow_tree = ShadowDecTree.get_shadow_tree(model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
     dtreeviz_model = DTreeViz(shadow_tree)
@@ -1291,8 +1296,8 @@ class DTreeViz:
         distribution of leaf sizes.
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
-               target_name=target, class_names=[0, 1])
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
+                                   feature_names=features, target_name=target, class_names=[0, 1])
         viz_model.leaf_sizes()
 
         :param display_type: str, optional
@@ -1311,9 +1316,8 @@ class DTreeViz:
             Min size for a leaf
         :param max_size: int
             Max size for a leaf
-        :param figsize: tuple of int
-            The plot size
-        :param ax: optional matplotlib "axes" to draw into
+        :param figsize: optional (width, height) in inches for the entire plot
+            :param ax: optional matplotlib "axes" to draw into
         """
 
         leaf_id, leaf_sizes = self.shadow_tree.get_leaf_sample_counts(min_size, max_size)
@@ -1381,10 +1385,9 @@ class DTreeViz:
         Right now it supports only binary classifications decision trees.
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
-               target_name=target, class_names=[0, 1])
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
+                                   feature_names=features, target_name=target, class_names=[0, 1])
         viz_model.ctree_leaf_distributions()
-
 
         :param display_type: str, optional
            'plot' or 'text'
@@ -1399,9 +1402,8 @@ class DTreeViz:
             Plot labels font name
         :param grid: bool
             True if we want to display the grid lines on the visualization
-        :param figsize: tuple of int
-            The plot size
-        :param ax: optional matplotlib "axes" to draw into
+        :param figsize: optional (width, height) in inches for the entire plot
+            :param ax: optional matplotlib "axes" to draw into
         """
 
         index, leaf_samples_0, leaf_samples_1 = self.shadow_tree.get_leaf_sample_counts_by_class()
@@ -1471,10 +1473,9 @@ class DTreeViz:
         Based on a decision tree regressor or classifier, create and return a tree visualization using the
         graphviz (DOT) language.
 
-
         Usage example :
-        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
-               target_name=target, class_names=[0, 1])
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
+                                   feature_names=features, target_name=target, class_names=[0, 1])
         viz_model.view()
 
         :param precision: When displaying floating-point numbers, how many digits to display
@@ -1905,8 +1906,8 @@ class DTreeViz:
 
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
-               target_name=target, class_names=[0, 1])
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
+                                   feature_names=features, target_name=target, class_names=[0, 1])
         viz_model.leaf_purity()
 
         This method contains three types of visualizations:
@@ -1926,9 +1927,8 @@ class DTreeViz:
             True if we want to display the grid lines on the visualization
         :param bins:  int
             Number of histogram bins
-        :param figsize: tuple of int
-            The plot size
-        :param ax: optional matplotlib "axes" to draw into
+        :param figsize: optional (width, height) in inches for the entire plot
+            :param ax: optional matplotlib "axes" to draw into
         :return:
         """
         leaf_id, leaf_criteria = self.shadow_tree.get_leaf_criterion()
@@ -1987,8 +1987,8 @@ class DTreeViz:
 
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
-               target_name=target, class_names=[0, 1])
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
+                                   feature_names=features, target_name=target, class_names=[0, 1])
         viz_model.node_stats(node_id=10)
 
         :param node_id: int
@@ -2014,13 +2014,11 @@ class DTreeViz:
         but in this scencario, the feature importances will be calculated based only on the nodes from prediction path.
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
-               target_name=target, class_names=[0, 1])
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
+                                   feature_names=features, target_name=target, class_names=[0, 1])
         viz_model.instance_feature_importance(x)
 
         :param x: Instance example to make prediction
-        :param figsize: tuple of int, optional
-            The plot size
         :param colors: dict, optional
             The set of colors used for plotting
         :param fontsize: int, optional
@@ -2029,9 +2027,8 @@ class DTreeViz:
             Plot labels font name
         :param grid: bool
             True if we want to display the grid lines on the visualization
-        :param figsize: tuple of int
-            The plot size
-        :param ax: optional matplotlib "axes" to draw into
+        :param figsize: optional (width, height) in inches for the entire plot
+            :param ax: optional matplotlib "axes" to draw into
         """
         explain_prediction_sklearn_default(self.shadow_tree, x,
                                            colors,
@@ -2055,8 +2052,8 @@ class DTreeViz:
             0.5 <= Embarked_label
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
-               target_name=target, class_names=[0, 1])
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
+                                   feature_names=features, target_name=target, class_names=[0, 1])
         viz_model.explain_prediction_path(x)
 
         :param x: np.ndarray
@@ -2079,10 +2076,9 @@ class DTreeViz:
 
 
         Usage example :
-        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target], feature_names=features,
-               target_name=target, class_names=[0, 1])
+        viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
+                                   feature_names=features, target_name=target, class_names=[0, 1])
         viz_model.rtree_leaf_distributions()
-
 
         :param show_leaf_labels: bool
             True if the plot should contains the leaf labels on x ax, False otherwise.
@@ -2100,9 +2096,8 @@ class DTreeViz:
             True if we want to display the grid lines on the visualization
         :param prediction_line_width: int
             The width of prediction line.
-        :param figsize: tuple of int
-            The plot size
-        :param ax: optional matplotlib "axes" to draw into
+        :param figsize: optional (width, height) in inches for the entire plot
+            :param ax: optional matplotlib "axes" to draw into
         """
         x, y, means, means_range, y_labels = _get_leaf_target_input(self.shadow_tree, precision)
         colors = adjust_colors(colors)

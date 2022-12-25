@@ -110,8 +110,6 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
 
     :param shadow_tree: tree used to make prediction
     :param x: Instance example to make prediction
-    :param figsize: tuple of int, optional
-        The plot size
     :param colors: dict, optional
         The set of colors used for plotting
     :param fontsize: int, optional
@@ -120,8 +118,7 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         Plot labels font name
     :param grid: bool
         True if we want to display the grid lines on the visualization
-    :param figsize: tuple of int
-        The plot size
+    :param figsize: optional (width, height) in inches for the entire plot
     :param ax: optional matplotlib "axes" to draw into
     :return:
         Prediction feature's importance plot
