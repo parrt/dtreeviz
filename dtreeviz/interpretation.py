@@ -4,16 +4,16 @@ In this moment, it contains "plain english" implementation, but others can be ad
 """
 from collections import defaultdict
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas
+from matplotlib import pyplot as plt
 
 from dtreeviz.colors import adjust_colors
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 
 
 def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
-                                     x: (pandas.core.series.Series, np.ndarray)):
+                                     x: (pandas.core.series.Series, np.ndarray)) -> str:
     """
     Explains the prediction path using feature value's range.
 
@@ -127,16 +127,6 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
     decision_node_path = [node.id for node in decision_node_path]
 
     feature_path_importance = shadow_tree.get_feature_path_importance(decision_node_path)
-    return _get_feature_path_importance_sklearn_plot(shadow_tree.feature_names, feature_path_importance,
-                                                     colors, fontsize,
-                                                     fontname,
-                                                     grid,
-                                                     figsize,
-                                                     ax)
-
-
-def _get_feature_path_importance_sklearn_plot(features, feature_path_importance, colors, fontsize, fontname,
-                                              grid, figsize, ax):
     colors = adjust_colors(colors)
     if ax is None:
         if figsize:
@@ -147,10 +137,9 @@ def _get_feature_path_importance_sklearn_plot(features, feature_path_importance,
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_linewidth(.3)
     ax.spines['bottom'].set_linewidth(.3)
-    ax.set_xticks(range(0, len(features)))
-    ax.set_xticklabels(features)
-
-    barcontainers = ax.barh(y=features,
+    ax.set_xticks(range(0, len(shadow_tree.feature_names)))
+    ax.set_xticklabels(shadow_tree.feature_names)
+    barcontainers = ax.barh(y=shadow_tree.feature_names,
                             width=feature_path_importance,
                             color=colors["hist_bar"],
                             lw=.3,
@@ -162,5 +151,6 @@ def _get_feature_path_importance_sklearn_plot(features, feature_path_importance,
     ax.set_ylabel("features", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.set_xlabel("feature importance", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(b=grid)
-
     return ax
+
+
