@@ -7,8 +7,8 @@ import pandas as pd
 from sklearn import tree
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
-from dtreeviz.trees import DTreeVizAdaptor, DTreeVizRender
-from dtreeviz.utils import myround
+from dtreeviz.utils import myround, DTreeVizRender
+from dtreeviz.trees import DTreeVizAdaptor
 
 
 def _warning_on_one_line(message, category, filename, lineno, file=None, line=None):

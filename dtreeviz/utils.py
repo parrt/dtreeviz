@@ -1,5 +1,12 @@
+import os
 import re
+import tempfile
+import warnings
 import xml.etree.cElementTree as ET
+from pathlib import Path
+from sys import platform as PLATFORM
+
+import graphviz
 import pandas as pd
 from numpy import ndarray
 from numbers import Number
@@ -207,3 +214,76 @@ if __name__ == '__main__':
 
     with open("/tmp/u.svg", "w") as f:
         f.write(svg2)
+
+
+class DTreeVizRender:
+    """
+    This object is constructed from graphviz DOT content and knows how to render and save as SVG.
+    """
+    def __init__(self, dot, scale=1.0):
+        self.dot = dot
+        self.scale = scale
+
+    def _repr_svg_(self):
+        return self.svg()
+
+    def svg(self):
+        """Render tree as svg and return svg text."""
+        svgfilename = self.save_svg()
+        with open(svgfilename, encoding='UTF-8') as f:
+            svg = f.read()
+        return svg
+
+    def view(self):
+        warnings.warn("DTreeVizRender.view() function is deprecated starting from version 2.0. \n "
+                      "Please use display() instead",
+                      DeprecationWarning, stacklevel=2)
+        self.show()
+
+    def show(self):
+        """Pop up a new window to display the (SVG) dtreeview view."""
+        svgfilename = self.save_svg()
+        graphviz.backend.view(svgfilename)
+
+    def save_svg(self):
+        """Saves the current object as SVG file in the tmp directory and returns the filename"""
+        tmp = tempfile.gettempdir()
+        svgfilename = os.path.join(tmp, f"DTreeViz_{os.getpid()}.svg")
+        self.save(svgfilename)
+        return svgfilename
+
+    def save(self, filename):
+        """
+        Save the svg of this tree visualization into filename argument.
+        Can only save .svg; others fail with errors.
+        See https://github.com/parrt/dtreeviz/issues/4
+        """
+        path = Path(filename)
+        if not path.parent.exists:
+            os.makedirs(path.parent)
+
+        g = graphviz.Source(self.dot, format='svg')
+        dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem)
+        format = path.suffix[1:]  # ".svg" -> "svg" etc...
+
+        if not filename.endswith(".svg"):
+            # Mac I think could do any format if we required:
+            #   brew reinstall pango librsvg cairo
+            raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
+
+        # Gen .svg file from .dot but output .svg has image refs to other files
+        cmd = ["dot", f"-T{format}", "-o", filename, dotfilename]
+        # print(' '.join(cmd))
+        if graphviz.__version__ <= '0.17':
+            graphviz.backend.run(cmd, capture_output=True, check=True, quiet=False)
+        else:
+            graphviz.backend.execute.run_check(cmd, capture_output=True, check=True, quiet=False)
+
+        if filename.endswith(".svg"):
+            # now merge in referenced SVG images to make all-in-one file
+            with open(filename, encoding='UTF-8') as f:
+                svg = f.read()
+            svg = inline_svg_images(svg)
+            svg = scale_SVG(svg, self.scale)
+            with open(filename, "w", encoding='UTF-8') as f:
+                f.write(svg)
