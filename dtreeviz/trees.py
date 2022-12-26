@@ -594,16 +594,16 @@ def model(model,
     :param feature_names: Names of features in the same order of X_train.
     :param target_name: What is the (string) name of the target variable; e.g., for a house price regressor, this might be "price".
     :param class_names: For classifiers, what are the names associated with the labels?
-    :return: a DTreeViz object that provides the main API for dtreeviz (version 2.0.0+);
+    :return: a DTreeVizAdaptor object that provides the main API for dtreeviz (version 2.0.0+);
              e.g., call the view() method on the return object to display it in a notebook.
     """
     shadow_tree = ShadowDecTree.get_shadow_tree(model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
-    dtreeviz_model = DTreeViz(shadow_tree)
+    dtreeviz_model = DTreeVizAdaptor(shadow_tree)
     return dtreeviz_model
 
 
-class DTreeViz:
+class DTreeVizAdaptor:
     def __init__(self, shahdow_tree: ShadowDecTree):
         self.shadow_tree = shahdow_tree
 

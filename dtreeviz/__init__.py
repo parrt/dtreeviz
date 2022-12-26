@@ -18,5 +18,5 @@ from dtreeviz.compatibility import rtreeviz_univar, \
 
 # NEW API
 # call m = dtreeviz.model(...) then m.view() etc...
-from dtreeviz.trees import DTreeViz, model
+from dtreeviz.trees import DTreeVizAdaptor, model
 

@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn import tree
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
-from dtreeviz.trees import DTreeViz, DTreeVizRender
+from dtreeviz.trees import DTreeVizAdaptor, DTreeVizRender
 from dtreeviz.utils import myround
 
 
@@ -40,7 +40,7 @@ def rtreeviz_univar(tree_model,
         feature_names = [feature_names]
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, None, tree_index)
 
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     model.rtree_feature_space(ax=ax, fontsize=fontsize, show=show, split_linewidth=split_linewidth,
                               mean_linewidth=mean_linewidth, markersize=markersize, colors=colors)
 
@@ -70,7 +70,7 @@ def rtreeviz_bivar_heatmap(tree_model,
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, None,
                                                 tree_index)
 
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     model.rtree_feature_space(ax=ax, fontsize=fontsize, ticks_fontsize=ticks_fontsize, fontname=fontname, show=show,
                               n_colors_in_map=n_colors_in_map, colors=colors, markersize=markersize)
 
@@ -101,7 +101,7 @@ def rtreeviz_bivar_3D(tree_model,
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
 
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     model.rtree_feature_space3D(ax, fontsize, ticks_fontsize, fontname,
                       azim, elev, dist, show, colors, markersize, n_colors_in_map)
 
@@ -125,7 +125,7 @@ def ctreeviz_univar(tree_model,
         feature_names = [feature_names]
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     model.ctree_feature_space(fontsize, fontname, nbins, gtype, show, colors, ax)
 
 
@@ -153,7 +153,7 @@ def ctreeviz_bivar(tree_model,
         feature_names = [feature_names]
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     model.ctree_feature_space(fontsize=fontsize,
                             fontname=fontname,
                             show=show,
@@ -255,7 +255,7 @@ def dtreeviz(tree_model,
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     return model.view(precision, orientation,
                       instance_orientation,
                       show_root_edge_labels, show_node_labels, show_just_path, fancy, histtype, highlight_path, X,
@@ -352,7 +352,7 @@ def viz_leaf_samples(tree_model,
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, None, feature_names, None, None,
                                                 tree_index)
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     model.leaf_sizes(display_type, colors, fontsize,
                      fontname, grid, bins, min_samples, max_samples, figsize, ax)
 
@@ -420,7 +420,7 @@ def viz_leaf_criterion(tree_model,
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, None, None, None, None, None,
                                                 tree_index)
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     model.leaf_purity(display_type, colors, fontsize, fontname, grid, bins, figsize, ax)
 
 
@@ -490,7 +490,7 @@ def ctreeviz_leaf_samples(tree_model,
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, None, None,
                                                 tree_index)
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     model.ctree_leaf_distributions(display_type, plot_ylim, colors, fontsize, fontname, grid, figsize, ax)
 
 
@@ -580,7 +580,7 @@ def viz_leaf_target(tree_model,
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, None,
                                                 tree_index)
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     model.rtree_leaf_distributions(show_leaf_labels,
                                    colors, markersize, label_fontsize, fontname, precision, grid,
                                    prediction_line_width, figsize, ax)
@@ -629,7 +629,7 @@ def describe_node_sample(tree_model,
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, None, feature_names, None, None,
                                                 tree_index)
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
     return model.node_stats(node_id)
 
 def explain_prediction_path(tree_model,
@@ -678,7 +678,7 @@ def explain_prediction_path(tree_model,
 
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, None, class_names,
                                                 tree_index)
-    model = DTreeViz(shadow_tree)
+    model = DTreeVizAdaptor(shadow_tree)
 
     if explanation_type == "sklearn_default":
         warnings.warn(
@@ -714,10 +714,10 @@ def model(model,
     :param feature_names: Names of features in the same order of X_train.
     :param target_name: What is the (string) name of the target variable; e.g., for a house price regressor, this might be "price".
     :param class_names: For classifiers, what are the names associated with the labels?
-    :return: a DTreeViz object that provides the main API for dtreeviz (version 2.0.0+);
+    :return: a DTreeVizAdaptor object that provides the main API for dtreeviz (version 2.0.0+);
              e.g., call the view() method on the return object to display it in a notebook.
     """
     shadow_tree = ShadowDecTree.get_shadow_tree(model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
-    dtreeviz_model = DTreeViz(shadow_tree)
+    dtreeviz_model = DTreeVizAdaptor(shadow_tree)
     return dtreeviz_model
