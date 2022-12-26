@@ -4,12 +4,12 @@ import pandas as pd
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+from matplotlib import patches as patches
 from matplotlib.collections import PatchCollection
 from colour import Color
 from PIL import ImageColor
 
 from dtreeviz.colors import adjust_colors, GREY
-from dtreeviz.trees import add_classifier_legend
 from dtreeviz import utils
 
 
@@ -536,3 +536,34 @@ def _predict_proba(model, X):
 
     # sklearn etc...
     return model.predict_proba(X)
+
+
+def add_classifier_legend(ax, class_names, class_values, facecolors, target_name,
+                          colors, fontsize=10, fontname='Arial'):
+    # add boxes for legend
+    boxes = []
+    for c in class_values:
+        box = patches.Rectangle((0, 0), 20, 10, linewidth=.4, edgecolor=colors['rect_edge'],
+                                facecolor=facecolors[c], label=class_names[c])
+        boxes.append(box)
+    leg = ax.legend(handles=boxes,
+                    frameon=True,
+                    shadow=False,
+                    fancybox=True,
+                    handletextpad=.35,
+                    borderpad=.8,
+                    bbox_to_anchor=(1.0, 1.0),
+                    edgecolor=colors['legend_edge'])
+
+    leg.set_title(target_name, prop={'size': fontsize,
+                                     'weight': 'bold',
+                                     'family': fontname})
+
+    leg.get_frame().set_linewidth(.5)
+    leg.get_title().set_color(colors['legend_title'])
+    leg.get_title().set_fontsize(fontsize)
+    leg.get_title().set_fontname(fontname)
+    # leg.get_title().set_fontweight('bold')
+    for text in leg.get_texts():
+        text.set_color(colors['text'])
+        text.set_fontsize(fontsize)

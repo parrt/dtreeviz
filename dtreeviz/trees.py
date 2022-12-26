@@ -9,7 +9,7 @@ import pandas as pd
 from colour import Color, rgb2hex
 from sklearn import tree
 
-from dtreeviz import DTreeVizRender
+from dtreeviz.classifiers import add_classifier_legend
 from dtreeviz.colors import adjust_colors
 from dtreeviz.interpretation import explain_prediction_plain_english, explain_prediction_sklearn_default
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
@@ -485,9 +485,9 @@ class DTreeVizAdaptor:
         if self.shadow_tree.is_classifier():
             class_values = self.shadow_tree.classes()
             color_map = {v: color_values[i] for i, v in enumerate(class_values)}
-            draw_legend(self.shadow_tree, self.shadow_tree.target_name, f"{tmp}/legend_{os.getpid()}.svg",
-                        colors=colors,
-                        fontname=fontname)
+            _draw_legend(self.shadow_tree, self.shadow_tree.target_name, f"{tmp}/legend_{os.getpid()}.svg",
+                         colors=colors,
+                         fontname=fontname)
 
         X_train = self.shadow_tree.X_train
         y_train = self.shadow_tree.y_train
@@ -517,29 +517,29 @@ class DTreeVizAdaptor:
                     continue
             if fancy:
                 if self.shadow_tree.is_classifier():
-                    class_split_viz(node, X_train, y_train,
+                    _class_split_viz(node, X_train, y_train,
+                                     filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
+                                     precision=precision,
+                                     colors={**color_map, **colors},
+                                     histtype=histtype,
+                                     node_heights=node_heights,
+                                     X=x,
+                                     ticks_fontsize=ticks_fontsize,
+                                     label_fontsize=label_fontsize,
+                                     fontname=fontname,
+                                     highlight_node=node.id in highlight_path)
+                else:
+                    _regr_split_viz(node, X_train, y_train,
                                     filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
+                                    target_name=self.shadow_tree.target_name,
+                                    y_range=y_range,
                                     precision=precision,
-                                    colors={**color_map, **colors},
-                                    histtype=histtype,
-                                    node_heights=node_heights,
                                     X=x,
                                     ticks_fontsize=ticks_fontsize,
                                     label_fontsize=label_fontsize,
                                     fontname=fontname,
-                                    highlight_node=node.id in highlight_path)
-                else:
-                    regr_split_viz(node, X_train, y_train,
-                                   filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
-                                   target_name=self.shadow_tree.target_name,
-                                   y_range=y_range,
-                                   precision=precision,
-                                   X=x,
-                                   ticks_fontsize=ticks_fontsize,
-                                   label_fontsize=label_fontsize,
-                                   fontname=fontname,
-                                   highlight_node=node.id in highlight_path,
-                                   colors=colors)
+                                    highlight_node=node.id in highlight_path,
+                                    colors=colors)
 
             nname = node_name(node)
             if not node.is_categorical_split():
@@ -554,23 +554,23 @@ class DTreeVizAdaptor:
                 if node.level not in range(depth_range_to_display[0], depth_range_to_display[1] + 1):
                     continue
             if self.shadow_tree.is_classifier():
-                class_leaf_viz(node, colors=color_values,
-                               filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
-                               graph_colors=colors,
-                               fontname=fontname)
+                _class_leaf_viz(node, colors=color_values,
+                                filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
+                                graph_colors=colors,
+                                fontname=fontname)
                 leaves.append(class_leaf_node(node))
             else:
                 # for now, always gen leaf
-                regr_leaf_viz(node,
-                              y_train,
-                              target_name=self.shadow_tree.target_name,
-                              filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
-                              y_range=y_range,
-                              precision=precision,
-                              ticks_fontsize=ticks_fontsize,
-                              label_fontsize=label_fontsize,
-                              fontname=fontname,
-                              colors=colors)
+                _regr_leaf_viz(node,
+                               y_train,
+                               target_name=self.shadow_tree.target_name,
+                               filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
+                               y_range=y_range,
+                               precision=precision,
+                               ticks_fontsize=ticks_fontsize,
+                               label_fontsize=label_fontsize,
+                               fontname=fontname,
+                               colors=colors)
                 leaves.append(regr_leaf_node(node))
 
         if show_just_path:
@@ -1275,51 +1275,20 @@ class DTreeVizAdaptor:
         return None
 
 
-def add_classifier_legend(ax, class_names, class_values, facecolors, target_name,
-                          colors, fontsize=10, fontname='Arial'):
-    # add boxes for legend
-    boxes = []
-    for c in class_values:
-        box = patches.Rectangle((0, 0), 20, 10, linewidth=.4, edgecolor=colors['rect_edge'],
-                                facecolor=facecolors[c], label=class_names[c])
-        boxes.append(box)
-    leg = ax.legend(handles=boxes,
-                    frameon=True,
-                    shadow=False,
-                    fancybox=True,
-                    handletextpad=.35,
-                    borderpad=.8,
-                    bbox_to_anchor=(1.0, 1.0),
-                    edgecolor=colors['legend_edge'])
-
-    leg.set_title(target_name, prop={'size': fontsize,
-                                     'weight': 'bold',
-                                     'family': fontname})
-
-    leg.get_frame().set_linewidth(.5)
-    leg.get_title().set_color(colors['legend_title'])
-    leg.get_title().set_fontsize(fontsize)
-    leg.get_title().set_fontname(fontname)
-    # leg.get_title().set_fontweight('bold')
-    for text in leg.get_texts():
-        text.set_color(colors['text'])
-        text.set_fontsize(fontsize)
-
-
-def class_split_viz(node: ShadowDecTreeNode,
-                    X_train: np.ndarray,
-                    y_train: np.ndarray,
-                    colors: dict,
-                    node_heights,
-                    filename: str = None,
-                    ticks_fontsize: int = 8,
-                    label_fontsize: int = 9,
-                    fontname: str = "Arial",
-                    precision=1,
-                    histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
-                    X: np.array = None,
-                    highlight_node: bool = False
-                    ):
+def _class_split_viz(node: ShadowDecTreeNode,
+                     X_train: np.ndarray,
+                     y_train: np.ndarray,
+                     colors: dict,
+                     node_heights,
+                     filename: str = None,
+                     ticks_fontsize: int = 8,
+                     label_fontsize: int = 9,
+                     fontname: str = "Arial",
+                     precision=1,
+                     histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
+                     X: np.array = None,
+                     highlight_node: bool = False
+                     ):
     def _get_bins(overall_range, nbins_):
         return np.linspace(start=overall_range[0], stop=overall_range[1], num=nbins_, endpoint=True)
 
@@ -1437,11 +1406,11 @@ def class_split_viz(node: ShadowDecTreeNode,
         plt.close()
 
 
-def class_leaf_viz(node: ShadowDecTreeNode,
-                   colors: List[str],
-                   filename: str,
-                   graph_colors=None,
-                   fontname: str = "Arial"):
+def _class_leaf_viz(node: ShadowDecTreeNode,
+                    colors: List[str],
+                    filename: str,
+                    graph_colors=None,
+                    fontname: str = "Arial"):
     graph_colors = adjust_colors(graph_colors)
     # size = _prop_size(node.nsamples(), counts=node.shadow_tree.leaf_sample_counts(),
     #                  output_range=(.2, 1.5))
@@ -1457,23 +1426,23 @@ def class_leaf_viz(node: ShadowDecTreeNode,
     # size = np.sqrt(np.log(size))
     counts = node.class_counts()
     prediction = node.prediction_name()
-    draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
-                  graph_colors=graph_colors, fontname=fontname)
+    _draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
+                   graph_colors=graph_colors, fontname=fontname)
 
 
-def regr_split_viz(node: ShadowDecTreeNode,
-                   X_train: np.ndarray,
-                   y_train: np.ndarray,
-                   target_name: str,
-                   filename: str = None,
-                   y_range=None,
-                   ticks_fontsize: int = 8,
-                   label_fontsize: int = 9,
-                   fontname: str = "Arial",
-                   precision=1,
-                   X: np.array = None,
-                   highlight_node: bool = False,
-                   colors: dict = None):
+def _regr_split_viz(node: ShadowDecTreeNode,
+                    X_train: np.ndarray,
+                    y_train: np.ndarray,
+                    target_name: str,
+                    filename: str = None,
+                    y_range=None,
+                    ticks_fontsize: int = 8,
+                    label_fontsize: int = 9,
+                    fontname: str = "Arial",
+                    precision=1,
+                    X: np.array = None,
+                    highlight_node: bool = False,
+                    colors: dict = None):
     colors = adjust_colors(colors)
 
     figsize = (2.5, 1.1)
@@ -1565,16 +1534,16 @@ def regr_split_viz(node: ShadowDecTreeNode,
         plt.close()
 
 
-def regr_leaf_viz(node: ShadowDecTreeNode,
-                  y: (pd.Series, np.ndarray),
-                  target_name,
-                  filename: str = None,
-                  y_range=None,
-                  precision=1,
-                  label_fontsize: int = 9,
-                  ticks_fontsize: int = 8,
-                  fontname: str = "Arial",
-                  colors=None):
+def _regr_leaf_viz(node: ShadowDecTreeNode,
+                   y: (pd.Series, np.ndarray),
+                   target_name,
+                   filename: str = None,
+                   y_range=None,
+                   precision=1,
+                   label_fontsize: int = 9,
+                   ticks_fontsize: int = 8,
+                   fontname: str = "Arial",
+                   colors=None):
     colors = adjust_colors(colors)
 
     samples = node.samples()
@@ -1618,7 +1587,7 @@ def regr_leaf_viz(node: ShadowDecTreeNode,
         plt.close()
 
 
-def draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial"):
+def _draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial"):
     colors = adjust_colors(colors)
     n_classes = shadow_tree.nclasses()
     class_values = shadow_tree.classes()
@@ -1663,7 +1632,7 @@ def draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial
         plt.close()
 
 
-def draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", graph_colors=None):
+def _draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", graph_colors=None):
     graph_colors = adjust_colors(graph_colors)
     n_nonzero = np.count_nonzero(counts)
 
