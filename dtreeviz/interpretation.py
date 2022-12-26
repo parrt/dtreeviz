@@ -164,18 +164,3 @@ def _get_feature_path_importance_sklearn_plot(features, feature_path_importance,
     ax.grid(b=grid)
 
     return ax
-
-
-def get_prediction_explainer(explanation_type: str):
-    """Factory method responsible to return a prediction path implementation based on argument 'explanation_type'
-
-    :param explanation_type: specify the type of path explanation to be returned
-    :return: method implementation for specified path explanation.
-    """
-
-    if explanation_type == "plain_english":
-        return explain_prediction_plain_english
-    elif explanation_type == "sklearn_default":
-        return explain_prediction_sklearn_default
-    else:
-        raise ValueError(f"Explanation type {explanation_type} is not supported yet!")

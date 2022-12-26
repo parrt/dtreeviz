@@ -1,3 +1,4 @@
+# Functions to support backward compatibility to pre-2.0 API
 import warnings
 from numbers import Number
 from typing import Mapping, List
@@ -13,7 +14,6 @@ from dtreeviz.trees import DTreeVizAdaptor
 
 def _warning_on_one_line(message, category, filename, lineno, file=None, line=None):
     return '%s:%s: %s: %s\n' % (filename, lineno, category.__name__, message)
-
 
 warnings.formatwarning = _warning_on_one_line
 
