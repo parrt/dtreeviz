@@ -579,8 +579,7 @@ def model(model,
           tree_index: int = None,
           feature_names: List[str] = None,
           target_name: str = None,
-          class_names: (List[str], Mapping[int, str]) = None
-          ):
+          class_names: (List[str], Mapping[int, str]) = None):
     """
     Given a decision tree-based model from a supported decision-tree library, training data, and
     information about the data, create a model adaptor that
@@ -604,6 +603,12 @@ def model(model,
 
 
 class DTreeVizAdaptor:
+    """
+    This object provides the primary interface to the functionality of this library. You can think of it as
+    an adaptor that adapts the various decision-tree based libraries for use with dtreeviz. In implementation,
+    however, this object encapsulates the key functionality but delegates model adaptation
+    from sklearn etc... to dtreeviz.models.ShadowDecTree subclasses.
+    """
     def __init__(self, shahdow_tree: ShadowDecTree):
         self.shadow_tree = shahdow_tree
 

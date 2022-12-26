@@ -12,17 +12,19 @@ from dtreeviz import utils
 
 class ShadowDecTree(ABC):
     """
-    This tree shadows a decision tree as constructed by scikit-learn's and XGBoost's
+    This tree shadows a decision tree as constructed by the various
+    libraries such as scikit-learn's and XGBoost's
     DecisionTree(Regressor|Classifier). As part of build process, the
     samples considered at each decision node or at each leaf node are
     saved as a big dictionary for use by the nodes.
 
-    The decision trees for classifiers and regressors from scikit-learn and XGBoost
-    are built for efficiency, not ease of tree walking. This class
-    is intended as a way to wrap all of that information in an easy to use
-    package.
+    The decision trees for classifiers and regressors from scikit-learn and
+    XGBoost etc... are built for efficiency, not ease of tree walking. This class
+    is wraps all of that information in an easy-to-use and consistent interface
+    that hides the details of the various decision tree libraries.
 
-    Field leaves is list of shadow leaf nodes. Field internal is list of shadow non-leaf nodes.
+    Field leaves is list of shadow leaf nodes.
+    Field internal is list of shadow non-leaf nodes.
     Field root is the shadow tree root.
     """
 
