@@ -1,6 +1,9 @@
 from .version import __version__
 
-from dtreeviz.classifiers import decision_boundaries
+# NEW API
+# call m = dtreeviz.model(...) then m.view() etc...
+from dtreeviz.utils import DTreeVizRender
+from dtreeviz.trees import DTreeVizAdaptor, model
 
 # OLD API
 from dtreeviz.compatibility import rtreeviz_univar, \
@@ -16,7 +19,4 @@ from dtreeviz.compatibility import rtreeviz_univar, \
     describe_node_sample, \
     explain_prediction_path
 
-# NEW API
-# call m = dtreeviz.model(...) then m.view() etc...
-from dtreeviz.trees import DTreeVizAdaptor, model
-
+from dtreeviz.classifiers import decision_boundaries
