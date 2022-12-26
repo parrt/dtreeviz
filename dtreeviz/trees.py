@@ -1721,12 +1721,12 @@ def model(model,
           tree_index: int = None,
           feature_names: List[str] = None,
           target_name: str = None,
-          class_names: (List[str], Mapping[int, str]) = None):
+          class_names: (List[str], Mapping[int, str]) = None) -> DTreeVizAdaptor:
     """
     Given a decision tree-based model from a supported decision-tree library, training data, and
-    information about the data, create a model adaptor that
-    provides a consistent interface for the overall dtreeviz lib to the various supported tree libraries.
-    Call methods such as v.view(), v.explain_prediction_path(), v.rtree_feature_space3D() on returned adaptor v.
+    information about the data, create a model adaptor that provides a consistent interface for
+    the overall dtreeviz lib to the various supported tree libraries. Call methods such as v.view(),
+    v.explain_prediction_path(), v.rtree_feature_space3D() on the returned adaptor v.
 
     :param model: A tree-based model from a supportive decision tree library, such as sklearn, XGBoost, and TensorFlow.
     :param X_train: Features used to train model; 2D array-like object of shape (n_samples, n_features).
@@ -1738,7 +1738,8 @@ def model(model,
     :return: a DTreeVizAdaptor object that provides the main API for dtreeviz (version 2.0.0+);
              e.g., call the view() method on the return object to display it in a notebook.
     """
-    shadow_tree = ShadowDecTree.get_shadow_tree(model, X_train, y_train, feature_names, target_name, class_names,
+    shadow_tree = ShadowDecTree.get_shadow_tree(model, X_train, y_train,
+                                                feature_names, target_name, class_names,
                                                 tree_index)
     dtreeviz_model = DTreeVizAdaptor(shadow_tree)
     return dtreeviz_model
