@@ -755,7 +755,7 @@ class DTreeVizAdaptor:
             ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.grid(b=grid)
 
-    def node_stats(self, node_id: int):
+    def node_stats(self, node_id: int) -> str:
         """Generate stats (count, mean, std, etc) based on data samples from a specified node.
 
         This method is especially useful to investigate leaf samples from a decision tree. This is a way to discover data
@@ -774,8 +774,8 @@ class DTreeVizAdaptor:
         """
 
         node_samples = self.shadow_tree.get_node_samples()
-        return pd.DataFrame(self.shadow_tree.X_train, columns=self.shadow_tree.feature_names).iloc[
-            node_samples[node_id]].describe()
+        df = pd.DataFrame(self.shadow_tree.X_train, columns=self.shadow_tree.feature_names)
+        return df.iloc[node_samples[node_id]].describe()
 
     def instance_feature_importance(self, x,
                                    colors: dict = None,
@@ -814,7 +814,6 @@ class DTreeVizAdaptor:
                                            figsize,
                                            ax)
 
-
     def explain_prediction_path(self, x: np.ndarray) -> str:
         """Prediction path interpretation for a data instance. There will be created a range of values for each feature,
          based on data instance values and its tree prediction path.
@@ -849,7 +848,6 @@ class DTreeVizAdaptor:
                                  figsize: tuple = None,
                                  ax=None):
         """Visualize leaf target distributions for regression decision trees.
-
 
         Usage example :
         viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
@@ -918,20 +916,22 @@ class DTreeVizAdaptor:
         # TODO: check if we can find some common functionality between univar and bivar visualisations and refactor
         #  to a single method.
         if len(self.shadow_tree.feature_names) == 1:     # univar example
-            self._ctreeviz_univar(fontsize, fontname, nbins, gtype, show, colors, figsize, ax)
+            _ctreeviz_univar(self.shadow_tree, fontsize, fontname, nbins, gtype, show, colors, figsize, ax)
         elif len(self.shadow_tree.feature_names) == 2:   # bivar example
-            self._ctreeviz_bivar(fontsize, fontname, show, colors, figsize, ax)
+            _ctreeviz_bivar(self.shadow_tree, fontsize, fontname, show, colors, figsize, ax)
         else:
             raise ValueError(f"ctree_feature_space supports a dataset with only one or two features."
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
 
-    def rtree_feature_space(self,  fontsize: int = 10, show={'title', 'splits'}, split_linewidth=.5,
-                    mean_linewidth=2, markersize=15, colors=None, ticks_fontsize=12, fontname = "Arial",
-                    n_colors_in_map=100, figsize=None, ax=None):
-        if len(self.shadow_tree.feature_names) == 1:     # univar example
-            self._rtreeviz_univar(fontsize, show, split_linewidth, mean_linewidth, markersize, colors, figsize, ax)
-        elif len(self.shadow_tree.feature_names) == 2:   # bivar example
-                self._rtreeviz_bivar_heatmap(fontsize, ticks_fontsize, fontname, show, n_colors_in_map, colors, markersize, figsize, ax)
+    def rtree_feature_space(self, fontsize: int = 10, show={'title', 'splits'}, split_linewidth=.5,
+                            mean_linewidth=2, markersize=15, colors=None, ticks_fontsize=12, fontname="Arial",
+                            n_colors_in_map=100, figsize=None, ax=None):
+        if len(self.shadow_tree.feature_names) == 1:  # univar example
+            _rtreeviz_univar(self.shadow_tree, fontsize, show, split_linewidth, mean_linewidth, markersize, colors,
+                             figsize, ax)
+        elif len(self.shadow_tree.feature_names) == 2:  # bivar example
+            _rtreeviz_bivar_heatmap(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, n_colors_in_map, colors,
+                                    markersize, figsize, ax)
         else:
             raise ValueError(f"rtree_feature_space() supports a dataset with only one or two features."
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
@@ -945,334 +945,9 @@ class DTreeVizAdaptor:
         Show 3D feature space for bivariate regression tree. X_train should have
         just the 2 variables used for training.
         """
-        self._rtreeviz_bivar_3D(fontsize, ticks_fontsize, fontname, azim, elev, dist, show, colors, markersize,
-                                n_colors_in_map, figsize, ax)
-
-
-    def _ctreeviz_univar(self,
-                        fontsize=10, fontname="Arial", nbins=25, gtype='strip',
-                        show={'title', 'legend', 'splits'},
-                        colors=None,
-                        figsize=None,
-                        ax=None):
-        if ax is None:
-            if figsize:
-                fig, ax = plt.subplots(figsize=figsize)
-            else:
-                fig, ax = plt.subplots()
-
-        X_train = self.shadow_tree.X_train.reshape(-1, )
-        y_train = self.shadow_tree.y_train
-        colors = adjust_colors(colors)
-        n_classes = self.shadow_tree.nclasses()
-        overall_feature_range = (np.min(X_train), np.max(X_train))
-        class_values = self.shadow_tree.classes()
-        color_values = colors['classes'][n_classes]
-        color_map = {v: color_values[i] for i, v in enumerate(class_values)}
-        X_colors = [color_map[cl] for cl in class_values]
-
-        ax.set_xlabel(f"{self.shadow_tree.feature_names}", fontsize=fontsize, fontname=fontname,
-                      color=colors['axis_label'])
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.yaxis.set_visible(False)
-        ax.spines['left'].set_visible(False)
-        ax.spines['bottom'].set_linewidth(.3)
-
-        X_hist = [X_train[y_train == cl] for cl in class_values]
-
-        if gtype == 'barstacked':
-            bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
-            hist, bins, barcontainers = ax.hist(X_hist,
-                                                color=X_colors,
-                                                align='mid',
-                                                histtype='barstacked',
-                                                bins=bins,
-                                                label=self.shadow_tree.class_names)
-
-            for patch in barcontainers:
-                for rect in patch.patches:
-                    rect.set_linewidth(.5)
-                    rect.set_edgecolor(colors['edge'])
-            ax.set_xlim(*overall_feature_range)
-            ax.set_xticks(overall_feature_range)
-            ax.set_yticks([0, max([max(h) for h in hist])])
-        elif gtype == 'strip':
-            # user should pass in short and wide fig
-            sigma = .013
-            mu = .08
-            class_step = .08
-            dot_w = 20
-            ax.set_ylim(0, mu + n_classes * class_step)
-            for i, bucket in enumerate(X_hist):
-                y_noise = np.random.normal(mu + i * class_step, sigma, size=len(bucket))
-                ax.scatter(bucket, y_noise, alpha=colors['scatter_marker_alpha'], marker='o', s=dot_w, c=color_map[i],
-                           edgecolors=colors['scatter_edge'], lw=.3)
-
-        ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
-                       labelsize=fontsize)
-
-        splits = [node.split() for node in self.shadow_tree.internal]
-        splits = sorted(splits)
-        bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
-
-        if 'splits' in show:  # this gets the horiz bars showing prediction region
-            pred_box_height = .07 * ax.get_ylim()[1]
-            for i in range(len(bins) - 1):
-                left = bins[i]
-                right = bins[i + 1]
-                inrange = y_train[(X_train >= left) & (X_train <= right)]
-                values, counts = np.unique(inrange, return_counts=True)
-                pred = values[np.argmax(counts)]
-                rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
-                                         edgecolor=colors['edge'], facecolor=color_map[pred])
-                ax.add_patch(rect)
-
-        if 'legend' in show:
-            add_classifier_legend(ax, self.shadow_tree.class_names, class_values, color_map, self.shadow_tree.target_name, colors,
-                                  fontname=fontname)
-
-        if 'title' in show:
-            accur = self.shadow_tree.get_score()
-            title = f"Classifier tree depth {self.shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
-            ax.set_title(title, fontsize=fontsize, color=colors['title'])
-
-        if 'splits' in show:
-            for split in splits:
-                ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
-
-    def _ctreeviz_bivar(self, fontsize=10, fontname="Arial", show={'title', 'legend', 'splits'},
-                        colors=None,
-                        figsize=None,
-                        ax=None):
-        """
-        Show tesselated 2D feature space for bivariate classification tree. X_train can
-        have lots of features but features lists indexes of 2 features to train tree with.
-        """
-        if ax is None:
-            if figsize:
-                fig, ax = plt.subplots(figsize=figsize)
-            else:
-                fig, ax = plt.subplots()
-
-        X_train = self.shadow_tree.X_train
-        y_train = self.shadow_tree.y_train
-        colors = adjust_colors(colors)
-        tesselation = self.shadow_tree.tesselation()
-        n_classes = self.shadow_tree.nclasses()
-        class_values = self.shadow_tree.classes()
-        color_values = colors['classes'][n_classes]
-        color_map = {v: color_values[i] for i, v in enumerate(class_values)}
-
-        if 'splits' in show:
-            for node, bbox in tesselation:
-                x = bbox[0]
-                y = bbox[1]
-                w = bbox[2] - bbox[0]
-                h = bbox[3] - bbox[1]
-                rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
-                                         edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
-                ax.add_patch(rect)
-
-        dot_w = 25
-        X_hist = [X_train[y_train == cl] for cl in class_values]
-        for i, h in enumerate(X_hist):
-            ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
-                       edgecolors=colors['scatter_edge'], lw=.3)
-
-        ax.set_xlabel(f"{self.shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname,
-                      color=colors['axis_label'])
-        ax.set_ylabel(f"{self.shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname,
-                      color=colors['axis_label'])
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['bottom'].set_linewidth(.3)
-
-        if 'legend' in show:
-            add_classifier_legend(ax, self.shadow_tree.class_names, class_values, color_map, self.shadow_tree.target_name, colors,
-                                  fontname=fontname)
-
-        if 'title' in show:
-            accur = self.shadow_tree.get_score()
-            title = f"Classifier tree depth {self.shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
-            ax.set_title(title, fontsize=fontsize, color=colors['title'], )
-
-        return None
-
-    def _rtreeviz_univar(self, fontsize: int = 10, show={'title', 'splits'},
-                        split_linewidth=.5, mean_linewidth=2, markersize=15, colors=None,
-                        figsize=None, ax=None):
-        X_train = self.shadow_tree.X_train.reshape(-1, )
-        y_train = self.shadow_tree.y_train
-
-        if ax is None:
-            if figsize:
-                fig, ax = plt.subplots(figsize=figsize)
-            else:
-                fig, ax = plt.subplots()
-
-        if X_train is None or y_train is None:
-            raise ValueError(f"x_train and y_train must not be none")
-
-        colors = adjust_colors(colors)
-
-        y_range = (min(y_train), max(y_train))  # same y axis for all
-        overall_feature_range = (np.min(X_train), np.max(X_train))
-
-        splits = []
-        for node in self.shadow_tree.internal:
-            splits.append(node.split())
-        splits = sorted(splits)
-        bins = [overall_feature_range[0]] + splits + [overall_feature_range[1]]
-
-        means = []
-        for i in range(len(bins) - 1):
-            left = bins[i]
-            right = bins[i + 1]
-            inrange = y_train[(X_train >= left) & (X_train <= right)]
-            means.append(np.mean(inrange))
-
-        ax.scatter(X_train, y_train, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'],
-                   s=markersize,
-                   edgecolor=colors['scatter_edge'], lw=.3)
-
-        if 'splits' in show:
-            for split in splits:
-                ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=split_linewidth)
-
-            prevX = overall_feature_range[0]
-            for i, m in enumerate(means):
-                split = overall_feature_range[1]
-                if i < len(splits):
-                    split = splits[i]
-                ax.plot([prevX, split], [m, m], '-', color=colors['mean_line'], linewidth=mean_linewidth)
-                prevX = split
-
-        ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=fontsize)
-
-        if 'title' in show:
-            title = f"Regression tree depth {self.shadow_tree.get_max_depth()}, samples per leaf {self.shadow_tree.get_min_samples_leaf()},\nTraining $R^2$={self.shadow_tree.get_score()}"
-            ax.set_title(title, fontsize=fontsize, color=colors['title'])
-
-        ax.set_xlabel(self.shadow_tree.feature_names, fontsize=fontsize, color=colors['axis_label'])
-        ax.set_ylabel(self.shadow_tree.target_name, fontsize=fontsize, color=colors['axis_label'])
-
-    def _rtreeviz_bivar_heatmap(self, fontsize=10, ticks_fontsize=12, fontname="Arial",
-                                show={'title'},
-                                n_colors_in_map=100,
-                                colors=None,
-                                markersize=15,
-                                figsize=None,
-                                ax=None) -> tree.DecisionTreeClassifier:
-        """
-        Show tesselated 2D feature space for bivariate regression tree. X_train can
-        have lots of features but features lists indexes of 2 features to train tree with.
-        """
-        if ax is None:
-            if figsize:
-                fig, ax = plt.subplots(figsize=figsize)
-            else:
-                fig, ax = plt.subplots()
-
-        X_train = self.shadow_tree.X_train
-        y_train = self.shadow_tree.y_train
-
-        colors = adjust_colors(colors)
-
-        y_lim = np.min(y_train), np.max(y_train)
-        y_range = y_lim[1] - y_lim[0]
-        color_map = [rgb2hex(c.rgb, force_long=True) for c in
-                     Color(colors['color_map_min']).range_to(Color(colors['color_map_max']),
-                                                             n_colors_in_map)]
-        tesselation = self.shadow_tree.tesselation()
-
-        for node, bbox in tesselation:
-            pred = node.prediction()
-            color = color_map[int(((pred - y_lim[0]) / y_range) * (n_colors_in_map - 1))]
-            x = bbox[0]
-            y = bbox[1]
-            w = bbox[2] - bbox[0]
-            h = bbox[3] - bbox[1]
-            rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
-                                     edgecolor=colors['edge'], facecolor=color)
-            ax.add_patch(rect)
-
-        color_map = [color_map[int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))] for y in y_train]
-        x, y, z = X_train[:, 0], X_train[:, 1], y_train
-        ax.scatter(x, y, marker='o', c=color_map, edgecolor=colors['scatter_edge'], lw=.3, s=markersize)
-
-        ax.set_xlabel(f"{self.shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname,
-                      color=colors['axis_label'])
-        ax.set_ylabel(f"{self.shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname,
-                      color=colors['axis_label'])
-
-        ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
-
-        if 'title' in show:
-            accur = self.shadow_tree.get_score()
-            title = f"Regression tree depth {self.shadow_tree.get_max_depth()}, training $R^2$={accur:.3f}"
-            ax.set_title(title, fontsize=fontsize, color=colors['title'])
-
-        return None
-
-    def _rtreeviz_bivar_3D(self, fontsize=10, ticks_fontsize=10, fontname="Arial",
-                          azim=0, elev=0, dist=7,
-                          show={'title'}, colors=None, markersize=15,
-                          n_colors_in_map=100, figsize=None, ax=None):
-
-        X_train = self.shadow_tree.X_train
-        y_train = self.shadow_tree.y_train
-
-        if ax is None:
-            if figsize:
-                fig = plt.figure(figsize=figsize)
-            else:
-                fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-        colors = adjust_colors(colors)
-        ax.view_init(elev=elev, azim=azim)
-        ax.dist = dist
-
-        def y_to_color_index(y):
-            y_range = y_lim[1] - y_lim[0]
-            return int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))
-
-        def plane(node, bbox, color_spectrum):
-            x = np.linspace(bbox[0], bbox[2], 2)
-            y = np.linspace(bbox[1], bbox[3], 2)
-            xx, yy = np.meshgrid(x, y)
-            z = np.full(xx.shape, node.prediction())
-            ax.plot_surface(xx, yy, z, alpha=colors['tesselation_alpha_3D'], shade=False,
-                            color=color_spectrum[y_to_color_index(node.prediction())],
-                            edgecolor=colors['edge'], lw=.3)
-
-        y_lim = np.min(y_train), np.max(y_train)
-        color_spectrum = Color(colors['color_map_min']).range_to(Color(colors['color_map_max']), n_colors_in_map)
-        color_spectrum = [rgb2hex(c.rgb, force_long=True) for c in color_spectrum]
-        y_colors = [color_spectrum[y_to_color_index(y)] for y in y_train]
-        tesselation = self.shadow_tree.tesselation()
-
-        for node, bbox in tesselation:
-            plane(node, bbox, color_spectrum)
-
-        x, y, z = X_train[:, 0], X_train[:, 1], y_train
-        ax.scatter(x, y, z, marker='o', alpha=colors['scatter_marker_alpha'], edgecolor=colors['scatter_edge'],
-                   lw=.3, c=y_colors, s=markersize)
-
-        ax.set_xlabel(f"{self.shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname,
-                      color=colors['axis_label'])
-        ax.set_ylabel(f"{self.shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname,
-                      color=colors['axis_label'])
-        ax.set_zlabel(f"{self.shadow_tree.target_name}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-
-        ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
-
-        if 'title' in show:
-            accur = self.shadow_tree.get_score()
-            title = f"Regression tree depth {self.shadow_tree.get_max_depth()}, training $R^2$={accur:.3f}"
-            ax.set_title(title, fontsize=fontsize, color=colors['title'])
-
-        return None
+        _rtreeviz_bivar_3D(self.shadow_tree, fontsize, ticks_fontsize, fontname, azim, elev, dist, show, colors,
+                           markersize,
+                           n_colors_in_map, figsize, ax)
 
 
 def _class_split_viz(node: ShadowDecTreeNode,
@@ -1713,6 +1388,335 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
         x_labels.append(f"{myround(leaf_target_mean, precision)}")
 
     return x, y, means, means_range, x_labels
+
+
+def _ctreeviz_univar(shadow_tree,
+                     fontsize=10, fontname="Arial", nbins=25, gtype='strip',
+                     show={'title', 'legend', 'splits'},
+                     colors=None,
+                     figsize=None,
+                     ax=None):
+    if ax is None:
+        if figsize:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig, ax = plt.subplots()
+
+    X_train = shadow_tree.X_train.reshape(-1, )
+    y_train = shadow_tree.y_train
+    colors = adjust_colors(colors)
+    n_classes = shadow_tree.nclasses()
+    overall_feature_range = (np.min(X_train), np.max(X_train))
+    class_values = shadow_tree.classes()
+    color_values = colors['classes'][n_classes]
+    color_map = {v: color_values[i] for i, v in enumerate(class_values)}
+    X_colors = [color_map[cl] for cl in class_values]
+
+    ax.set_xlabel(f"{shadow_tree.feature_names}", fontsize=fontsize, fontname=fontname,
+                  color=colors['axis_label'])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.yaxis.set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_linewidth(.3)
+
+    X_hist = [X_train[y_train == cl] for cl in class_values]
+
+    if gtype == 'barstacked':
+        bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
+        hist, bins, barcontainers = ax.hist(X_hist,
+                                            color=X_colors,
+                                            align='mid',
+                                            histtype='barstacked',
+                                            bins=bins,
+                                            label=shadow_tree.class_names)
+
+        for patch in barcontainers:
+            for rect in patch.patches:
+                rect.set_linewidth(.5)
+                rect.set_edgecolor(colors['edge'])
+        ax.set_xlim(*overall_feature_range)
+        ax.set_xticks(overall_feature_range)
+        ax.set_yticks([0, max([max(h) for h in hist])])
+    elif gtype == 'strip':
+        # user should pass in short and wide fig
+        sigma = .013
+        mu = .08
+        class_step = .08
+        dot_w = 20
+        ax.set_ylim(0, mu + n_classes * class_step)
+        for i, bucket in enumerate(X_hist):
+            y_noise = np.random.normal(mu + i * class_step, sigma, size=len(bucket))
+            ax.scatter(bucket, y_noise, alpha=colors['scatter_marker_alpha'], marker='o', s=dot_w, c=color_map[i],
+                       edgecolors=colors['scatter_edge'], lw=.3)
+
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
+                   labelsize=fontsize)
+
+    splits = [node.split() for node in shadow_tree.internal]
+    splits = sorted(splits)
+    bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
+
+    if 'splits' in show:  # this gets the horiz bars showing prediction region
+        pred_box_height = .07 * ax.get_ylim()[1]
+        for i in range(len(bins) - 1):
+            left = bins[i]
+            right = bins[i + 1]
+            inrange = y_train[(X_train >= left) & (X_train <= right)]
+            values, counts = np.unique(inrange, return_counts=True)
+            pred = values[np.argmax(counts)]
+            rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
+                                     edgecolor=colors['edge'], facecolor=color_map[pred])
+            ax.add_patch(rect)
+
+    if 'legend' in show:
+        add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors,
+                              fontname=fontname)
+
+    if 'title' in show:
+        accur = shadow_tree.get_score()
+        title = f"Classifier tree depth {shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
+        ax.set_title(title, fontsize=fontsize, color=colors['title'])
+
+    if 'splits' in show:
+        for split in splits:
+            ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
+
+
+def _ctreeviz_bivar(shadow_tree, fontsize=10, fontname="Arial", show={'title', 'legend', 'splits'},
+                    colors=None,
+                    figsize=None,
+                    ax=None):
+    """
+    Show tesselated 2D feature space for bivariate classification tree. X_train can
+    have lots of features but features lists indexes of 2 features to train tree with.
+    """
+    if ax is None:
+        if figsize:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig, ax = plt.subplots()
+
+    X_train = shadow_tree.X_train
+    y_train = shadow_tree.y_train
+    colors = adjust_colors(colors)
+    tesselation = shadow_tree.tesselation()
+    n_classes = shadow_tree.nclasses()
+    class_values = shadow_tree.classes()
+    color_values = colors['classes'][n_classes]
+    color_map = {v: color_values[i] for i, v in enumerate(class_values)}
+
+    if 'splits' in show:
+        for node, bbox in tesselation:
+            x = bbox[0]
+            y = bbox[1]
+            w = bbox[2] - bbox[0]
+            h = bbox[3] - bbox[1]
+            rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
+                                     edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
+            ax.add_patch(rect)
+
+    dot_w = 25
+    X_hist = [X_train[y_train == cl] for cl in class_values]
+    for i, h in enumerate(X_hist):
+        ax.scatter(h[:, 0], h[:, 1], marker='o', s=dot_w, c=color_map[i],
+                   edgecolors=colors['scatter_edge'], lw=.3)
+
+    ax.set_xlabel(f"{shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname,
+                  color=colors['axis_label'])
+    ax.set_ylabel(f"{shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname,
+                  color=colors['axis_label'])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_linewidth(.3)
+
+    if 'legend' in show:
+        add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors,
+                              fontname=fontname)
+
+    if 'title' in show:
+        accur = shadow_tree.get_score()
+        title = f"Classifier tree depth {shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
+        ax.set_title(title, fontsize=fontsize, color=colors['title'], )
+
+    return None
+
+
+def _rtreeviz_univar(shadow_tree, fontsize: int = 10, show={'title', 'splits'},
+                     split_linewidth=.5, mean_linewidth=2, markersize=15, colors=None,
+                     figsize=None, ax=None):
+    X_train = shadow_tree.X_train.reshape(-1, )
+    y_train = shadow_tree.y_train
+
+    if ax is None:
+        if figsize:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig, ax = plt.subplots()
+
+    if X_train is None or y_train is None:
+        raise ValueError(f"x_train and y_train must not be none")
+
+    colors = adjust_colors(colors)
+
+    y_range = (min(y_train), max(y_train))  # same y axis for all
+    overall_feature_range = (np.min(X_train), np.max(X_train))
+
+    splits = []
+    for node in shadow_tree.internal:
+        splits.append(node.split())
+    splits = sorted(splits)
+    bins = [overall_feature_range[0]] + splits + [overall_feature_range[1]]
+
+    means = []
+    for i in range(len(bins) - 1):
+        left = bins[i]
+        right = bins[i + 1]
+        inrange = y_train[(X_train >= left) & (X_train <= right)]
+        means.append(np.mean(inrange))
+
+    ax.scatter(X_train, y_train, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'],
+               s=markersize,
+               edgecolor=colors['scatter_edge'], lw=.3)
+
+    if 'splits' in show:
+        for split in splits:
+            ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=split_linewidth)
+
+        prevX = overall_feature_range[0]
+        for i, m in enumerate(means):
+            split = overall_feature_range[1]
+            if i < len(splits):
+                split = splits[i]
+            ax.plot([prevX, split], [m, m], '-', color=colors['mean_line'], linewidth=mean_linewidth)
+            prevX = split
+
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=fontsize)
+
+    if 'title' in show:
+        title = f"Regression tree depth {shadow_tree.get_max_depth()}, samples per leaf {shadow_tree.get_min_samples_leaf()},\nTraining $R^2$={shadow_tree.get_score()}"
+        ax.set_title(title, fontsize=fontsize, color=colors['title'])
+
+    ax.set_xlabel(shadow_tree.feature_names, fontsize=fontsize, color=colors['axis_label'])
+    ax.set_ylabel(shadow_tree.target_name, fontsize=fontsize, color=colors['axis_label'])
+
+
+def _rtreeviz_bivar_heatmap(shadow_tree, fontsize=10, ticks_fontsize=12, fontname="Arial",
+                            show={'title'},
+                            n_colors_in_map=100,
+                            colors=None,
+                            markersize=15,
+                            figsize=None,
+                            ax=None) -> tree.DecisionTreeClassifier:
+    """
+    Show tesselated 2D feature space for bivariate regression tree. X_train can
+    have lots of features but features lists indexes of 2 features to train tree with.
+    """
+    if ax is None:
+        if figsize:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig, ax = plt.subplots()
+
+    X_train = shadow_tree.X_train
+    y_train = shadow_tree.y_train
+
+    colors = adjust_colors(colors)
+
+    y_lim = np.min(y_train), np.max(y_train)
+    y_range = y_lim[1] - y_lim[0]
+    color_map = [rgb2hex(c.rgb, force_long=True) for c in
+                 Color(colors['color_map_min']).range_to(Color(colors['color_map_max']),
+                                                         n_colors_in_map)]
+    tesselation = shadow_tree.tesselation()
+
+    for node, bbox in tesselation:
+        pred = node.prediction()
+        color = color_map[int(((pred - y_lim[0]) / y_range) * (n_colors_in_map - 1))]
+        x = bbox[0]
+        y = bbox[1]
+        w = bbox[2] - bbox[0]
+        h = bbox[3] - bbox[1]
+        rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
+                                 edgecolor=colors['edge'], facecolor=color)
+        ax.add_patch(rect)
+
+    color_map = [color_map[int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))] for y in y_train]
+    x, y, z = X_train[:, 0], X_train[:, 1], y_train
+    ax.scatter(x, y, marker='o', c=color_map, edgecolor=colors['scatter_edge'], lw=.3, s=markersize)
+
+    ax.set_xlabel(f"{shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname,
+                  color=colors['axis_label'])
+    ax.set_ylabel(f"{shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname,
+                  color=colors['axis_label'])
+
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
+
+    if 'title' in show:
+        accur = shadow_tree.get_score()
+        title = f"Regression tree depth {shadow_tree.get_max_depth()}, training $R^2$={accur:.3f}"
+        ax.set_title(title, fontsize=fontsize, color=colors['title'])
+
+    return None
+
+
+def _rtreeviz_bivar_3D(shadow_tree, fontsize=10, ticks_fontsize=10, fontname="Arial",
+                       azim=0, elev=0, dist=7,
+                       show={'title'}, colors=None, markersize=15,
+                       n_colors_in_map=100, figsize=None, ax=None):
+    X_train = shadow_tree.X_train
+    y_train = shadow_tree.y_train
+
+    if ax is None:
+        if figsize:
+            fig = plt.figure(figsize=figsize)
+        else:
+            fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+    colors = adjust_colors(colors)
+    ax.view_init(elev=elev, azim=azim)
+    ax.dist = dist
+
+    def y_to_color_index(y):
+        y_range = y_lim[1] - y_lim[0]
+        return int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))
+
+    def plane(node, bbox, color_spectrum):
+        x = np.linspace(bbox[0], bbox[2], 2)
+        y = np.linspace(bbox[1], bbox[3], 2)
+        xx, yy = np.meshgrid(x, y)
+        z = np.full(xx.shape, node.prediction())
+        ax.plot_surface(xx, yy, z, alpha=colors['tesselation_alpha_3D'], shade=False,
+                        color=color_spectrum[y_to_color_index(node.prediction())],
+                        edgecolor=colors['edge'], lw=.3)
+
+    y_lim = np.min(y_train), np.max(y_train)
+    color_spectrum = Color(colors['color_map_min']).range_to(Color(colors['color_map_max']), n_colors_in_map)
+    color_spectrum = [rgb2hex(c.rgb, force_long=True) for c in color_spectrum]
+    y_colors = [color_spectrum[y_to_color_index(y)] for y in y_train]
+    tesselation = shadow_tree.tesselation()
+
+    for node, bbox in tesselation:
+        plane(node, bbox, color_spectrum)
+
+    x, y, z = X_train[:, 0], X_train[:, 1], y_train
+    ax.scatter(x, y, z, marker='o', alpha=colors['scatter_marker_alpha'], edgecolor=colors['scatter_edge'],
+               lw=.3, c=y_colors, s=markersize)
+
+    ax.set_xlabel(f"{shadow_tree.feature_names[0]}", fontsize=fontsize, fontname=fontname,
+                  color=colors['axis_label'])
+    ax.set_ylabel(f"{shadow_tree.feature_names[1]}", fontsize=fontsize, fontname=fontname,
+                  color=colors['axis_label'])
+    ax.set_zlabel(f"{shadow_tree.target_name}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
+
+    if 'title' in show:
+        accur = shadow_tree.get_score()
+        title = f"Regression tree depth {shadow_tree.get_max_depth()}, training $R^2$={accur:.3f}"
+        ax.set_title(title, fontsize=fontsize, color=colors['title'])
+
+    return None
 
 
 def model(model,
