@@ -3,7 +3,7 @@ from .version import __version__
 from dtreeviz.classifiers import decision_boundaries
 
 # OLD API
-from dtreeviz.backward import rtreeviz_univar, \
+from dtreeviz.compatibility import rtreeviz_univar, \
     rtreeviz_bivar_heatmap, \
     rtreeviz_bivar_3D, \
     ctreeviz_univar, \
