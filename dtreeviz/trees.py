@@ -815,7 +815,7 @@ class DTreeVizAdaptor:
                                            ax)
 
 
-    def explain_prediction_path(self, x: np.ndarray):
+    def explain_prediction_path(self, x: np.ndarray) -> str:
         """Prediction path interpretation for a data instance. There will be created a range of values for each feature,
          based on data instance values and its tree prediction path.
 
