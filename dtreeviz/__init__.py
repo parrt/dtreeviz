@@ -3,7 +3,7 @@ from .version import __version__
 # NEW API
 # call m = dtreeviz.model(...) then m.view() etc...
 from dtreeviz.utils import DTreeVizRender
-from dtreeviz.trees import DTreeVizAdaptor, model
+from dtreeviz.trees import DTreeVizAPI, model
 
 # OLD API
 from dtreeviz.compatibility import rtreeviz_univar, \
