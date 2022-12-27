@@ -752,7 +752,7 @@ class DTreeVizAPI:
             ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.grid(b=grid)
 
-    def node_stats(self, node_id: int) -> str:
+    def node_stats(self, node_id: int) -> pd.DataFrame:
         """Generate stats (count, mean, std, etc) based on data samples from a specified node.
 
         This method is especially useful to investigate leaf samples from a decision tree. This is a way to discover data
