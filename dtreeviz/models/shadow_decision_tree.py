@@ -11,15 +11,13 @@ from dtreeviz import utils
 
 class ShadowDecTree(ABC):
     """
-    This tree shadows a decision tree as constructed by the various
-    libraries such as scikit-learn's and XGBoost's
-    DecisionTree(Regressor|Classifier). As part of build process, the
-    samples considered at each decision node or at each leaf node are
-    saved as a big dictionary for use by the nodes.
+    This object adapts decision trees constructed by the various libraries such as scikit-learn's and XGBoost's
+    DecisionTree(Regressor|Classifier) to dtreeviz.  As part of the construction process, the samples
+    considered at decision and leaf nodes are saved as a big dictionary for use by the nodes.
 
     The decision trees for classifiers and regressors from scikit-learn and
     XGBoost etc... are built for efficiency, not ease of tree walking. This class
-    is wraps all of that information in an easy-to-use and consistent interface
+    wraps all of that information in an easy-to-use and consistent interface
     that hides the details of the various decision tree libraries.
 
     Field leaves is list of shadow leaf nodes.
@@ -458,7 +456,6 @@ class ShadowDecTree(ABC):
         To check to which library the tree_model belongs we are using string checks instead of isinstance()
         because we don't want all the libraries to be installed as mandatory, except sklearn.
         """
-
         if hasattr(tree_model, 'get_booster'):
             # scikit-learn wrappers XGBClassifier and XGBRegressor allow you to
             # extract the underlying xgboost.core.Booster with the get_booster() method:
