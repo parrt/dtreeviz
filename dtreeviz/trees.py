@@ -28,7 +28,7 @@ NUM_BINS = [
 ]  # support for 40 classes
 
 
-class DTreeVizAdaptor:
+class DTreeVizAPI:
     """
     This object provides the primary interface to the functionality of this library. You can think of it as
     an adaptor that adapts the various decision-tree based libraries for use with dtreeviz. In implementation,
@@ -1725,7 +1725,7 @@ def model(model,
           tree_index: int = None,
           feature_names: List[str] = None,
           target_name: str = None,
-          class_names: (List[str], Mapping[int, str]) = None) -> DTreeVizAdaptor:
+          class_names: (List[str], Mapping[int, str]) = None) -> DTreeVizAPI:
     """
     Given a decision tree-based model from a supported decision-tree library, training data, and
     information about the data, create a model adaptor that provides a consistent interface for
@@ -1739,11 +1739,11 @@ def model(model,
     :param feature_names: Names of features in the same order of X_train.
     :param target_name: What is the (string) name of the target variable; e.g., for a house price regressor, this might be "price".
     :param class_names: For classifiers, what are the names associated with the labels?
-    :return: a DTreeVizAdaptor object that provides the main API for dtreeviz (version 2.0.0+);
+    :return: a DTreeVizAPI object that provides the main API for dtreeviz (version 2.0.0+);
              e.g., call the view() method on the return object to display it in a notebook.
     """
     shadow_tree = ShadowDecTree.get_shadow_tree(model, X_train, y_train,
                                                 feature_names, target_name, class_names,
                                                 tree_index)
-    dtreeviz_model = DTreeVizAdaptor(shadow_tree)
+    dtreeviz_model = DTreeVizAPI(shadow_tree)
     return dtreeviz_model
