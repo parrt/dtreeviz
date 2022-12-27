@@ -312,13 +312,7 @@ This project is licensed under the terms of the MIT license, see [LICENSE](LICEN
 
 Notes for parrt.
 
-OLD:
-
-```
-$ python setup.py sdist upload
-``` 
-
-NEW:
+Update version.py, setup.py, README.
 
 ```
 python3 -m build
