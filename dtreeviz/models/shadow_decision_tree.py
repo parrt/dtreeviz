@@ -278,8 +278,6 @@ class ShadowDecTree(ABC):
 
             bins = np.linspace(overall_feature_range[0],
                                overall_feature_range[1], nbins + 1)
-            # bins = np.arange(overall_feature_range[0],
-            #                  overall_feature_range[1] + binwidth, binwidth)
             # print(f"\tlen(bins)={len(bins):2d} bins={bins}")
             X, y = X_feature[node.samples()], y_train[node.samples()]
             X_hist = [X[y == cl] for cl in class_values]
@@ -386,7 +384,6 @@ class ShadowDecTree(ABC):
         :return: tuple
             Contains a numpy array of leaf ids and an array of leaf samples
         """
-
         max_samples = max_samples if max_samples else max([node.nsamples() for node in self.leaves])
         leaf_samples = [(node.id, node.nsamples()) for node in self.leaves if
                         min_samples <= node.nsamples() <= max_samples]
@@ -399,7 +396,6 @@ class ShadowDecTree(ABC):
         For classification, supported criteria are “gini” for the Gini impurity and “entropy” for the information gain.
         For regression, supported criteria are “mse”, “friedman_mse”, “mae”.
         """
-
         leaf_criterion = [(node.id, node.criterion()) for node in self.leaves]
         x, y = zip(*leaf_criterion)
         return np.array(x), np.array(y)
@@ -410,7 +406,6 @@ class ShadowDecTree(ABC):
         :return: tuple
             Contains a list of leaf ids and a two lists of leaf samples(one for each class)
         """
-
         leaf_samples = [(node.id, node.n_sample_classes()[0], node.n_sample_classes()[1]) for node in self.leaves]
         index, leaf_sample_0, leaf_samples_1 = zip(*leaf_samples)
         return index, leaf_sample_0, leaf_samples_1
@@ -507,24 +502,20 @@ class ShadowDecTreeNode():
 
     def split(self) -> (int, float):
         """Returns the split/threshold value used at this node."""
-
         return self.shadow_tree.get_node_split(self.id)
 
     def feature(self) -> int:
         """Returns feature index used at this node"""
-
         return self.shadow_tree.get_node_feature(self.id)
 
     def feature_name(self) -> (str, None):
         """Returns the feature name used at this node"""
-
         if self.shadow_tree.feature_names is not None:
             return self.shadow_tree.feature_names[self.feature()]
         return None
 
     def samples(self) -> List[int]:
         """Returns samples indexes from this node"""
-
         return self.shadow_tree.get_node_samples()[self.id]
 
     def nsamples(self) -> int:
@@ -533,7 +524,6 @@ class ShadowDecTreeNode():
         used to compute the predicted value or class . If this is an internal node, it is the number of samples used
         to compute the split point.
         """
-
         return self.shadow_tree.get_node_nsamples(self.id)
 
     # TODO
@@ -544,7 +534,6 @@ class ShadowDecTreeNode():
 
         Returns the sample count values for each classes.
         """
-
         samples = np.array(self.samples())
         if samples.size == 0:
             return [0, 0]
@@ -565,7 +554,6 @@ class ShadowDecTreeNode():
 
     def split_samples(self) -> Tuple[np.ndarray, np.ndarray]:
         """Returns the list of indexes to the left and the right of the split value."""
-
         return self.shadow_tree.get_split_samples(self.id)
 
     def isleaf(self) -> bool:
@@ -582,14 +570,8 @@ class ShadowDecTreeNode():
 
         If the node is an internal node, returns None
         """
-
         if not self.isleaf():
             return None
-        # if self.isclassifier():
-        #     counts = self.shadow_tree.get_prediction_value(self.id)
-        #     return np.argmax(counts)
-        # else:
-        #     return self.shadow_tree.get_prediction_value(self.id)
         return self.shadow_tree.get_prediction(self.id)
 
     def prediction_name(self) -> (str, None):
@@ -599,7 +581,6 @@ class ShadowDecTreeNode():
 
         Return prediction class or value otherwise.
         """
-
         if self.isclassifier():
             if self.shadow_tree.class_names is not None:
                 return self.shadow_tree.class_names[self.prediction()]
@@ -609,7 +590,6 @@ class ShadowDecTreeNode():
         """
         If this tree model is a classifier, return a list with the count associated with each class.
         """
-
         if self.isclassifier():
             if self.shadow_tree.get_class_weight() is None:
                 # return np.array(np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]), dtype=int)

@@ -1,6 +1,7 @@
 from .version import __version__
 
 # NEW API
+# import dtreeviz
 # call m = dtreeviz.model(...) then m.view() etc...
 from dtreeviz.utils import DTreeVizRender
 from dtreeviz.trees import DTreeVizAPI, model

@@ -148,20 +148,18 @@ class ShadowTensorflowTree(ShadowDecTree):
     def get_node_feature(self, id) -> int:
         return self.get_features()[id]
 
-    # TODO check if we can pun this method in the super class
+    # TODO check if we can put this method in the super class
     def get_node_nsamples_by_class(self, id):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
             node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
             return node_value[0][0], node_value[0][1]
 
-    # TODO implement for regression tree
     def get_prediction(self, id):
         if self.is_classifier():
             return np.argmax(self.tree_nodes[id].value.probability)
         else:
             return self.tree_nodes[id].value.value
-        # raise VisualisationNotYetSupportedError("get_prediction()", "TensorFlow Decision Forests2")
 
     def is_categorical_split(self, id) -> bool:
         node_condition = self.tree_nodes[id].condition
@@ -201,7 +199,6 @@ class ShadowTensorflowTree(ShadowDecTree):
         Get individual node info and left/right child node. We are using a dict as a data structure to keep
         the left and right child node info.
         """
-
         tree_nodes = defaultdict(lambda: None)
         children_left = defaultdict(lambda: -1)
         children_right = defaultdict(lambda: -1)

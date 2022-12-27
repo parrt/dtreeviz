@@ -62,7 +62,6 @@ def rtreeviz_bivar_heatmap(tree_model,
     Show tesselated 2D feature space for bivariate regression tree. X_train can
     have lots of features but features lists indexes of 2 features to train tree with.
     """
-
     warnings.warn("rtreeviz_bivar_heatmap() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.rtree_feature_space(...)",
                   DeprecationWarning, stacklevel=2)
@@ -93,7 +92,6 @@ def rtreeviz_bivar_3D(tree_model,
     Show 3D feature space for bivariate regression tree. X_train should have
     just the 2 variables used for training.
     """
-
     warnings.warn("rtreeviz_bivar_3D() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.rtree_feature_space3D(...)",
                   DeprecationWarning, stacklevel=2)
@@ -116,7 +114,6 @@ def ctreeviz_univar(tree_model,
                     show={'title', 'legend', 'splits'},
                     colors=None,
                     ax=None):
-
     warnings.warn("ctreeviz_univar() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.ctree_feature_space(...)",
                   DeprecationWarning, stacklevel=2)
@@ -248,7 +245,6 @@ def dtreeviz(tree_model,
     :param scale: Default is 1.0. Scale the width, height of the overall SVG preserving aspect ratio
     :return: A string in graphviz DOT language that describes the decision tree.
     """
-
     warnings.warn("dtreeviz() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.view()",
                   DeprecationWarning, stacklevel=2)
@@ -345,7 +341,6 @@ def viz_leaf_samples(tree_model,
     :param figsize: optional (width, height) in inches for the entire plot
     :param ax: optional matplotlib "axes" to draw into
     """
-
     warnings.warn("viz_leaf_samples() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.leaf_sizes()",
                   DeprecationWarning, stacklevel=2)
@@ -494,30 +489,6 @@ def ctreeviz_leaf_samples(tree_model,
     model.ctree_leaf_distributions(display_type, plot_ylim, colors, fontsize, fontname, grid, figsize, ax)
 
 
-def _get_leaf_target_input(shadow_tree: ShadowDecTree,
-                           precision: int):
-    x = []
-    y = []
-    means = []
-    means_range = []
-    x_labels = []
-    sigma = .05
-    for i, node in enumerate(shadow_tree.leaves):
-        leaf_index_sample = node.samples()
-        leaf_target = shadow_tree.y_train[leaf_index_sample]
-        leaf_target_mean = np.mean(leaf_target)
-        np.random.seed(0)  # generate the same list of random values for each call
-        X = np.random.normal(i, sigma, size=len(leaf_target))
-
-        x.extend(X)
-        y.extend(leaf_target)
-        means.append([leaf_target_mean, leaf_target_mean])
-        means_range.append([i - (sigma * 3), i + (sigma * 3)])
-        x_labels.append(f"{myround(leaf_target_mean, precision)}")
-
-    return x, y, means, means_range, x_labels
-
-
 def viz_leaf_target(tree_model,
                     X_train: (pd.DataFrame, np.ndarray) = None,
                     y_train: (pd.DataFrame, np.ndarray) = None,
@@ -622,7 +593,6 @@ def describe_node_sample(tree_model,
     :return: pd.DataFrame
         Node training samples' stats
     """
-
     warnings.warn("describe_node_sample() function is deprecated starting from version 2.0. \n "
                   "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.node_stats()",
                   DeprecationWarning, stacklevel=2)
@@ -675,7 +645,6 @@ def explain_prediction_path(tree_model,
         Required in case of tree ensemble. Specify the tree index to interpret.
 
     """
-
     shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, None, class_names,
                                                 tree_index)
     model = DTreeVizAPI(shadow_tree)
@@ -691,33 +660,3 @@ def explain_prediction_path(tree_model,
                       "For the same functionality, please use this code instead: \n m = dtreeviz.model(...) \n m.explain_prediction_path()",
                       DeprecationWarning, stacklevel=2)
         return model.explain_prediction_path(x)
-
-
-def model(model,
-          X_train,
-          y_train,
-          tree_index: int = None,
-          feature_names: List[str] = None,
-          target_name: str = None,
-          class_names: (List[str], Mapping[int, str]) = None
-          ):
-    """
-    Given a decision tree-based model from a supported decision-tree library, training data, and
-    information about the data, create a model adaptor that
-    provides a consistent interface for the overall dtreeviz lib to the various supported tree libraries.
-    Call methods such as v.view(), v.explain_prediction_path(), v.rtree_feature_space3D() on returned adaptor v.
-
-    :param model: A tree-based model from a supportive decision tree library, such as sklearn, XGBoost, and TensorFlow.
-    :param X_train: Features used to train model; 2D array-like object of shape (n_samples, n_features).
-    :param y_train: Classifier or regressor target used to train model; 1D array-like object of shape (n_samples, 1).
-    :param tree_index: Index (from 0) of tree if model is an ensemble of trees like a random forest.
-    :param feature_names: Names of features in the same order of X_train.
-    :param target_name: What is the (string) name of the target variable; e.g., for a house price regressor, this might be "price".
-    :param class_names: For classifiers, what are the names associated with the labels?
-    :return: a DTreeVizAPI object that provides the main API for dtreeviz (version 2.0.0+);
-             e.g., call the view() method on the return object to display it in a notebook.
-    """
-    shadow_tree = ShadowDecTree.get_shadow_tree(model, X_train, y_train, feature_names, target_name, class_names,
-                                                tree_index)
-    dtreeviz_model = DTreeVizAPI(shadow_tree)
-    return dtreeviz_model
