@@ -14,8 +14,8 @@ class ShadowLightGBMTree(ShadowDecTree):
     def __init__(self,
                  booster: Booster,
                  tree_index: int,
-                 x_data: (pd.DataFrame, np.ndarray),
-                 y_data: (pd.Series, np.ndarray),
+                 X_train: (pd.DataFrame, np.ndarray),
+                 y_train: (pd.Series, np.ndarray),
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
@@ -28,7 +28,7 @@ class ShadowLightGBMTree(ShadowDecTree):
         self.features = None  # lazy evaluation
         self.node_to_samples = None
 
-        super().__init__(booster, x_data, y_data, feature_names, target_name, class_names)
+        super().__init__(booster, X_train, y_train, feature_names, target_name, class_names)
 
     def _get_nodes_info(self):
         tree_nodes = {}
@@ -105,7 +105,7 @@ class ShadowLightGBMTree(ShadowDecTree):
                 else:
                     node_thresholds[i] = round(self.tree_nodes[i]["threshold"], 2)
 
-        self.thresholds = np.array(node_thresholds, dtype="object")
+        self.thresholds = np.array(node_thresholds, dtype=object)
         return self.thresholds
 
     def get_features(self) -> np.ndarray:
@@ -133,15 +133,15 @@ class ShadowLightGBMTree(ShadowDecTree):
 
     def classes(self) -> np.ndarray:
         if self.is_classifier():
-            return np.unique(self.y_data)
+            return np.unique(self.y_train)
 
     def get_node_samples(self):
         if self.node_to_samples is not None:
             return self.node_to_samples
 
         node_to_samples = defaultdict(list)
-        for i in range(self.x_data.shape[0]):
-            path = self.predict_path(self.x_data[i])
+        for i in range(self.X_train.shape[0]):
+            path = self.predict_path(self.X_train[i])
             for node in path:
                 node_to_samples[node.id].append(i)
 
@@ -150,7 +150,7 @@ class ShadowLightGBMTree(ShadowDecTree):
 
     def get_split_samples(self, id):
         samples = np.array(self.get_node_samples()[id])
-        node_X_data = self.x_data[samples, self.get_node_feature(id)]
+        node_X_data = self.X_train[samples, self.get_node_feature(id)]
         split = self.get_node_split(id)
 
         if self.is_categorical_split(id):
@@ -196,7 +196,7 @@ class ShadowLightGBMTree(ShadowDecTree):
             return np.argmax((node_value[0][0], node_value[0][1]))
         elif not self.is_classifier():
             node_samples = [node.samples() for node in all_nodes if node.id == id][0]
-            return np.mean(self.y_data[node_samples])
+            return np.mean(self.y_train[node_samples])
 
     def nnodes(self) -> int:
         return len(self.tree_nodes)

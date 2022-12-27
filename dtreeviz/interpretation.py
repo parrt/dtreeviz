@@ -4,16 +4,16 @@ In this moment, it contains "plain english" implementation, but others can be ad
 """
 from collections import defaultdict
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas
+from matplotlib import pyplot as plt
 
 from dtreeviz.colors import adjust_colors
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 
 
 def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
-                                     x: (pandas.core.series.Series, np.ndarray)):
+                                     x: (pandas.core.series.Series, np.ndarray)) -> str:
     """
     Explains the prediction path using feature value's range.
 
@@ -33,7 +33,6 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
     :return: str
         Prediction path explanation in plain english.
     """
-
     node_feature_index = shadow_tree.get_features()
     feature_names = shadow_tree.feature_names
     node_threshold = shadow_tree.get_thresholds()
@@ -42,7 +41,6 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
     # TODO - refactor this logic and find a way to make it simpler
     feature_smaller_values = {}
     feature_bigger_values = {}
-    # feature_categorical_value = {}
     feature_categorical_value = defaultdict(lambda: set())
     feature_categorical_value_not_in = defaultdict(lambda: set())
 
@@ -86,7 +84,6 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
             prediction_path_output += feature_range + "\n"
 
     for feature_name in set(list(feature_categorical_value.keys()) + list(feature_categorical_value_not_in.keys())):
-        # prediction_path_output += f"{feature_name} in {feature_categorical_value[feature_name]} \n"
         prediction_path_output += f"{feature_name}{' in ' + str(feature_categorical_value[feature_name]) if feature_name in feature_categorical_value else ''}" \
                                   f"{' not in ' + str(feature_categorical_value_not_in[feature_name]) if feature_name in feature_categorical_value_not_in else ''}  \n"
 
@@ -95,11 +92,12 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
 
 def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
                                        x: (pandas.core.series.Series, np.ndarray),
-                                       figsize: tuple = (10, 5),
                                        colors: dict = None,
-                                       fontsize: int = 14,
+                                       fontsize: int = 10,
                                        fontname: str = "Arial",
-                                       grid: bool = False):
+                                       grid: bool = False,
+                                       figsize: tuple = None,
+                                       ax=None):
     """
     Explain prediction calculating features importance using sklearn default algorithm : mean decrease in impurity
     (or gini importance) mechanism.
@@ -109,8 +107,6 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
 
     :param shadow_tree: tree used to make prediction
     :param x: Instance example to make prediction
-    :param figsize: tuple of int, optional
-        The plot size
     :param colors: dict, optional
         The set of colors used for plotting
     :param fontsize: int, optional
@@ -119,54 +115,37 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         Plot labels font name
     :param grid: bool
         True if we want to display the grid lines on the visualization
+    :param figsize: optional (width, height) in inches for the entire plot
+    :param ax: optional matplotlib "axes" to draw into
     :return:
         Prediction feature's importance plot
     """
-
     decision_node_path = shadow_tree.predict_path(x)
     decision_node_path = [node.id for node in decision_node_path]
 
     feature_path_importance = shadow_tree.get_feature_path_importance(decision_node_path)
-    return _get_feature_path_importance_sklearn_plot(shadow_tree.feature_names, feature_path_importance, figsize,
-                                                     colors, fontsize,
-                                                     fontname,
-                                                     grid)
-
-
-def _get_feature_path_importance_sklearn_plot(features, feature_path_importance, figsize, colors, fontsize, fontname,
-                                              grid):
     colors = adjust_colors(colors)
-    fig, ax = plt.subplots(figsize=figsize)
+    if ax is None:
+        if figsize:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig, ax = plt.subplots()
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_linewidth(.3)
     ax.spines['bottom'].set_linewidth(.3)
-    ax.set_xticks(range(0, len(features)))
-    ax.set_xticklabels(features)
-
-    barcontainers = ax.bar(range(0, len(features)), feature_path_importance, color=colors["hist_bar"], lw=.3,
-                           align='center',
-                           width=1)
+    ax.set_xticks(range(0, len(shadow_tree.feature_names)))
+    ax.set_xticklabels(shadow_tree.feature_names)
+    barcontainers = ax.barh(y=shadow_tree.feature_names,
+                            width=feature_path_importance,
+                            color=colors["hist_bar"],
+                            lw=.3,
+                            align='center',
+                            height=1)
     for rect in barcontainers.patches:
         rect.set_linewidth(.5)
         rect.set_edgecolor(colors['rect_edge'])
-    ax.set_xlabel("features", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_ylabel("feature importance", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_ylabel("features", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    ax.set_xlabel("feature importance", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(b=grid)
-
     return ax
-
-
-def get_prediction_explainer(explanation_type: str):
-    """Factory method responsible to return a prediction path implementation based on argument 'explanation_type'
-
-    :param explanation_type: specify the type of path explanation to be returned
-    :return: method implementation for specified path explanation.
-    """
-
-    if explanation_type == "plain_english":
-        return explain_prediction_plain_english
-    elif explanation_type == "sklearn_default":
-        return explain_prediction_sklearn_default
-    else:
-        raise ValueError(f"Explanation type {explanation_type} is not supported yet!")

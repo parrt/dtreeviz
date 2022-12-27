@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
 from numbers import Number
 from typing import List, Tuple, Mapping
 
@@ -12,24 +11,24 @@ from dtreeviz import utils
 
 class ShadowDecTree(ABC):
     """
-    This tree shadows a decision tree as constructed by scikit-learn's and XGBoost's
-    DecisionTree(Regressor|Classifier). As part of build process, the
-    samples considered at each decision node or at each leaf node are
-    saved as a big dictionary for use by the nodes.
+    This object adapts decision trees constructed by the various libraries such as scikit-learn's and XGBoost's
+    DecisionTree(Regressor|Classifier) to dtreeviz.  As part of the construction process, the samples
+    considered at decision and leaf nodes are saved as a big dictionary for use by the nodes.
 
-    The decision trees for classifiers and regressors from scikit-learn and XGBoost
-    are built for efficiency, not ease of tree walking. This class
-    is intended as a way to wrap all of that information in an easy to use
-    package.
+    The decision trees for classifiers and regressors from scikit-learn and
+    XGBoost etc... are built for efficiency, not ease of tree walking. This class
+    wraps all of that information in an easy-to-use and consistent interface
+    that hides the details of the various decision tree libraries.
 
-    Field leaves is list of shadow leaf nodes. Field internal is list of shadow non-leaf nodes.
+    Field leaves is list of shadow leaf nodes.
+    Field internal is list of shadow non-leaf nodes.
     Field root is the shadow tree root.
     """
 
     def __init__(self,
                  tree_model,
-                 x_data: (pd.DataFrame, np.ndarray),
-                 y_data: (pd.Series, np.ndarray),
+                 X_train: (pd.DataFrame, np.ndarray),
+                 y_train: (pd.Series, np.ndarray),
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None):
@@ -38,9 +37,9 @@ class ShadowDecTree(ABC):
         ----------
         :param tree_model: sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier, xgboost.core.Booster
             The decision tree to be interpreted
-        :param x_data: pd.DataFrame, np.ndarray
+        :param X_train: pd.DataFrame, np.ndarray
             Features values on which the shadow tree will be build.
-        :param y_data: pd.Series, np.ndarray
+        :param y_train: pd.Series, np.ndarray
             Target values on which the shadow tree will be build.
         :param feature_names: List[str]
             Features' names
@@ -57,8 +56,8 @@ class ShadowDecTree(ABC):
 
         self.feature_names = feature_names
         self.target_name = target_name
-        self.x_data = ShadowDecTree._get_x_data(x_data)
-        self.y_data = ShadowDecTree._get_y_data(y_data)
+        self.X_train = ShadowDecTree._get_x_data(X_train)
+        self.y_train = ShadowDecTree._get_y_data(y_train)
         self.root, self.leaves, self.internal = self._get_tree_nodes()
         if self.is_classifier():
             self.class_names = utils._normalize_class_names(class_names, self.nclasses())
@@ -279,8 +278,6 @@ class ShadowDecTree(ABC):
 
             bins = np.linspace(overall_feature_range[0],
                                overall_feature_range[1], nbins + 1)
-            # bins = np.arange(overall_feature_range[0],
-            #                  overall_feature_range[1] + binwidth, binwidth)
             # print(f"\tlen(bins)={len(bins):2d} bins={bins}")
             X, y = X_feature[node.samples()], y_train[node.samples()]
             X_hist = [X[y == cl] for cl in class_values]
@@ -363,8 +360,8 @@ class ShadowDecTree(ABC):
                 walk(t.right, (bbox[0], s, bbox[2], bbox[3]))
 
         # create bounding box in feature space (not zeroed)
-        f1_values = self.x_data[:, 0]
-        f2_values = self.x_data[:, 1]
+        f1_values = self.X_train[:, 0]
+        f2_values = self.X_train[:, 1]
         overall_bbox = (np.min(f1_values), np.min(f2_values),  # x,y of lower left edge
                         np.max(f1_values), np.max(f2_values))  # x,y of upper right edge
         walk(self.root, overall_bbox)
@@ -387,7 +384,6 @@ class ShadowDecTree(ABC):
         :return: tuple
             Contains a numpy array of leaf ids and an array of leaf samples
         """
-
         max_samples = max_samples if max_samples else max([node.nsamples() for node in self.leaves])
         leaf_samples = [(node.id, node.nsamples()) for node in self.leaves if
                         min_samples <= node.nsamples() <= max_samples]
@@ -400,7 +396,6 @@ class ShadowDecTree(ABC):
         For classification, supported criteria are “gini” for the Gini impurity and “entropy” for the information gain.
         For regression, supported criteria are “mse”, “friedman_mse”, “mae”.
         """
-
         leaf_criterion = [(node.id, node.criterion()) for node in self.leaves]
         x, y = zip(*leaf_criterion)
         return np.array(x), np.array(y)
@@ -411,7 +406,6 @@ class ShadowDecTree(ABC):
         :return: tuple
             Contains a list of leaf ids and a two lists of leaf samples(one for each class)
         """
-
         leaf_samples = [(node.id, node.n_sample_classes()[0], node.n_sample_classes()[1]) for node in self.leaves]
         index, leaf_sample_0, leaf_samples_1 = zip(*leaf_samples)
         return index, leaf_sample_0, leaf_samples_1
@@ -440,19 +434,23 @@ class ShadowDecTree(ABC):
         return root, leaves, internal
 
     @staticmethod
-    def _get_x_data(x_data):
-        if isinstance(x_data, pd.DataFrame):
-            x_data = x_data.values  # We recommend using :meth:`DataFrame.to_numpy` instead.
-        return x_data
+    def _get_x_data(X_train):
+        if isinstance(X_train, pd.DataFrame):
+            X_train = X_train.values  # We recommend using :meth:`DataFrame.to_numpy` instead.
+        return X_train
 
     @staticmethod
-    def _get_y_data(y_data):
-        if isinstance(y_data, pd.Series):
-            y_data = y_data.values
-        return y_data
+    def _get_y_data(y_train):
+        if isinstance(y_train, pd.Series):
+            y_train = y_train.values
+        return y_train
 
     @staticmethod
-    def get_shadow_tree(tree_model, x_data, y_data, feature_names, target_name, class_names=None, tree_index=None):
+    def get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names=None, tree_index=None):
+        """
+        To check to which library the tree_model belongs we are using string checks instead of isinstance()
+        because we don't want all the libraries to be installed as mandatory, except sklearn.
+        """
         if hasattr(tree_model, 'get_booster'):
             # scikit-learn wrappers XGBClassifier and XGBRegressor allow you to
             # extract the underlying xgboost.core.Booster with the get_booster() method:
@@ -461,26 +459,31 @@ class ShadowDecTree(ABC):
             return tree_model
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
             from dtreeviz.models import sklearn_decision_trees
-            return sklearn_decision_trees.ShadowSKDTree(tree_model, x_data, y_data, feature_names,
+            return sklearn_decision_trees.ShadowSKDTree(tree_model, X_train, y_train, feature_names,
                                                         target_name, class_names)
         elif str(type(tree_model)).endswith("xgboost.core.Booster'>"):
             from dtreeviz.models import xgb_decision_tree
-            return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, x_data, y_data,
+            return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, X_train, y_train,
                                                     feature_names, target_name, class_names)
         elif (str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>") or
-              str(type(tree_model)).endswith("pyspark.ml.classification.DecisionTreeClassificationModel'>")):
+              str(type(tree_model)).endswith("pyspark.ml.regression.DecisionTreeRegressionModel'>")):
             from dtreeviz.models import spark_decision_tree
-            return spark_decision_tree.ShadowSparkTree(tree_model, x_data, y_data,
+            return spark_decision_tree.ShadowSparkTree(tree_model, X_train, y_train,
                                                        feature_names, target_name, class_names)
         elif "lightgbm.basic.Booster" in str(type(tree_model)):
             from dtreeviz.models import lightgbm_decision_tree
-            return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, x_data, y_data,
+            return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, X_train, y_train,
                                                              feature_names, target_name, class_names)
+        elif "tensorflow_decision_forests.keras.RandomForestModel" in str(type(tree_model)):
+            from dtreeviz.models import tensorflow_decision_tree
+            return tensorflow_decision_tree.ShadowTensorflowTree(tree_model, tree_index, X_train, y_train,
+                                                                 feature_names, target_name, class_names)
         else:
             raise ValueError(
                 f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
-                "xgboost.core.Booster, lightgbm.basic.Booster, pyspark DecisionTreeClassificationModel or "
-                f"pyspark DecisionTreeClassificationModel) but you passed a {tree_model.__class__.__name__}!")
+                "xgboost.core.Booster, lightgbm.basic.Booster, pyspark DecisionTreeClassificationModel, "
+                f"pyspark DecisionTreeClassificationModel, tensorflow_decision_forests.keras.RandomForestModel) "
+                f"but you passed a {tree_model.__class__.__name__}!")
 
 
 class ShadowDecTreeNode():
@@ -499,24 +502,20 @@ class ShadowDecTreeNode():
 
     def split(self) -> (int, float):
         """Returns the split/threshold value used at this node."""
-
         return self.shadow_tree.get_node_split(self.id)
 
     def feature(self) -> int:
         """Returns feature index used at this node"""
-
         return self.shadow_tree.get_node_feature(self.id)
 
     def feature_name(self) -> (str, None):
         """Returns the feature name used at this node"""
-
         if self.shadow_tree.feature_names is not None:
             return self.shadow_tree.feature_names[self.feature()]
         return None
 
     def samples(self) -> List[int]:
         """Returns samples indexes from this node"""
-
         return self.shadow_tree.get_node_samples()[self.id]
 
     def nsamples(self) -> int:
@@ -525,7 +524,6 @@ class ShadowDecTreeNode():
         used to compute the predicted value or class . If this is an internal node, it is the number of samples used
         to compute the split point.
         """
-
         return self.shadow_tree.get_node_nsamples(self.id)
 
     # TODO
@@ -536,12 +534,11 @@ class ShadowDecTreeNode():
 
         Returns the sample count values for each classes.
         """
-
         samples = np.array(self.samples())
         if samples.size == 0:
             return [0, 0]
 
-        node_y_data = self.shadow_tree.y_data[samples]
+        node_y_data = self.shadow_tree.y_train[samples]
         unique, counts = np.unique(node_y_data, return_counts=True)
 
         if len(unique) == 2:
@@ -557,7 +554,6 @@ class ShadowDecTreeNode():
 
     def split_samples(self) -> Tuple[np.ndarray, np.ndarray]:
         """Returns the list of indexes to the left and the right of the split value."""
-
         return self.shadow_tree.get_split_samples(self.id)
 
     def isleaf(self) -> bool:
@@ -574,14 +570,8 @@ class ShadowDecTreeNode():
 
         If the node is an internal node, returns None
         """
-
         if not self.isleaf():
             return None
-        # if self.isclassifier():
-        #     counts = self.shadow_tree.get_prediction_value(self.id)
-        #     return np.argmax(counts)
-        # else:
-        #     return self.shadow_tree.get_prediction_value(self.id)
         return self.shadow_tree.get_prediction(self.id)
 
     def prediction_name(self) -> (str, None):
@@ -591,7 +581,6 @@ class ShadowDecTreeNode():
 
         Return prediction class or value otherwise.
         """
-
         if self.isclassifier():
             if self.shadow_tree.class_names is not None:
                 return self.shadow_tree.class_names[self.prediction()]
@@ -601,7 +590,6 @@ class ShadowDecTreeNode():
         """
         If this tree model is a classifier, return a list with the count associated with each class.
         """
-
         if self.isclassifier():
             if self.shadow_tree.get_class_weight() is None:
                 # return np.array(np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]), dtype=int)
@@ -624,4 +612,5 @@ class ShadowDecTreeNode():
 
 class VisualisationNotYetSupportedError(Exception):
     def __init__(self, method_name, model_name):
-        super().__init__(f"{method_name} is not implemented yet for {model_name}")
+        super().__init__(f"{method_name} is not implemented yet for {model_name}. "
+                         f"Please create an issue on https://github.com/parrt/dtreeviz/issues if you need this. Thanks!")

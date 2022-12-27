@@ -16,8 +16,8 @@ class ShadowTensorflowTree(ShadowDecTree):
     # TODO check for the other types of ensamble trees
     def __init__(self, model: RandomForestModel,
                  tree_index: int,
-                 x_data,
-                 y_data,
+                 X_train,
+                 y_train,
                  feature_names: List[str] = None,
                  target_name: str = None,
                  class_names: (List[str], Mapping[int, str]) = None
@@ -33,7 +33,7 @@ class ShadowTensorflowTree(ShadowDecTree):
         self.node_to_samples = None  # lazy initialization
         self.thresholds = None  # lazy  initialization
 
-        super().__init__(model, x_data, y_data, feature_names, target_name, class_names)
+        super().__init__(model, X_train, y_train, feature_names, target_name, class_names)
 
     def _get_column_dataspec(self):
         column_dataspec = {}
@@ -78,7 +78,7 @@ class ShadowTensorflowTree(ShadowDecTree):
                     if self.column_dataspec[feature_split_name].categorical.offset_value_by_one_during_training is True:
                         thresholds[index] = [value - 1 for value in thresholds[index]]
 
-        self.thresholds = np.array(thresholds)
+        self.thresholds = np.array(thresholds, dtype=object)
         return self.thresholds
 
     def get_features(self) -> np.ndarray:
@@ -106,19 +106,19 @@ class ShadowTensorflowTree(ShadowDecTree):
             return 1
         else:
             # didn't find an API method from TF-DF to return the class labels
-            return len(np.unique(self.y_data))
+            return len(np.unique(self.y_train))
 
     def classes(self) -> np.ndarray:
         if self.is_classifier():
-            return np.unique(self.y_data)
+            return np.unique(self.y_train)
 
     def get_node_samples(self):
         if self.node_to_samples is not None:
             return self.node_to_samples
 
         node_to_samples = defaultdict(list)
-        for i in range(self.x_data.shape[0]):
-            path = self.predict_path(self.x_data[i])
+        for i in range(self.X_train.shape[0]):
+            path = self.predict_path(self.X_train[i])
             for node in path:
                 node_to_samples[node.id].append(i)
 
@@ -127,7 +127,7 @@ class ShadowTensorflowTree(ShadowDecTree):
 
     def get_split_samples(self, id):
         samples = np.array(self.get_node_samples()[id])
-        node_X_data = self.x_data[samples, self.get_node_feature(id)]
+        node_X_data = self.X_train[samples, self.get_node_feature(id)]
         split = self.get_node_split(id)
 
         if self.is_categorical_split(id):
@@ -148,20 +148,18 @@ class ShadowTensorflowTree(ShadowDecTree):
     def get_node_feature(self, id) -> int:
         return self.get_features()[id]
 
-    # TODO check if we can pun this method in the super class
+    # TODO check if we can put this method in the super class
     def get_node_nsamples_by_class(self, id):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
             node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
             return node_value[0][0], node_value[0][1]
 
-    # TODO implement for regression tree
     def get_prediction(self, id):
         if self.is_classifier():
             return np.argmax(self.tree_nodes[id].value.probability)
         else:
             return self.tree_nodes[id].value.value
-        # raise VisualisationNotYetSupportedError("get_prediction()", "TensorFlow Decision Forests2")
 
     def is_categorical_split(self, id) -> bool:
         node_condition = self.tree_nodes[id].condition
@@ -201,7 +199,6 @@ class ShadowTensorflowTree(ShadowDecTree):
         Get individual node info and left/right child node. We are using a dict as a data structure to keep
         the left and right child node info.
         """
-
         tree_nodes = defaultdict(lambda: None)
         children_left = defaultdict(lambda: -1)
         children_right = defaultdict(lambda: -1)

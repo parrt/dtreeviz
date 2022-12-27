@@ -1,6 +1,15 @@
+import os
 import re
+import tempfile
+import warnings
 import xml.etree.cElementTree as ET
+from pathlib import Path
+from sys import platform as PLATFORM
+
+import graphviz
 import pandas as pd
+from matplotlib import patches as patches
+from numpy import ndarray
 from numbers import Number
 from typing import Tuple, Sequence
 
@@ -119,10 +128,7 @@ def scale_SVG(svg:str, scale:float) -> str:
     ET.register_namespace('xlink', "http://www.w3.org/1999/xlink")
     xml_str = ET.tostring(root).decode()
     return xml_str
-    # print(root.attrib)
-    # return ET.tostring(root, encoding='utf8', method='xml').decode("utf-8")
 
-    # return root.tostring()#ET.tostring(root, 'utf-8')
 
 def myround(v,ndigits=2):
     return format(v, '.' + str(ndigits) + 'f')
@@ -156,25 +162,26 @@ def _normalize_class_names(class_names, nclasses):
         return class_names
     elif isinstance(class_names, Sequence):
         return {i: n for i, n in enumerate(class_names)}
+    elif isinstance(class_names, ndarray):
+        return list(class_names)
     else:
         raise Exception(f"class_names must be dict or sequence, not {class_names.__class__.__name__}")
 
 
-def extract_params_from_pipeline(pipeline, x_data, feature_names):
+def extract_params_from_pipeline(pipeline, X_train, feature_names):
     """
     Extracts necessary parameters from an :py:class:`sklearn.pipeline.Pipeline` to pass into
     :py:class:`dtreeviz.models.sklearn_decision_trees.ShadowSKDTree`.
 
     Args:
         pipeline (sklearn.pipeline.Pipeline): An SKlearn pipeline whose last component is a decision tree model.
-        x_data (numpy.ndarray): The (X)-input data on which the pipeline was fitted on.
-        feature_names (list): List of names of the features in `x_data`.
+        X_train (numpy.ndarray): The (X)-input data on which the pipeline was fitted on.
+        feature_names (list): List of names of the features in `X_train`.
 
     Returns:
         tuple: Tuple consisting of the tree model, the transformed input data, and a list of feature
         names used by the model.
     """
-
     # Pick last element of pipeline
     tree_model = pipeline.steps[-1][1]
 
@@ -182,11 +189,11 @@ def extract_params_from_pipeline(pipeline, x_data, feature_names):
         pipeline=pipeline,
         features=feature_names
     )
-    x_data = pd.DataFrame(
-        data=pipeline[:-1].transform(x_data),
+    X_train = pd.DataFrame(
+        data=pipeline[:-1].transform(X_train),
         columns=feature_names
     )
-    return tree_model, x_data, feature_names
+    return tree_model, X_train, feature_names
 
 
 def check_tree_index(tree_index, nr_of_trees):
@@ -194,6 +201,79 @@ def check_tree_index(tree_index, nr_of_trees):
         raise ValueError("You need to pass in a tree_index parameter.")
     if tree_index >= nr_of_trees:
         raise ValueError(f"tree_index parameter should have values between [{0}, {nr_of_trees - 1}].")
+
+
+class DTreeVizRender:
+    """
+    This object is constructed from graphviz DOT content and knows how to render and save as SVG.
+    """
+    def __init__(self, dot, scale=1.0):
+        self.dot = dot
+        self.scale = scale
+
+    def _repr_svg_(self):
+        return self.svg()
+
+    def svg(self):
+        """Render tree as svg and return svg text."""
+        svgfilename = self.save_svg()
+        with open(svgfilename, encoding='UTF-8') as f:
+            svg = f.read()
+        return svg
+
+    def view(self):
+        warnings.warn("DTreeVizRender.view() function is deprecated starting from version 2.0. \n "
+                      "Please use display() instead",
+                      DeprecationWarning, stacklevel=2)
+        self.show()
+
+    def show(self):
+        """Pop up a new window to display the (SVG) dtreeview view."""
+        svgfilename = self.save_svg()
+        graphviz.backend.view(svgfilename)
+
+    def save_svg(self):
+        """Saves the current object as SVG file in the tmp directory and returns the filename"""
+        tmp = tempfile.gettempdir()
+        svgfilename = os.path.join(tmp, f"DTreeViz_{os.getpid()}.svg")
+        self.save(svgfilename)
+        return svgfilename
+
+    def save(self, filename):
+        """
+        Save the svg of this tree visualization into filename argument.
+        Can only save .svg; others fail with errors.
+        See https://github.com/parrt/dtreeviz/issues/4
+        """
+        path = Path(filename)
+        if not path.parent.exists:
+            os.makedirs(path.parent)
+
+        g = graphviz.Source(self.dot, format='svg')
+        dotfilename = g.save(directory=path.parent.as_posix(), filename=path.stem)
+        format = path.suffix[1:]  # ".svg" -> "svg" etc...
+
+        if not filename.endswith(".svg"):
+            # Mac I think could do any format if we required:
+            #   brew reinstall pango librsvg cairo
+            raise (Exception(f"{PLATFORM} can only save .svg files: {filename}"))
+
+        # Gen .svg file from .dot but output .svg has image refs to other files
+        cmd = ["dot", f"-T{format}", "-o", filename, dotfilename]
+        # print(' '.join(cmd))
+        if graphviz.__version__ <= '0.17':
+            graphviz.backend.run(cmd, capture_output=True, check=True, quiet=False)
+        else:
+            graphviz.backend.execute.run_check(cmd, capture_output=True, check=True, quiet=False)
+
+        if filename.endswith(".svg"):
+            # now merge in referenced SVG images to make all-in-one file
+            with open(filename, encoding='UTF-8') as f:
+                svg = f.read()
+            svg = inline_svg_images(svg)
+            svg = scale_SVG(svg, self.scale)
+            with open(filename, "w", encoding='UTF-8') as f:
+                f.write(svg)
 
 
 if __name__ == '__main__':
@@ -204,3 +284,33 @@ if __name__ == '__main__':
 
     with open("/tmp/u.svg", "w") as f:
         f.write(svg2)
+
+
+def add_classifier_legend(ax, class_names, class_values, facecolors, target_name,
+                          colors, fontsize=10, fontname='Arial'):
+    # add boxes for legend
+    boxes = []
+    for c in class_values:
+        box = patches.Rectangle((0, 0), 20, 10, linewidth=.4, edgecolor=colors['rect_edge'],
+                                facecolor=facecolors[c], label=class_names[c])
+        boxes.append(box)
+    leg = ax.legend(handles=boxes,
+                    frameon=True,
+                    shadow=False,
+                    fancybox=True,
+                    handletextpad=.35,
+                    borderpad=.8,
+                    bbox_to_anchor=(1.0, 1.0),
+                    edgecolor=colors['legend_edge'])
+
+    leg.set_title(target_name, prop={'size': fontsize,
+                                     'weight': 'bold',
+                                     'family': fontname})
+
+    leg.get_frame().set_linewidth(.5)
+    leg.get_title().set_color(colors['legend_title'])
+    leg.get_title().set_fontsize(fontsize)
+    leg.get_title().set_fontname(fontname)
+    for text in leg.get_texts():
+        text.set_color(colors['text'])
+        text.set_fontsize(fontsize)

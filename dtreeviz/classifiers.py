@@ -1,32 +1,33 @@
 from typing import Tuple
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-import matplotlib.patches as patches
-import matplotlib.pyplot as plt
-from matplotlib.collections import PatchCollection
-from colour import Color
 from PIL import ImageColor
+from colour import Color
+from matplotlib import patches as patches
+from matplotlib.collections import PatchCollection
 
-from dtreeviz.colors import adjust_colors, GREY
-from dtreeviz.trees import add_classifier_legend
 from dtreeviz import utils
+from dtreeviz.colors import adjust_colors
+from dtreeviz.utils import add_classifier_legend
 
 
-def clfviz(model, X: np.ndarray, y: np.ndarray,
-           ntiles=50, tile_fraction=.9,
-           binary_threshold=0.5,
-           show=['instances', 'boundaries', 'probabilities', 'misclassified', 'legend'],
-           feature_names=None, target_name=None, class_names=None,
-           markers=None,
-           boundary_marker='o', boundary_markersize=.8,
-           fontsize=9, fontname="Arial",
-           dot_w=25,
-           yshift=.08,
-           sigma=.013,
-           colors: dict = None,
-           ranges: Tuple = None,
-           ax=None) -> None:
+def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
+                        ntiles=50, tile_fraction=.9,
+                        binary_threshold=0.5,
+                        show=['instances', 'boundaries', 'probabilities', 'misclassified', 'legend'],
+                        feature_names=None, target_name=None, class_names=None,
+                        markers=None,
+                        boundary_marker='o', boundary_markersize=.8,
+                        fontsize=9, fontname="Arial",
+                        dot_w=25,
+                        yshift=.08,
+                        sigma=.013,
+                        colors: dict = None,
+                        ranges: Tuple = None,
+                        figsize: Tuple = None,
+                        ax=None) -> None:
     """
     Two-variable case:
     Draw a tiled grid over a 2D classifier feature space where each tile is colored by
@@ -44,7 +45,7 @@ def clfviz(model, X: np.ndarray, y: np.ndarray,
 
     TODO: assumes classes are contiguous and 0..k-1
 
-    :param model: an sklearn classifier model or any other model that can answer
+    :param model: an sklearn or Keras classifier model or any other model that can answer
                   method predict_proba(X)
     :param X: A 1- or 2-column dataframe or numpy array with the one or two features to plot
     :param y: The target column with integers indicating the true instance classes;
@@ -76,6 +77,7 @@ def clfviz(model, X: np.ndarray, y: np.ndarray,
     :param ranges: Tuple for ranges of plot. One range per input dimension also specified as tuple, 
                    e.g. ((10, 100), (500, 600)).
                    Ranges of plot are determined by min, max of X vector if not specified. 
+    :param figsize: optional (width, height) in inches for the entire plot
     :param ax: An optional matplotlib "axes" upon which this method should draw. If you
                send in your own figure, it should be wide but not tall like shape 4,1
     """
@@ -84,40 +86,49 @@ def clfviz(model, X: np.ndarray, y: np.ndarray,
     if isinstance(y, pd.Series):
         y = y.values
 
+    if model.__class__.__module__.startswith('tensorflow.python.keras') or \
+            model.__class__.__module__.startswith('keras'):
+        if not (hasattr(model, 'predict') and callable(getattr(model, 'predict'))):
+            raise ValueError("Keras model argument must implement method `predict()`")
+    elif not(hasattr(model, 'predict_proba') and callable(getattr(model, 'predict_proba'))):
+        raise ValueError("model argument must implement method `predict_proba()`")
+
     if len(X.shape) == 1 or (len(X.shape)==2 and X.shape[1] == 1):
-        clfviz_univar(model=model, x=X, y=y,
-                      ntiles=ntiles,
-                      binary_threshold=binary_threshold,
-                      show=show,
-                      feature_name=feature_names[0] if feature_names is not None else None,
-                      target_name=target_name,
-                      class_names=class_names,
-                      markers=markers,
-                      fontsize=fontsize, fontname=fontname,
-                      dot_w=dot_w,
-                      sigma=sigma,
-                      yshift=yshift,
-                      colors=colors,
-                      ax=ax)
+        decision_boundaries_univar(model=model, x=X, y=y,
+                                   ntiles=ntiles,
+                                   binary_threshold=binary_threshold,
+                                   show=show,
+                                   feature_name=feature_names[0] if feature_names is not None else None,
+                                   target_name=target_name,
+                                   class_names=class_names,
+                                   markers=markers,
+                                   fontsize=fontsize, fontname=fontname,
+                                   dot_w=dot_w,
+                                   sigma=sigma,
+                                   yshift=yshift,
+                                   colors=colors,
+                                   figsize=figsize,
+                                   ax=ax)
     elif len(X.shape) == 2 and X.shape[1] == 2:
-        clfviz_bivar(model=model, X=X, y=y,
-                     ntiles=ntiles, tile_fraction=tile_fraction,
-                     binary_threshold=binary_threshold,
-                     show=show,
-                     feature_names=feature_names, target_name=target_name,
-                     class_names=class_names,
-                     markers=markers,
-                     boundary_marker=boundary_marker,
-                     boundary_markersize=boundary_markersize,
-                     fontsize=fontsize, fontname=fontname,
-                     dot_w=dot_w, colors=colors,
-                     ranges=ranges,
-                     ax=ax)
+        decision_boundaries_bivar(model=model, X=X, y=y,
+                                  ntiles=ntiles, tile_fraction=tile_fraction,
+                                  binary_threshold=binary_threshold,
+                                  show=show,
+                                  feature_names=feature_names, target_name=target_name,
+                                  class_names=class_names,
+                                  markers=markers,
+                                  boundary_marker=boundary_marker,
+                                  boundary_markersize=boundary_markersize,
+                                  fontsize=fontsize, fontname=fontname,
+                                  dot_w=dot_w, colors=colors,
+                                  ranges=ranges,
+                                  figsize=figsize,
+                                  ax=ax)
     else:
         raise ValueError(f"Expecting 2D data not {X.shape}")
 
 
-def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
+def decision_boundaries_bivar(model, X:np.ndarray, y:np.ndarray,
                  ntiles=50, tile_fraction=.9,
                  binary_threshold=0.5,
                  show=['instances','boundaries','probabilities','misclassified','legend'],
@@ -127,9 +138,10 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
                  fontsize=9, fontname="Arial",
                  dot_w=25, colors:dict=None,
                  ranges=None,
+                 figsize=None,
                  ax=None) -> None:
     """
-    See comment and parameter descriptions for clfviz() above.
+    See comment and parameter descriptions for decision_boundaries() above.
     """
     if isinstance(X, pd.DataFrame):
         X = X.values
@@ -140,7 +152,10 @@ def clfviz_bivar(model, X:np.ndarray, y:np.ndarray,
         raise ValueError(f"Expecting 2D data not {X.shape}")
 
     if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(5, 3.5))
+        if figsize:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig, ax = plt.subplots()
 
     # Created grid over the range of x1 and x2 variables, get probabilities, predictions
     grid_points, grid_proba, grid_pred_as_matrix, w, x_, class_X, class_values = \
@@ -364,23 +379,27 @@ def _draw_boundary_edges(ax, grid_points, grid_pred_as_matrix, boundary_marker, 
             markersize=boundary_markersize, c=colors['class_boundary'], alpha=1.0)
 
 
-def clfviz_univar(model, x: np.ndarray, y: np.ndarray,
-                  ntiles=100,
-                  binary_threshold=0.5,
-                  show=['instances', 'boundaries', 'probabilities', 'misclassified', 'legend'],
-                  feature_name=None, target_name=None, class_names=None,
-                  markers=None,
-                  fontsize=9, fontname="Arial",
-                  dot_w=25,
-                  yshift=.09,
-                  sigma=.09,
-                  colors: dict = None,
-                  ax=None) -> None:
+def decision_boundaries_univar(model, x: np.ndarray, y: np.ndarray,
+                               ntiles=100,
+                               binary_threshold=0.5,
+                               show=['instances', 'boundaries', 'probabilities', 'misclassified', 'legend'],
+                               feature_name=None, target_name=None, class_names=None,
+                               markers=None,
+                               fontsize=9, fontname="Arial",
+                               dot_w=25,
+                               yshift=.09,
+                               sigma=.09,
+                               colors: dict = None,
+                               figsize: Tuple = None,
+                               ax=None) -> None:
     """
-    See comment and parameter descriptions for clfviz() above.
+    See comment and parameter descriptions for decision_boundaries() above.
     """
     if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(5, 1.2))
+        if figsize:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig, ax = plt.subplots()
 
     if isinstance(x, pd.Series):
         x = x.values
