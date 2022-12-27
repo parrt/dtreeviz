@@ -9,12 +9,11 @@ import pandas as pd
 from colour import Color, rgb2hex
 from sklearn import tree
 
-from dtreeviz.classifiers import add_classifier_legend
 from dtreeviz.colors import adjust_colors
 from dtreeviz.interpretation import explain_prediction_plain_english, explain_prediction_sklearn_default
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
-from dtreeviz.utils import myround, DTreeVizRender
+from dtreeviz.utils import myround, DTreeVizRender, add_classifier_legend
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [
@@ -32,7 +31,7 @@ class DTreeVizAPI:
     """
     This object provides the primary interface to the functionality of this library. You can think of it as
     an adaptor that adapts the various decision-tree based libraries for use with dtreeviz. In implementation,
-    however, this object encapsulates the key functionality but delegates model adaptation
+    however, this object encapsulates the key functionality and API but delegates tree model adaptation
     from sklearn etc... to dtreeviz.models.ShadowDecTree subclasses.
     """
     def __init__(self, shahdow_tree: ShadowDecTree):
@@ -95,7 +94,6 @@ class DTreeVizAPI:
         :param figsize: optional (width, height) in inches for the entire plot
             :param ax: optional matplotlib "axes" to draw into
         """
-
         leaf_id, leaf_sizes = self.shadow_tree.get_leaf_sample_counts(min_size, max_size)
 
         if display_type == "plot":
@@ -181,7 +179,6 @@ class DTreeVizAPI:
         :param figsize: optional (width, height) in inches for the entire plot
             :param ax: optional matplotlib "axes" to draw into
         """
-
         index, leaf_samples_0, leaf_samples_1 = self.shadow_tree.get_leaf_sample_counts_by_class()
 
         if display_type == "plot":
@@ -1087,8 +1084,6 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
                     graph_colors=None,
                     fontname: str = "Arial"):
     graph_colors = adjust_colors(graph_colors)
-    # size = _prop_size(node.nsamples(), counts=node.shadow_tree.leaf_sample_counts(),
-    #                  output_range=(.2, 1.5))
 
     minsize = .15
     maxsize = 1.3
@@ -1098,7 +1093,6 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
     size = min(size, maxsize)
 
     # we visually need n=1 and n=9 to appear different but diff between 300 and 400 is no big deal
-    # size = np.sqrt(np.log(size))
     counts = node.class_counts()
     prediction = node.prediction_name()
     _draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
@@ -1172,7 +1166,6 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         right = y_train[right]
         split = node.split()
 
-        # ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
         ax.plot([overall_feature_range[0], split], [np.mean(left), np.mean(left)], '--', color=colors['split_line'],
                 linewidth=1)
         ax.plot([split, split], [*y_range], '--', color=colors['split_line'], linewidth=1)
@@ -1203,7 +1196,6 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         if highlight_node:
             wedge(ax, X[node.feature()], color=colors['highlight'])
 
-    # plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
@@ -1237,7 +1229,6 @@ def _regr_leaf_viz(node: ShadowDecTreeNode,
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_linewidth(.3)
     ax.set_xticks([])
-    # ax.set_yticks(y_range)
 
     ticklabelpad = plt.rcParams['xtick.major.pad']
     ax.annotate(f"{target_name}={myround(m, precision)}\nn={len(y)}",
@@ -1256,7 +1247,6 @@ def _regr_leaf_viz(node: ShadowDecTreeNode,
     ax.scatter(X, y, s=5, c=colors['scatter_marker'], alpha=alpha, lw=.3)
     ax.plot([0, len(node.samples())], [m, m], '--', color=colors['split_line'], linewidth=1)
 
-    # plt.tight_layout()
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
         plt.close()
@@ -1320,8 +1310,6 @@ def _draw_piechart(counts, size, colors, filename, label=None, fontname="Arial",
     tweak = size * .01
     fig, ax = plt.subplots(1, 1, figsize=(size, size))
     ax.axis('equal')
-    # ax.set_xlim(0 - tweak, size + tweak)
-    # ax.set_ylim(0 - tweak, size + tweak)
     ax.set_xlim(0, size - 10 * tweak)
     ax.set_ylim(0, size - 10 * tweak)
     # frame=True needed for some reason to fit pie properly (ugh)
@@ -1342,7 +1330,6 @@ def _draw_piechart(counts, size, colors, filename, label=None, fontname="Arial",
                 verticalalignment='top',
                 fontsize=9, color=graph_colors['text'], fontname=fontname)
 
-    # plt.tight_layout()
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
     plt.close()
 

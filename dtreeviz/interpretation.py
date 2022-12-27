@@ -33,7 +33,6 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
     :return: str
         Prediction path explanation in plain english.
     """
-
     node_feature_index = shadow_tree.get_features()
     feature_names = shadow_tree.feature_names
     node_threshold = shadow_tree.get_thresholds()
@@ -42,7 +41,6 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
     # TODO - refactor this logic and find a way to make it simpler
     feature_smaller_values = {}
     feature_bigger_values = {}
-    # feature_categorical_value = {}
     feature_categorical_value = defaultdict(lambda: set())
     feature_categorical_value_not_in = defaultdict(lambda: set())
 
@@ -86,7 +84,6 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
             prediction_path_output += feature_range + "\n"
 
     for feature_name in set(list(feature_categorical_value.keys()) + list(feature_categorical_value_not_in.keys())):
-        # prediction_path_output += f"{feature_name} in {feature_categorical_value[feature_name]} \n"
         prediction_path_output += f"{feature_name}{' in ' + str(feature_categorical_value[feature_name]) if feature_name in feature_categorical_value else ''}" \
                                   f"{' not in ' + str(feature_categorical_value_not_in[feature_name]) if feature_name in feature_categorical_value_not_in else ''}  \n"
 
@@ -152,5 +149,3 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
     ax.set_xlabel("feature importance", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
     ax.grid(b=grid)
     return ax
-
-

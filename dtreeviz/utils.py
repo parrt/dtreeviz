@@ -8,6 +8,7 @@ from sys import platform as PLATFORM
 
 import graphviz
 import pandas as pd
+from matplotlib import patches as patches
 from numpy import ndarray
 from numbers import Number
 from typing import Tuple, Sequence
@@ -127,10 +128,7 @@ def scale_SVG(svg:str, scale:float) -> str:
     ET.register_namespace('xlink', "http://www.w3.org/1999/xlink")
     xml_str = ET.tostring(root).decode()
     return xml_str
-    # print(root.attrib)
-    # return ET.tostring(root, encoding='utf8', method='xml').decode("utf-8")
 
-    # return root.tostring()#ET.tostring(root, 'utf-8')
 
 def myround(v,ndigits=2):
     return format(v, '.' + str(ndigits) + 'f')
@@ -184,7 +182,6 @@ def extract_params_from_pipeline(pipeline, X_train, feature_names):
         tuple: Tuple consisting of the tree model, the transformed input data, and a list of feature
         names used by the model.
     """
-
     # Pick last element of pipeline
     tree_model = pipeline.steps[-1][1]
 
@@ -204,16 +201,6 @@ def check_tree_index(tree_index, nr_of_trees):
         raise ValueError("You need to pass in a tree_index parameter.")
     if tree_index >= nr_of_trees:
         raise ValueError(f"tree_index parameter should have values between [{0}, {nr_of_trees - 1}].")
-
-
-if __name__ == '__main__':
-    # test rig
-    with open("/tmp/t.svg") as f:
-        svg = f.read()
-        svg2 = scale_SVG(svg, scale=(.8))
-
-    with open("/tmp/u.svg", "w") as f:
-        f.write(svg2)
 
 
 class DTreeVizRender:
@@ -287,3 +274,43 @@ class DTreeVizRender:
             svg = scale_SVG(svg, self.scale)
             with open(filename, "w", encoding='UTF-8') as f:
                 f.write(svg)
+
+
+if __name__ == '__main__':
+    # test rig
+    with open("/tmp/t.svg") as f:
+        svg = f.read()
+        svg2 = scale_SVG(svg, scale=(.8))
+
+    with open("/tmp/u.svg", "w") as f:
+        f.write(svg2)
+
+
+def add_classifier_legend(ax, class_names, class_values, facecolors, target_name,
+                          colors, fontsize=10, fontname='Arial'):
+    # add boxes for legend
+    boxes = []
+    for c in class_values:
+        box = patches.Rectangle((0, 0), 20, 10, linewidth=.4, edgecolor=colors['rect_edge'],
+                                facecolor=facecolors[c], label=class_names[c])
+        boxes.append(box)
+    leg = ax.legend(handles=boxes,
+                    frameon=True,
+                    shadow=False,
+                    fancybox=True,
+                    handletextpad=.35,
+                    borderpad=.8,
+                    bbox_to_anchor=(1.0, 1.0),
+                    edgecolor=colors['legend_edge'])
+
+    leg.set_title(target_name, prop={'size': fontsize,
+                                     'weight': 'bold',
+                                     'family': fontname})
+
+    leg.get_frame().set_linewidth(.5)
+    leg.get_title().set_color(colors['legend_title'])
+    leg.get_title().set_fontsize(fontsize)
+    leg.get_title().set_fontname(fontname)
+    for text in leg.get_texts():
+        text.set_color(colors['text'])
+        text.set_fontsize(fontsize)
