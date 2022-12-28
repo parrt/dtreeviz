@@ -31,6 +31,17 @@ color_blind_friendly_colors = [
 ]
 
 
+mpl_colors = [
+    None,  # 0 classes
+    None,  # 1 class
+]
+for n_classes in range(2, 11):
+    class_colors = []
+    for i in range(0, n_classes):
+        class_colors.append(f'C{i}')
+    mpl_colors.append(class_colors)
+
+
 def get_hex_colors(n_classes, cmap_name="RdYlBu"):
     """
     Will generate a list of lists that contain n discrete hex colors
