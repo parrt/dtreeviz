@@ -214,7 +214,12 @@ class DTreeVizAPI:
             ax.set_ylabel("samples by class", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.grid(visible=grid)
             ax.legend([bar_container0, bar_container1],
-                      [f'class {self.shadow_tree.classes()[0]}', f'class {self.shadow_tree.classes()[1]}'])
+                      [f'class {self.shadow_tree.classes()[0]}', f'class {self.shadow_tree.classes()[1]}'],
+                      frameon=colors['legend_edge'] is not None,
+                      shadow=False,
+                      fancybox=colors['legend_edge'] is not None,
+                      edgecolor=colors['legend_edge']
+                     )
         elif display_type == "text":
             for leaf, samples_0, samples_1 in zip(index, leaf_samples_0, leaf_samples_1):
                 print(f"leaf {leaf}, samples : {samples_0}, {samples_1}")
@@ -1268,9 +1273,9 @@ def _draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Aria
 
     fig, ax = plt.subplots(1, 1, figsize=(1, 1))
     leg = ax.legend(handles=boxes,
-                    frameon=True,
+                    frameon=colors['legend_edge'] is not None,
                     shadow=False,
-                    fancybox=True,
+                    fancybox=colors['legend_edge'] is not None,
                     loc='center',
                     title=target_name,
                     handletextpad=.35,
