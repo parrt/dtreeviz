@@ -117,7 +117,7 @@ class DTreeVizAPI:
                 rect.set_edgecolor(colors['rect_edge'])
             ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.set_ylabel("samples count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-            ax.grid(b=grid)
+            ax.grid(visible=grid)
         elif display_type == "text":
             for leaf, samples in zip(leaf_id, leaf_sizes):
                 print(f"leaf {leaf} has {samples} samples")
@@ -138,7 +138,7 @@ class DTreeVizAPI:
                 rect.set_edgecolor(colors['rect_edge'])
             ax.set_xlabel("leaf sample", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-            ax.grid(b=grid)
+            ax.grid(visible=grid)
 
     def ctree_leaf_distributions(self,
                                  display_type: str = "plot",
@@ -212,7 +212,7 @@ class DTreeVizAPI:
 
             ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.set_ylabel("samples by class", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-            ax.grid(grid)
+            ax.grid(visible=grid)
             ax.legend([bar_container0, bar_container1],
                       [f'class {self.shadow_tree.classes()[0]}', f'class {self.shadow_tree.classes()[1]}'])
         elif display_type == "text":
@@ -728,7 +728,7 @@ class DTreeVizAPI:
             ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.set_ylabel(f"{self.shadow_tree.criterion()}", fontsize=fontsize, fontname=fontname,
                           color=colors['axis_label'])
-            ax.grid(b=grid)
+            ax.grid(visible=grid)
         elif display_type == "text":
             for leaf, criteria in zip(leaf_id, leaf_criteria):
                 print(f"leaf {leaf} has {criteria} {self.shadow_tree.criterion()}")
@@ -750,7 +750,7 @@ class DTreeVizAPI:
             ax.set_xlabel(f"{self.shadow_tree.criterion()}", fontsize=fontsize, fontname=fontname,
                           color=colors['axis_label'])
             ax.set_ylabel("leaf count", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-            ax.grid(b=grid)
+            ax.grid(visible=grid)
 
     def node_stats(self, node_id: int) -> pd.DataFrame:
         """Generate stats (count, mean, std, etc) based on data samples from a specified node.
@@ -891,7 +891,7 @@ class DTreeVizAPI:
         ax.set_xlabel(self.shadow_tree.target_name.lower(), fontsize=label_fontsize, fontname=fontname,
                       color=colors['axis_label'])
         ax.set_ylabel("leaf", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.grid(b=grid)
+        ax.grid(visible=grid)
 
         if show_leaf_labels:
             for i in range(len(y_labels)):
