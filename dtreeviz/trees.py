@@ -1356,7 +1356,7 @@ def _draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial
             colors = [colors[i]]
 
     tweak = size * .01
-    fig, ax = plt.subplots(1, 1, figsize=(size, 0.3))
+    fig, ax = plt.subplots(1, 1, figsize=(size, 0.2))
 
     data_cum = 0
     for i in range(len(counts)):
