@@ -295,9 +295,9 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
                                 facecolor=facecolors[c], label=class_names[c])
         boxes.append(box)
     leg = ax.legend(handles=boxes,
-                    frameon=True,
+                    frameon=colors['legend_edge'] is not None,
                     shadow=False,
-                    fancybox=True,
+                    fancybox=colors['legend_edge'] is not None,
                     handletextpad=.35,
                     borderpad=.8,
                     bbox_to_anchor=(1.0, 1.0),
