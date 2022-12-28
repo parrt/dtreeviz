@@ -223,6 +223,7 @@ class DTreeVizAPI:
              precision: int = 2,
              orientation: ('TD', 'LR') = "TD",
              instance_orientation: ("TD", "LR") = "LR",
+             leaf_plot_type: ('pie', 'barh') = 'pie',
              show_root_edge_labels: bool = True,
              show_node_labels: bool = False,
              show_just_path: bool = False,
@@ -255,6 +256,7 @@ class DTreeVizAPI:
                           after the decimal point. Default is 2.
         :param orientation:  Is the tree top down, "TD", or left to right, "LR"?
         :param instance_orientation: table orientation (TD, LR) for showing feature prediction's values.
+        :param leaf_plot_type: leaf plot type ('pie', 'barh')
         :param show_root_edge_labels: Include < and >= on the edges emanating from the root?
         :param show_node_labels: Add "Node id" to top of each node in graph for educational purposes
         :param show_just_path: If True, it shows only the sample(X) prediction path
@@ -554,7 +556,8 @@ class DTreeVizAPI:
                 _class_leaf_viz(node, colors=color_values,
                                 filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
                                 graph_colors=colors,
-                                fontname=fontname)
+                                fontname=fontname,
+                                leaf_plot_type=leaf_plot_type)
                 leaves.append(class_leaf_node(node))
             else:
                 # for now, always gen leaf
@@ -1082,7 +1085,8 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
                     colors: List[str],
                     filename: str,
                     graph_colors=None,
-                    fontname: str = "Arial"):
+                    fontname: str = "Arial",
+                    leaf_plot_type: ('pie', 'barh') = "pie"):
     graph_colors = adjust_colors(graph_colors)
 
     minsize = .15
@@ -1095,8 +1099,15 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
     # we visually need n=1 and n=9 to appear different but diff between 300 and 400 is no big deal
     counts = node.class_counts()
     prediction = node.prediction_name()
-    _draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
-                   graph_colors=graph_colors, fontname=fontname)
+
+    if leaf_plot_type == 'pie':
+        _draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
+                      graph_colors=graph_colors, fontname=fontname)
+    elif leaf_plot_type == 'barh':
+        _draw_barh_chart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
+                      graph_colors=graph_colors, fontname=fontname)
+    else:
+        raise ValueError(f'Undefined leaf_plot_type = {leaf_plot_type}')
 
 
 def _regr_split_viz(node: ShadowDecTreeNode,
@@ -1326,6 +1337,43 @@ def _draw_piechart(counts, size, colors, filename, label=None, fontname="Arial",
 
     if label is not None:
         ax.text(size / 2 - 6 * tweak, -10 * tweak, label,
+                horizontalalignment='center',
+                verticalalignment='top',
+                fontsize=9, color=graph_colors['text'], fontname=fontname)
+
+    plt.savefig(filename, bbox_inches='tight', pad_inches=0)
+    plt.close()
+
+
+def _draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial", ticks_fontsize=9, graph_colors=None):
+    graph_colors = adjust_colors(graph_colors)
+    n_nonzero = np.count_nonzero(counts)
+
+    if n_nonzero != 0:
+        i = np.nonzero(counts)[0][0]
+        if n_nonzero == 1:
+            counts = [counts[i]]
+            colors = [colors[i]]
+
+    tweak = size * .01
+    fig, ax = plt.subplots(1, 1, figsize=(size, 0.3))
+
+    data_cum = 0
+    for i in range(len(counts)):
+        width = counts[i]
+        plt.barh(0, width, left=data_cum, color=colors[i], height=1, edgecolor=graph_colors['rect_edge'], linewidth=0.5)
+        data_cum += width
+
+    ax.spines['left'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.tick_params(axis='x', which='both', top=False, bottom=False, left=False, right=False)
+    ax.get_yaxis().set_visible(False)
+    ax.set_xticks([])
+
+    if label is not None:
+        ax.text(sum(counts) / 2, -1, label,
                 horizontalalignment='center',
                 verticalalignment='top',
                 fontsize=9, color=graph_colors['text'], fontname=fontname)
