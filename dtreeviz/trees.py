@@ -1624,7 +1624,7 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize=10, ticks_fontsize=12, fontnam
         y = bbox[1]
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-        rect = patches.Rectangle((x, y), w, h, 0, linewidth=.3, alpha=colors['tesselation_alpha'],
+        rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tesselation_alpha'],
                                  edgecolor=colors['edge'], facecolor=color)
         ax.add_patch(rect)
 
