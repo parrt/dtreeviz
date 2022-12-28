@@ -148,7 +148,8 @@ class DTreeVizAPI:
                                  fontname: str = "Arial",
                                  grid: bool = False,
                                  figsize: tuple = None,
-                                 ax=None):
+                                 ax=None,
+                                 label_all_leaves: bool = True):
         """Visualize the distribution of classes for each leaf.
 
         It's a good way to see how classes are distributed in leaves. For example, you can observe that in some
@@ -176,8 +177,12 @@ class DTreeVizAPI:
             Plot labels font name
         :param grid: bool
             True if we want to display the grid lines on the visualization
-        :param figsize: optional (width, height) in inches for the entire plot
-            :param ax: optional matplotlib "axes" to draw into
+        :param figsize: optional
+            (width, height) in inches for the entire plot
+        :param ax: optional
+            matplotlib "axes" to draw into
+        :param label_all_leaves: bool
+            True if we want to label all leaves IDs on the x axis
         """
         index, leaf_samples_0, leaf_samples_1 = self.shadow_tree.get_leaf_sample_counts_by_class()
 
@@ -194,8 +199,18 @@ class DTreeVizAPI:
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
             ax.spines['bottom'].set_linewidth(.3)
-            ax.set_xticks(range(0, len(index)))
-            ax.set_xticklabels(index)
+            ax.tick_params(axis='x', which='major', labelcolor=colors['tick_label'], top=False, bottom=label_all_leaves)
+            ax.tick_params(axis='y', which='both', labelcolor=colors['tick_label'], left=True, right=False)
+            ax.tick_params(axis='x', which='minor', labelcolor=colors['tick_label'], top=False, bottom=False)
+
+            xlabel='leaf ids'
+            if label_all_leaves:
+                ax.set_xticks(range(0, len(index)))
+                ax.set_xticklabels(index)
+            else:
+                ax.set_xticklabels([])
+                xlabel='leaves'
+
             if plot_ylim is not None:
                 ax.set_ylim(0, plot_ylim)
 
@@ -210,7 +225,7 @@ class DTreeVizAPI:
                     rect.set_linewidth(.5)
                     rect.set_edgecolor(colors['rect_edge'])
 
-            ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+            ax.set_xlabel(xlabel, fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.set_ylabel("samples by class", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.grid(visible=grid)
             ax.legend([bar_container0, bar_container1],
