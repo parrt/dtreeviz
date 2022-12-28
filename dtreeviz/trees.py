@@ -147,9 +147,9 @@ class DTreeVizAPI:
                                  fontsize: int = 10,
                                  fontname: str = "Arial",
                                  grid: bool = False,
+                                 label_all_leaves: bool = True,
                                  figsize: tuple = None,
-                                 ax=None,
-                                 label_all_leaves: bool = True):
+                                 ax=None):
         """Visualize the distribution of classes for each leaf.
 
         It's a good way to see how classes are distributed in leaves. For example, you can observe that in some
@@ -177,12 +177,12 @@ class DTreeVizAPI:
             Plot labels font name
         :param grid: bool
             True if we want to display the grid lines on the visualization
+        :param label_all_leaves: bool
+            True if we want to label all leaves IDs on the x axis
         :param figsize: optional
             (width, height) in inches for the entire plot
         :param ax: optional
             matplotlib "axes" to draw into
-        :param label_all_leaves: bool
-            True if we want to label all leaves IDs on the x axis
         """
         index, leaf_samples_0, leaf_samples_1 = self.shadow_tree.get_leaf_sample_counts_by_class()
 
