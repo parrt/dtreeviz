@@ -616,7 +616,7 @@ class DTreeVizAPI:
             if node.is_categorical_split() and not self.shadow_tree.is_classifier():
                 lcolor, rcolor = colors["categorical_split_left"], colors["categorical_split_right"]
             else:
-                if 'larrow' in colors and 'rarrow' in colors:
+                if colors.get('larrow', None) is not None and colors.get('rarrow', None) is not None:
                     lcolor = colors['larrow']
                     rcolor = colors['rarrow']
                 elif 'arrow' in colors:
