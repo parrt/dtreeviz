@@ -616,13 +616,8 @@ class DTreeVizAPI:
             if node.is_categorical_split() and not self.shadow_tree.is_classifier():
                 lcolor, rcolor = colors["categorical_split_left"], colors["categorical_split_right"]
             else:
-                if colors.get('larrow', None) is not None and colors.get('rarrow', None) is not None:
-                    lcolor = colors['larrow']
-                    rcolor = colors['rarrow']
-                elif 'arrow' in colors:
-                    lcolor = rcolor = colors['arrow']
-                else:
-                    raise ValueError('Can not find arrow, or larrow AND rarrow in colors dict!')
+                lcolor = colors.get('larrow', colors['arrow'])
+                rcolor = colors.get('rarrow', colors['arrow'])
 
             lpw = rpw = "0.3"
             if node.left.id in highlight_path:
