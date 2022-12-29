@@ -213,13 +213,15 @@ class DTreeVizAPI:
             ax.set_xlabel("leaf ids", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.set_ylabel("samples by class", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
             ax.grid(visible=grid)
-            ax.legend([bar_container0, bar_container1],
-                      [f'class {self.shadow_tree.classes()[0]}', f'class {self.shadow_tree.classes()[1]}'],
-                      frameon=colors['legend_edge'] is not None,
-                      shadow=False,
-                      fancybox=colors['legend_edge'] is not None,
-                      edgecolor=colors['legend_edge']
-                     )
+
+            class_values = self.shadow_tree.classes()
+            n_classes=self.shadow_tree.nclasses()
+            color_values = colors['classes'][n_classes]
+            color_map = {v: color_values[i] for i, v in enumerate(class_values)}
+            add_classifier_legend(ax, self.shadow_tree.class_names, class_values, color_map, self.shadow_tree.target_name, colors,
+                                fontname=fontname)
+
+
         elif display_type == "text":
             for leaf, samples_0, samples_1 in zip(index, leaf_samples_0, leaf_samples_1):
                 print(f"leaf {leaf}, samples : {samples_0}, {samples_1}")
