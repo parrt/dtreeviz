@@ -1492,6 +1492,8 @@ def _ctreeviz_univar(shadow_tree,
             y_noise = np.random.normal(mu + i * class_step, sigma, size=len(bucket))
             ax.scatter(bucket, y_noise, alpha=colors['scatter_marker_alpha'], marker='o', s=dot_w, c=color_map[i],
                        edgecolors=colors['scatter_edge'], lw=.3)
+    else:
+        raise ValueError(f'Unrecognized gtype = {gtype}!')
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
                    labelsize=fontsize)
