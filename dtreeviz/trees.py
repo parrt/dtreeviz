@@ -1526,8 +1526,9 @@ def _ctreeviz_univar(shadow_tree,
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     if 'splits' in show:
+        split_heights = [*ax.get_ylim()]
         for split in splits:
-            ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
+            ax.plot([split, split], split_heights, '--', color=colors['split_line'], linewidth=1)
 
 
 def _ctreeviz_bivar(shadow_tree, fontsize=10, fontname="Arial", show={'title', 'legend', 'splits'},
