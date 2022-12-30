@@ -1512,7 +1512,7 @@ def _ctreeviz_univar(shadow_tree,
                 continue
             values, counts = np.unique(inrange, return_counts=True)
             pred = values[np.argmax(counts)]
-            rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
+            rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3, alpha=colors['tesselation_alpha'],
                                      edgecolor=colors['edge'], facecolor=color_map[pred])
             ax.add_patch(rect)
 
