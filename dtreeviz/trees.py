@@ -230,12 +230,12 @@ class DTreeVizAPI:
              precision: int = 2,
              orientation: ('TD', 'LR') = "TD",
              instance_orientation: ("TD", "LR") = "LR",
-             leaf_plot_type: ('pie', 'barh') = 'pie',
              show_root_edge_labels: bool = True,
              show_node_labels: bool = False,
              show_just_path: bool = False,
              fancy: bool = True,
              histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
+             leaftype: ('pie', 'barh') = 'pie',
              highlight_path: List[int] = [],
              x: np.ndarray = None,
              max_X_features_LR: int = 10,
@@ -263,7 +263,7 @@ class DTreeVizAPI:
                           after the decimal point. Default is 2.
         :param orientation:  Is the tree top down, "TD", or left to right, "LR"?
         :param instance_orientation: table orientation (TD, LR) for showing feature prediction's values.
-        :param leaf_plot_type: leaf plot type ('pie', 'barh')
+        :param leaftype: leaf plot type ('pie', 'barh')
         :param show_root_edge_labels: Include < and >= on the edges emanating from the root?
         :param show_node_labels: Add "Node id" to top of each node in graph for educational purposes
         :param show_just_path: If True, it shows only the sample(X) prediction path
@@ -564,7 +564,7 @@ class DTreeVizAPI:
                                 filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
                                 graph_colors=colors,
                                 fontname=fontname,
-                                leaf_plot_type=leaf_plot_type)
+                                leaftype=leaftype)
                 leaves.append(class_leaf_node(node))
             else:
                 # for now, always gen leaf
@@ -1094,7 +1094,7 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
                     filename: str,
                     graph_colors=None,
                     fontname: str = "Arial",
-                    leaf_plot_type: ('pie', 'barh') = "pie"):
+                    leaftype: ('pie', 'barh') = "pie"):
     graph_colors = adjust_colors(graph_colors)
 
     minsize = .15
@@ -1108,14 +1108,14 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
     counts = node.class_counts()
     prediction = node.prediction_name()
 
-    if leaf_plot_type == 'pie':
+    if leaftype == 'pie':
         _draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
-    elif leaf_plot_type == 'barh':
+    elif leaftype == 'barh':
         _draw_barh_chart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
     else:
-        raise ValueError(f'Undefined leaf_plot_type = {leaf_plot_type}')
+        raise ValueError(f'Undefined leaftype = {leaftype}')
 
 
 def _regr_split_viz(node: ShadowDecTreeNode,
