@@ -914,6 +914,7 @@ class DTreeVizAPI:
 
     def ctree_feature_space(self,
                             fontsize=10,
+                            ticks_fontsize=8,
                             fontname="Arial",
                             nbins=25,
                             gtype='strip',
@@ -924,9 +925,9 @@ class DTreeVizAPI:
         # TODO: check if we can find some common functionality between univar and bivar visualisations and refactor
         #  to a single method.
         if len(self.shadow_tree.feature_names) == 1:     # univar example
-            _ctreeviz_univar(self.shadow_tree, fontsize, fontname, nbins, gtype, show, colors, figsize, ax)
+            _ctreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, fontname, nbins, gtype, show, colors, figsize, ax)
         elif len(self.shadow_tree.feature_names) == 2:   # bivar example
-            _ctreeviz_bivar(self.shadow_tree, fontsize, fontname, show, colors, figsize, ax)
+            _ctreeviz_bivar(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, colors, figsize, ax)
         else:
             raise ValueError(f"ctree_feature_space supports a dataset with only one or two features."
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
@@ -935,7 +936,7 @@ class DTreeVizAPI:
                             mean_linewidth=2, markersize=15, colors=None, ticks_fontsize=12, fontname="Arial",
                             n_colors_in_map=100, figsize=None, ax=None):
         if len(self.shadow_tree.feature_names) == 1:  # univar example
-            _rtreeviz_univar(self.shadow_tree, fontsize, show, split_linewidth, mean_linewidth, markersize, colors,
+            _rtreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, show, split_linewidth, mean_linewidth, markersize, colors,
                              figsize, ax)
         elif len(self.shadow_tree.feature_names) == 2:  # bivar example
             _rtreeviz_bivar_heatmap(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, n_colors_in_map, colors,
@@ -1434,7 +1435,7 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
 
 
 def _ctreeviz_univar(shadow_tree,
-                     fontsize=10, fontname="Arial", nbins=25, gtype='strip',
+                     fontsize=10, ticks_fontsize=10, fontname="Arial", nbins=25, gtype='strip',
                      show={'title', 'legend', 'splits'},
                      colors=None,
                      figsize=None,
@@ -1494,7 +1495,7 @@ def _ctreeviz_univar(shadow_tree,
                        edgecolors=colors['scatter_edge'], lw=.3)
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
-                   labelsize=fontsize)
+                   labelsize=ticks_fontsize)
 
     splits = [node.split() for node in shadow_tree.internal]
     splits = sorted(splits)
@@ -1526,7 +1527,7 @@ def _ctreeviz_univar(shadow_tree,
             ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
 
 
-def _ctreeviz_bivar(shadow_tree, fontsize=10, fontname="Arial", show={'title', 'legend', 'splits'},
+def _ctreeviz_bivar(shadow_tree, fontsize=10, ticks_fontsize=10, fontname="Arial", show={'title', 'legend', 'splits'},
                     colors=None,
                     figsize=None,
                     ax=None):
@@ -1572,6 +1573,7 @@ def _ctreeviz_bivar(shadow_tree, fontsize=10, fontname="Arial", show={'title', '
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_linewidth(.3)
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
 
     if 'legend' in show:
         add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors,
@@ -1585,7 +1587,7 @@ def _ctreeviz_bivar(shadow_tree, fontsize=10, fontname="Arial", show={'title', '
     return None
 
 
-def _rtreeviz_univar(shadow_tree, fontsize: int = 10, show={'title', 'splits'},
+def _rtreeviz_univar(shadow_tree, fontsize: int = 10, ticks_fontsize=10, show={'title', 'splits'},
                      split_linewidth=.5, mean_linewidth=2, markersize=15, colors=None,
                      figsize=None, ax=None):
     X_train = shadow_tree.X_train.reshape(-1, )
@@ -1634,7 +1636,7 @@ def _rtreeviz_univar(shadow_tree, fontsize: int = 10, show={'title', 'splits'},
             ax.plot([prevX, split], [m, m], '-', color=colors['mean_line'], linewidth=mean_linewidth)
             prevX = split
 
-    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=fontsize)
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
 
     if 'title' in show:
         title = f"Regression tree depth {shadow_tree.get_max_depth()}, samples per leaf {shadow_tree.get_min_samples_leaf()},\nTraining $R^2$={shadow_tree.get_score()}"
