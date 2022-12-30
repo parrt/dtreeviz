@@ -1435,7 +1435,7 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
 
 def _ctreeviz_univar(shadow_tree,
                      fontsize=10, fontname="Arial", nbins=25, gtype='strip',
-                     show={'title', 'legend', 'splits'},
+                     show={'title', 'legend', 'splits', 'preds'},
                      colors=None,
                      figsize=None,
                      ax=None):
@@ -1501,7 +1501,7 @@ def _ctreeviz_univar(shadow_tree,
     splits = [node.split() for node in shadow_tree.internal]
     splits = sorted(splits)
 
-    if 'splits' in show:  # this gets the horiz bars showing prediction region
+    if 'preds' in show:  # this gets the horiz bars showing prediction region
         pred_box_height = .07 * ax.get_ylim()[1]
         bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
         for i in range(len(bins) - 1):
