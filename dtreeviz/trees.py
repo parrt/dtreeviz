@@ -1537,19 +1537,19 @@ def _ctreeviz_bivar(shadow_tree, fontsize=10, fontname="Arial", show={'title', '
     X_train = shadow_tree.X_train
     y_train = shadow_tree.y_train
     colors = adjust_colors(colors)
-    tesselation = shadow_tree.tesselation()
+    tessellation = shadow_tree.tessellation()
     n_classes = shadow_tree.nclasses()
     class_values = shadow_tree.classes()
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
     if 'splits' in show:
-        for node, bbox in tesselation:
+        for node, bbox in tessellation:
             x = bbox[0]
             y = bbox[1]
             w = bbox[2] - bbox[0]
             h = bbox[3] - bbox[1]
-            rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tesselation_alpha'],
+            rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
                                      edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
             ax.add_patch(rect)
 
@@ -1665,16 +1665,16 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize=10, ticks_fontsize=12, fontnam
     color_map = [rgb2hex(c.rgb, force_long=True) for c in
                  Color(colors['color_map_min']).range_to(Color(colors['color_map_max']),
                                                          n_colors_in_map)]
-    tesselation = shadow_tree.tesselation()
+    tessellation = shadow_tree.tessellation()
 
-    for node, bbox in tesselation:
+    for node, bbox in tessellation:
         pred = node.prediction()
         color = color_map[int(((pred - y_lim[0]) / y_range) * (n_colors_in_map - 1))]
         x = bbox[0]
         y = bbox[1]
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-        rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tesselation_alpha'],
+        rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
                                  edgecolor=colors['edge'], facecolor=color)
         ax.add_patch(rect)
 
@@ -1723,7 +1723,7 @@ def _rtreeviz_bivar_3D(shadow_tree, fontsize=10, ticks_fontsize=10, fontname="Ar
         y = np.linspace(bbox[1], bbox[3], 2)
         xx, yy = np.meshgrid(x, y)
         z = np.full(xx.shape, node.prediction())
-        ax.plot_surface(xx, yy, z, alpha=colors['tesselation_alpha_3D'], shade=False,
+        ax.plot_surface(xx, yy, z, alpha=colors['tessellation_alpha_3D'], shade=False,
                         color=color_spectrum[y_to_color_index(node.prediction())],
                         edgecolor=colors['edge'], lw=.3)
 
@@ -1731,9 +1731,9 @@ def _rtreeviz_bivar_3D(shadow_tree, fontsize=10, ticks_fontsize=10, fontname="Ar
     color_spectrum = Color(colors['color_map_min']).range_to(Color(colors['color_map_max']), n_colors_in_map)
     color_spectrum = [rgb2hex(c.rgb, force_long=True) for c in color_spectrum]
     y_colors = [color_spectrum[y_to_color_index(y)] for y in y_train]
-    tesselation = shadow_tree.tesselation()
+    tessellation = shadow_tree.tessellation()
 
-    for node, bbox in tesselation:
+    for node, bbox in tessellation:
         plane(node, bbox, color_spectrum)
 
     x, y, z = X_train[:, 0], X_train[:, 1], y_train
