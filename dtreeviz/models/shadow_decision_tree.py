@@ -334,7 +334,7 @@ class ShadowDecTree(ABC):
         walk(self.root, x, path)
         return path
 
-    def tesselation(self):
+    def tessellation(self):
         """
         Walk tree and return list of tuples containing a leaf node and bounding box list of(x1, y1, x2, y2) coordinates.
         """
