@@ -1477,7 +1477,7 @@ def _ctreeviz_univar(shadow_tree,
         for patch in barcontainers:
             for rect in patch.patches:
                 rect.set_linewidth(.5)
-                rect.set_edgecolor(colors['edge'])
+                rect.set_edgecolor(colors['rect_edge'])
         ax.set_xlim(*overall_feature_range)
         ax.set_xticks(overall_feature_range)
         ax.set_yticks([0, max([max(h) for h in hist])])
