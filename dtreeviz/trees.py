@@ -1506,6 +1506,8 @@ def _ctreeviz_univar(shadow_tree,
             left = bins[i]
             right = bins[i + 1]
             inrange = y_train[(X_train >= left) & (X_train <= right)]
+            if 0 == len(inrange):
+                continue
             values, counts = np.unique(inrange, return_counts=True)
             pred = values[np.argmax(counts)]
             rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3,
