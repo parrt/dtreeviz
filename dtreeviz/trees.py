@@ -1498,10 +1498,10 @@ def _ctreeviz_univar(shadow_tree,
 
     splits = [node.split() for node in shadow_tree.internal]
     splits = sorted(splits)
-    bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
 
     if 'splits' in show:  # this gets the horiz bars showing prediction region
         pred_box_height = .07 * ax.get_ylim()[1]
+        bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
         for i in range(len(bins) - 1):
             left = bins[i]
             right = bins[i + 1]
