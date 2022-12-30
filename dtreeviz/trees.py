@@ -347,7 +347,7 @@ class DTreeVizAPI:
                 return f'leaf{node.id} [margin="0" shape=box penwidth="0" color="{colors["text"]}" label=<{html}>]'
 
         def node_label(node):
-            return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="Helvetica" color="{colors["node_label"]}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
+            return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="{fontname}" color="{colors["node_label"]}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
 
         def class_legend_html():
             return f"""
@@ -389,7 +389,7 @@ class DTreeVizAPI:
                 else:
                     color = colors['text']
                 headers.append(f'<td cellpadding="1" align="right" bgcolor="white">'
-                               f'<font face="Helvetica" color="{color}" point-size="{instance_fontsize}">'
+                               f'<font face="{fontname}" color="{color}" point-size="{instance_fontsize}">'
                                f'{name}'
                                '</font>'
                                '</td>')
@@ -405,7 +405,7 @@ class DTreeVizAPI:
                 else:
                     disp_v = myround(v, precision)
                 values.append(f'<td cellpadding="1" align="right" bgcolor="white">'
-                              f'<font face="Helvetica" color="{color}" point-size="{instance_fontsize}">{disp_v}</font>'
+                              f'<font face="{fontname}" color="{color}" point-size="{instance_fontsize}">{disp_v}</font>'
                               '</td>')
 
             if instance_orientation == "TD":
@@ -432,6 +432,7 @@ class DTreeVizAPI:
             path = self.shadow_tree.predict_path(x)
             leaf = f"leaf{path[-1].id}"
             if self.shadow_tree.is_classifier():
+                # TODO both regular spaces, &nbsp;, and &#160; do not move edge_label away from the line
                 edge_label = f" &#160;Prediction<br/> {path[-1].prediction_name()}"
             else:
                 edge_label = f" &#160;Prediction<br/> {myround(path[-1].prediction(), precision)}"
@@ -442,7 +443,7 @@ class DTreeVizAPI:
                         {instance_html(path)}
                         >]
                     }}
-                    {leaf} -> X_y [dir=back; penwidth="1.2" color="{colors['highlight']}" label=<<font face="Helvetica" color="{colors['leaf_label']}" point-size="{11}">{edge_label}</font>>]
+                    {leaf} -> X_y [dir=back; penwidth="1.2" color="{colors['highlight']}" label=<<font face="{fontname}" color="{colors['leaf_label']}" point-size="{11}">{edge_label}</font>>]
                     """
 
         def get_internal_nodes():
@@ -584,10 +585,10 @@ class DTreeVizAPI:
 
         # TODO do we need show_edge_labels ?
         show_edge_labels = False
-        all_llabel = '&lt;' if show_edge_labels else ''
-        all_rlabel = '&ge;' if show_edge_labels else ''
-        root_llabel = self.shadow_tree.get_root_edge_labels()[0] if show_root_edge_labels else ''
-        root_rlabel = self.shadow_tree.get_root_edge_labels()[1] if show_root_edge_labels else ''
+        all_llabel = '  &lt;' if show_edge_labels else ''
+        all_rlabel = '  &ge;' if show_edge_labels else ''
+        root_llabel = f'  {self.shadow_tree.get_root_edge_labels()[0]}' if show_root_edge_labels else ''
+        root_rlabel = f'  {self.shadow_tree.get_root_edge_labels()[1]}' if show_root_edge_labels else ''
 
         edges = []
         # non leaf edges with > and <=
@@ -628,12 +629,12 @@ class DTreeVizAPI:
 
             if show_just_path:
                 if node.left.id in highlight_path:
-                    edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}> fontcolor="{colors["text"]}"]')
+                    edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} fontname="{fontname}" color="{lcolor}" label=<{llabel}> fontcolor="{colors["text"]}"]')
                 if node.right.id in highlight_path:
-                    edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}> fontcolor="{colors["text"]}"]')
+                    edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} fontname="{fontname}" color="{rcolor}" label=<{rlabel}> fontcolor="{colors["text"]}"]')
             else:
-                edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}> fontcolor="{colors["text"]}"]')
-                edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}> fontcolor="{colors["text"]}"]')
+                edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} fontname="{fontname}" color="{lcolor}" label=<{llabel}> fontcolor="{colors["text"]}"]')
+                edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} fontname="{fontname}" color="{rcolor}" label=<{rlabel}> fontcolor="{colors["text"]}"]')
                 edges.append(f"""
                     {{
                         rank=same;
