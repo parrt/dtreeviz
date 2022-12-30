@@ -432,10 +432,9 @@ class DTreeVizAPI:
             path = self.shadow_tree.predict_path(x)
             leaf = f"leaf{path[-1].id}"
             if self.shadow_tree.is_classifier():
-                # TODO both regular spaces, &nbsp;, and &#160; do not move edge_label away from the line
-                edge_label = f" &#160;Prediction<br/> {path[-1].prediction_name()}"
+                edge_label = f"  Prediction<br/> {path[-1].prediction_name()}"
             else:
-                edge_label = f" &#160;Prediction<br/> {myround(path[-1].prediction(), precision)}"
+                edge_label = f"  Prediction<br/> {myround(path[-1].prediction(), precision)}"
             return f"""
                     subgraph cluster_instance {{
                         style=invis;
