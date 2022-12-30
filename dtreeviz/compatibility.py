@@ -155,7 +155,7 @@ def ctreeviz_bivar(tree_model,
                             fontname=fontname,
                             show=show,
                             colors=colors,
-                            ax=None)
+                            ax=ax)
 
 def dtreeviz(tree_model,
              X_train: (pd.DataFrame, np.ndarray) = None,
@@ -183,7 +183,6 @@ def dtreeviz(tree_model,
              title: str = None,
              title_fontsize: int = 10,
              colors: dict = None,
-             cmap: str = "RdYlBu",
              scale=1.0
              ) \
         -> DTreeVizRender:
@@ -645,7 +644,7 @@ def explain_prediction_path(tree_model,
         Required in case of tree ensemble. Specify the tree index to interpret.
 
     """
-    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, None, class_names,
+    shadow_tree = ShadowDecTree.get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names,
                                                 tree_index)
     model = DTreeVizAPI(shadow_tree)
 

@@ -539,7 +539,6 @@ class DTreeVizAPI:
                                     filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
                                     target_name=self.shadow_tree.target_name,
                                     y_range=y_range,
-                                    precision=precision,
                                     X=x,
                                     ticks_fontsize=ticks_fontsize,
                                     label_fontsize=label_fontsize,
@@ -1127,7 +1126,6 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                     ticks_fontsize: int = 8,
                     label_fontsize: int = 9,
                     fontname: str = "Arial",
-                    precision=1,
                     X: np.array = None,
                     highlight_node: bool = False,
                     colors: dict = None):
@@ -1172,8 +1170,7 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         t.set_clip_on(False)
         ax.add_patch(t)
 
-    if node.is_categorical_split() is False:
-
+    if not node.is_categorical_split():
         xticks = list(overall_feature_range)
         if node.split() > xmin + .10 * xr and node.split() < xmax - .1 * xr:  # don't show split if too close to axis ends
             xticks += [node.split()]
@@ -1363,7 +1360,6 @@ def _draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial
             counts = [counts[i]]
             colors = [colors[i]]
 
-    tweak = size * .01
     fig, ax = plt.subplots(1, 1, figsize=(size, 0.2))
 
     data_cum = 0
