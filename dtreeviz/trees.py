@@ -1527,7 +1527,7 @@ def _ctreeviz_univar(shadow_tree,
             ax.plot([split, split], [*ax.get_ylim()], '--', color=colors['split_line'], linewidth=1)
 
 
-def _ctreeviz_bivar(shadow_tree, fontsize=10, ticks_fontsize=10, fontname="Arial", show={'title', 'legend', 'splits'},
+def _ctreeviz_bivar(shadow_tree, fontsize=10, ticks_fontsize=8, fontname="Arial", show={'title', 'legend', 'splits'},
                     colors=None,
                     figsize=None,
                     ax=None):
