@@ -235,7 +235,7 @@ class DTreeVizAPI:
              show_just_path: bool = False,
              fancy: bool = True,
              histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
-             leaftype: ('pie', 'barh') = 'pie',
+             leaftype: ('pie', 'barh') = 'barh',
              highlight_path: List[int] = [],
              x: np.ndarray = None,
              max_X_features_LR: int = 10,
@@ -962,15 +962,14 @@ def _class_split_viz(node: ShadowDecTreeNode,
                      y_train: np.ndarray,
                      colors: dict,
                      node_heights,
-                     filename: str = None,
-                     ticks_fontsize: int = 8,
-                     label_fontsize: int = 9,
-                     fontname: str = "Arial",
-                     precision=1,
-                     histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
-                     X: np.array = None,
-                     highlight_node: bool = False
-                     ):
+                     filename: str,
+                     ticks_fontsize: int,
+                     label_fontsize: int,
+                     fontname: str,
+                     precision: int,
+                     histtype: ('bar', 'barstacked', 'strip'),
+                     X: np.array,
+                     highlight_node: bool):
     def _get_bins(overall_range, nbins_):
         return np.linspace(start=overall_range[0], stop=overall_range[1], num=nbins_, endpoint=True)
 
@@ -1091,9 +1090,9 @@ def _class_split_viz(node: ShadowDecTreeNode,
 def _class_leaf_viz(node: ShadowDecTreeNode,
                     colors: List[str],
                     filename: str,
-                    graph_colors=None,
-                    fontname: str = "Arial",
-                    leaftype: ('pie', 'barh') = "pie"):
+                    graph_colors,
+                    fontname,
+                    leaftype):
     graph_colors = adjust_colors(graph_colors)
 
     minsize = .15
@@ -1121,14 +1120,14 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                     X_train: np.ndarray,
                     y_train: np.ndarray,
                     target_name: str,
-                    filename: str = None,
-                    y_range=None,
-                    ticks_fontsize: int = 8,
-                    label_fontsize: int = 9,
-                    fontname: str = "Arial",
-                    X: np.array = None,
-                    highlight_node: bool = False,
-                    colors: dict = None):
+                    filename,
+                    y_range,
+                    ticks_fontsize,
+                    label_fontsize,
+                    fontname: str,
+                    X: np.array,
+                    highlight_node: bool,
+                    colors):
     colors = adjust_colors(colors)
 
     figsize = (2.5, 1.1)
@@ -1220,13 +1219,13 @@ def _regr_split_viz(node: ShadowDecTreeNode,
 def _regr_leaf_viz(node: ShadowDecTreeNode,
                    y: (pd.Series, np.ndarray),
                    target_name,
-                   filename: str = None,
-                   y_range=None,
-                   precision=1,
-                   label_fontsize: int = 9,
-                   ticks_fontsize: int = 8,
-                   fontname: str = "Arial",
-                   colors=None):
+                   filename: str,
+                   y_range,
+                   precision,
+                   label_fontsize: int,
+                   ticks_fontsize: int,
+                   fontname: str,
+                   colors):
     colors = adjust_colors(colors)
 
     samples = node.samples()
@@ -1268,7 +1267,7 @@ def _regr_leaf_viz(node: ShadowDecTreeNode,
         plt.close()
 
 
-def _draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial"):
+def _draw_legend(shadow_tree, target_name, filename, colors, fontname):
     colors = adjust_colors(colors)
     n_classes = shadow_tree.nclasses()
     class_values = shadow_tree.classes()
@@ -1313,7 +1312,7 @@ def _draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Aria
         plt.close()
 
 
-def _draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", graph_colors=None):
+def _draw_piechart(counts, size, colors, filename, label, fontname, graph_colors):
     graph_colors = adjust_colors(graph_colors)
     n_nonzero = np.count_nonzero(counts)
 
@@ -1350,7 +1349,7 @@ def _draw_piechart(counts, size, colors, filename, label=None, fontname="Arial",
     plt.close()
 
 
-def _draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial", ticks_fontsize=9, graph_colors=None):
+def _draw_barh_chart(counts, size, colors, filename, label, fontname, graph_colors):
     graph_colors = adjust_colors(graph_colors)
     n_nonzero = np.count_nonzero(counts)
 
@@ -1405,8 +1404,7 @@ def _get_num_bins(histtype, n_classes):
     return bins
 
 
-def _get_leaf_target_input(shadow_tree: ShadowDecTree,
-                           precision: int):
+def _get_leaf_target_input(shadow_tree: ShadowDecTree, precision: int):
     x = []
     y = []
     means = []
