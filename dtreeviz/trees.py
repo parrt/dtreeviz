@@ -235,7 +235,7 @@ class DTreeVizAPI:
              show_just_path: bool = False,
              fancy: bool = True,
              histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
-             leaftype: ('pie', 'barh') = 'barh',
+             leaftype: ('pie', 'barh') = 'pie',
              highlight_path: List[int] = [],
              x: np.ndarray = None,
              max_X_features_LR: int = 10,
