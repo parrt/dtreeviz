@@ -147,7 +147,7 @@ class DTreeVizAPI:
                                  fontsize: int = 10,
                                  fontname: str = "Arial",
                                  grid: bool = False,
-                                 label_all_leaves: bool = True,
+                                 show_leaf_labels: bool = True,
                                  figsize: tuple = None,
                                  ax=None):
         """Visualize the distribution of classes for each leaf.
@@ -177,7 +177,7 @@ class DTreeVizAPI:
             Plot labels font name
         :param grid: bool
             True if we want to display the grid lines on the visualization
-        :param label_all_leaves: bool
+        :param show_leaf_labels: bool
             True if we want to label all leaves IDs on the x axis
         :param figsize: optional
             (width, height) in inches for the entire plot
@@ -199,12 +199,12 @@ class DTreeVizAPI:
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_linewidth(.3)
             ax.spines['bottom'].set_linewidth(.3)
-            ax.tick_params(axis='x', which='major', labelcolor=colors['tick_label'], top=False, bottom=label_all_leaves)
+            ax.tick_params(axis='x', which='major', labelcolor=colors['tick_label'], top=False, bottom=show_leaf_labels)
             ax.tick_params(axis='y', which='both', labelcolor=colors['tick_label'], left=True, right=False)
             ax.tick_params(axis='x', which='minor', labelcolor=colors['tick_label'], top=False, bottom=False)
 
             xlabel='leaf ids'
-            if label_all_leaves:
+            if show_leaf_labels:
                 ax.set_xticks(range(0, len(index)))
                 ax.set_xticklabels(index)
             else:
