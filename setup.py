@@ -5,18 +5,35 @@ from setuptools import setup, find_packages
 # $ python3 -m build
 # $ twine upload dist/dtreeviz-1.4.0.tar.gz dist/dtreeviz-1.4.0-py3-none-any.whl
 
+
+extra_xgboost = ['xgboost']
+extra_pyspark = ['pyspark']
+extra_lightgbm = ['lightgbm']
+extra_tensorflow = ['tensorflow_decision_forests']
+
+
 setup(
     name='dtreeviz',
     version='2.0.0',
     url='https://github.com/parrt/dtreeviz',
     license='MIT',
     packages=find_packages(),
-    install_requires=['graphviz>=0.9','pandas','numpy','scikit-learn',
-                        'matplotlib','colour', 'pytest'],
-    extras_require={'xgboost': ['xgboost'],
-                    'pyspark':['pyspark'],
-                    'lightgbm':['lightgbm'],
-                    'tensorflow_decision_forests':['tensorflow_decision_forests']},
+    install_requires=[
+        'graphviz>=0.9',
+        'pandas',
+        'numpy',
+        'scikit-learn',
+        'matplotlib',
+        'colour',
+        'pytest'
+    ],
+    extras_require={
+        'xgboost': extra_xgboost,
+        'pyspark': extra_pyspark,
+        'lightgbm': extra_lightgbm,
+        'tensorflow_decision_forests': extra_tensorflow,
+        'all': extra_xgboost + extra_pyspark + extra_lightgbm + extra_tensorflow,
+    },
     python_requires='>=3.6',
     author='Terence Parr, Tudor Lapusan, and Prince Grover',
     author_email='parrt@antlr.org',
