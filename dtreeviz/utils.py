@@ -145,13 +145,24 @@ def _extract_final_feature_names(pipeline, features):
 
     Returns:
         list: Features names used by the last component
+
+    Note:
+        This function depends on how the feature names in :py:mod:`sklearn` are handled. Any
+        API-breaking change is likely to break this function.
     """
-    for component in pipeline[:-1]:
+
+    pipeline_preprocessing = pipeline[:-1]
+
+    # Extraction for feature_names in sklearn>=1.2.0
+    if hasattr(pipeline_preprocessing, 'get_feature_names_out'):
+        return pipeline_preprocessing.get_feature_names_out(features).tolist()
+
+    # Extraction for feature_names in  sklearn<1.2.0
+    for component in pipeline_preprocessing:
         if hasattr(component, 'get_support'):
             features = [f for f, s in zip(features, component.get_support()) if s]
         if hasattr(component, 'get_feature_names'):
             features = component.get_feature_names(features)
-
     return features
 
 
@@ -189,6 +200,7 @@ def extract_params_from_pipeline(pipeline, X_train, feature_names):
         pipeline=pipeline,
         features=feature_names
     )
+
     X_train = pd.DataFrame(
         data=pipeline[:-1].transform(X_train),
         columns=feature_names
