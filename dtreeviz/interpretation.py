@@ -44,6 +44,7 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
     feature_categorical_value = defaultdict(lambda: set())
     feature_categorical_value_not_in = defaultdict(lambda: set())
 
+    decision_node_path_ordered_feature_names = []
     for i, node in enumerate(decision_node_path):
         if i == len(decision_node_path) - 1:
             break  # stop at leaf node
@@ -51,6 +52,9 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
 
         feature_name = feature_names[node_feature_index[node_id]]
         feature_value = x[node_feature_index[node_id]]
+
+        if feature_name not in decision_node_path_ordered_feature_names:
+            decision_node_path_ordered_feature_names.append(feature_name)
 
         if not shadow_tree.is_categorical_split(node_id):
             feature_split_value = round(node_threshold[node_id], 2)
@@ -70,7 +74,7 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
                 feature_categorical_value_not_in[feature_name].update(node_threshold[node_id])
 
     prediction_path_output = ""
-    for feature_name in feature_names:
+    for feature_name in decision_node_path_ordered_feature_names:
         feature_range = ""
         if feature_name in feature_smaller_values:
             feature_range = f"{max(feature_smaller_values[feature_name])} <= {feature_name} "
