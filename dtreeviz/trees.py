@@ -1502,7 +1502,7 @@ def _ctreeviz_univar(shadow_tree,
     splits = sorted(splits)
 
     if 'preds' in show:  # this gets the horiz bars showing prediction region
-        pred_box_height = .07 * ax.get_ylim()[1]
+        pred_box_height = .07 * (ax.get_ylim()[1] - ax.get_ylim()[0])
         bins = [ax.get_xlim()[0]] + splits + [ax.get_xlim()[1]]
         for i in range(len(bins) - 1):
             left = bins[i]
@@ -1512,7 +1512,7 @@ def _ctreeviz_univar(shadow_tree,
                 continue
             values, counts = np.unique(inrange, return_counts=True)
             pred = values[np.argmax(counts)]
-            rect = patches.Rectangle((left, 0), (right - left), pred_box_height, linewidth=.3, alpha=colors['tesselation_alpha'],
+            rect = patches.Rectangle((left, -2*pred_box_height), (right - left), pred_box_height, linewidth=.3, alpha=colors['tesselation_alpha'],
                                      edgecolor=colors['edge'], facecolor=color_map[pred])
             ax.add_patch(rect)
 
