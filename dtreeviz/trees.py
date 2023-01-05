@@ -230,12 +230,12 @@ class DTreeVizAPI:
              precision: int = 2,
              orientation: ('TD', 'LR') = "TD",
              instance_orientation: ("TD", "LR") = "LR",
-             leaf_plot_type: ('pie', 'barh') = 'pie',
              show_root_edge_labels: bool = True,
              show_node_labels: bool = False,
              show_just_path: bool = False,
              fancy: bool = True,
              histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
+             leaftype: ('pie', 'barh') = 'pie',
              highlight_path: List[int] = [],
              x: np.ndarray = None,
              max_X_features_LR: int = 10,
@@ -263,7 +263,7 @@ class DTreeVizAPI:
                           after the decimal point. Default is 2.
         :param orientation:  Is the tree top down, "TD", or left to right, "LR"?
         :param instance_orientation: table orientation (TD, LR) for showing feature prediction's values.
-        :param leaf_plot_type: leaf plot type ('pie', 'barh')
+        :param leaftype: leaf plot type ('pie', 'barh')
         :param show_root_edge_labels: Include < and >= on the edges emanating from the root?
         :param show_node_labels: Add "Node id" to top of each node in graph for educational purposes
         :param show_just_path: If True, it shows only the sample(X) prediction path
@@ -347,7 +347,7 @@ class DTreeVizAPI:
                 return f'leaf{node.id} [margin="0" shape=box penwidth="0" color="{colors["text"]}" label=<{html}>]'
 
         def node_label(node):
-            return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="Helvetica" color="{colors["node_label"]}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
+            return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="{fontname}" color="{colors["node_label"]}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
 
         def class_legend_html():
             return f"""
@@ -389,7 +389,7 @@ class DTreeVizAPI:
                 else:
                     color = colors['text']
                 headers.append(f'<td cellpadding="1" align="right" bgcolor="white">'
-                               f'<font face="Helvetica" color="{color}" point-size="{instance_fontsize}">'
+                               f'<font face="{fontname}" color="{color}" point-size="{instance_fontsize}">'
                                f'{name}'
                                '</font>'
                                '</td>')
@@ -405,7 +405,7 @@ class DTreeVizAPI:
                 else:
                     disp_v = myround(v, precision)
                 values.append(f'<td cellpadding="1" align="right" bgcolor="white">'
-                              f'<font face="Helvetica" color="{color}" point-size="{instance_fontsize}">{disp_v}</font>'
+                              f'<font face="{fontname}" color="{color}" point-size="{instance_fontsize}">{disp_v}</font>'
                               '</td>')
 
             if instance_orientation == "TD":
@@ -432,9 +432,9 @@ class DTreeVizAPI:
             path = self.shadow_tree.predict_path(x)
             leaf = f"leaf{path[-1].id}"
             if self.shadow_tree.is_classifier():
-                edge_label = f" &#160;Prediction<br/> {path[-1].prediction_name()}"
+                edge_label = f"  Prediction<br/> {path[-1].prediction_name()}"
             else:
-                edge_label = f" &#160;Prediction<br/> {myround(path[-1].prediction(), precision)}"
+                edge_label = f"  Prediction<br/> {myround(path[-1].prediction(), precision)}"
             return f"""
                     subgraph cluster_instance {{
                         style=invis;
@@ -442,7 +442,7 @@ class DTreeVizAPI:
                         {instance_html(path)}
                         >]
                     }}
-                    {leaf} -> X_y [dir=back; penwidth="1.2" color="{colors['highlight']}" label=<<font face="Helvetica" color="{colors['leaf_label']}" point-size="{11}">{edge_label}</font>>]
+                    {leaf} -> X_y [dir=back; penwidth="1.2" color="{colors['highlight']}" label=<<font face="{fontname}" color="{colors['leaf_label']}" point-size="{11}">{edge_label}</font>>]
                     """
 
         def get_internal_nodes():
@@ -539,7 +539,6 @@ class DTreeVizAPI:
                                     filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
                                     target_name=self.shadow_tree.target_name,
                                     y_range=y_range,
-                                    precision=precision,
                                     X=x,
                                     ticks_fontsize=ticks_fontsize,
                                     label_fontsize=label_fontsize,
@@ -564,7 +563,7 @@ class DTreeVizAPI:
                                 filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
                                 graph_colors=colors,
                                 fontname=fontname,
-                                leaf_plot_type=leaf_plot_type)
+                                leaftype=leaftype)
                 leaves.append(class_leaf_node(node))
             else:
                 # for now, always gen leaf
@@ -585,10 +584,10 @@ class DTreeVizAPI:
 
         # TODO do we need show_edge_labels ?
         show_edge_labels = False
-        all_llabel = '&lt;' if show_edge_labels else ''
-        all_rlabel = '&ge;' if show_edge_labels else ''
-        root_llabel = self.shadow_tree.get_root_edge_labels()[0] if show_root_edge_labels else ''
-        root_rlabel = self.shadow_tree.get_root_edge_labels()[1] if show_root_edge_labels else ''
+        all_llabel = '  &lt;' if show_edge_labels else ''
+        all_rlabel = '  &ge;' if show_edge_labels else ''
+        root_llabel = f'  {self.shadow_tree.get_root_edge_labels()[0]}' if show_root_edge_labels else ''
+        root_rlabel = f'  {self.shadow_tree.get_root_edge_labels()[1]}' if show_root_edge_labels else ''
 
         edges = []
         # non leaf edges with > and <=
@@ -629,12 +628,12 @@ class DTreeVizAPI:
 
             if show_just_path:
                 if node.left.id in highlight_path:
-                    edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}> fontcolor="{colors["text"]}"]')
+                    edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} fontname="{fontname}" color="{lcolor}" label=<{llabel}> fontcolor="{colors["text"]}"]')
                 if node.right.id in highlight_path:
-                    edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}> fontcolor="{colors["text"]}"]')
+                    edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} fontname="{fontname}" color="{rcolor}" label=<{rlabel}> fontcolor="{colors["text"]}"]')
             else:
-                edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} color="{lcolor}" label=<{llabel}> fontcolor="{colors["text"]}"]')
-                edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} color="{rcolor}" label=<{rlabel}> fontcolor="{colors["text"]}"]')
+                edges.append(f'{nname} -> {left_node_name} [penwidth={lpw} fontname="{fontname}" color="{lcolor}" label=<{llabel}> fontcolor="{colors["text"]}"]')
+                edges.append(f'{nname} -> {right_node_name} [penwidth={rpw} fontname="{fontname}" color="{rcolor}" label=<{rlabel}> fontcolor="{colors["text"]}"]')
                 edges.append(f"""
                     {{
                         rank=same;
@@ -914,6 +913,7 @@ class DTreeVizAPI:
 
     def ctree_feature_space(self,
                             fontsize=10,
+                            ticks_fontsize=8,
                             fontname="Arial",
                             nbins=25,
                             gtype='strip',
@@ -924,18 +924,18 @@ class DTreeVizAPI:
         # TODO: check if we can find some common functionality between univar and bivar visualisations and refactor
         #  to a single method.
         if len(self.shadow_tree.feature_names) == 1:     # univar example
-            _ctreeviz_univar(self.shadow_tree, fontsize, fontname, nbins, gtype, show, colors, figsize, ax)
+            _ctreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, fontname, nbins, gtype, show, colors, figsize, ax)
         elif len(self.shadow_tree.feature_names) == 2:   # bivar example
-            _ctreeviz_bivar(self.shadow_tree, fontsize, fontname, show, colors, figsize, ax)
+            _ctreeviz_bivar(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, colors, figsize, ax)
         else:
             raise ValueError(f"ctree_feature_space supports a dataset with only one or two features."
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
 
-    def rtree_feature_space(self, fontsize: int = 10, show={'title', 'splits'}, split_linewidth=.5,
-                            mean_linewidth=2, markersize=15, colors=None, ticks_fontsize=12, fontname="Arial",
+    def rtree_feature_space(self, fontsize: int = 10, ticks_fontsize=8, show={'title', 'splits'}, split_linewidth=.5,
+                            mean_linewidth=2, markersize=15, colors=None, fontname="Arial",
                             n_colors_in_map=100, figsize=None, ax=None):
         if len(self.shadow_tree.feature_names) == 1:  # univar example
-            _rtreeviz_univar(self.shadow_tree, fontsize, show, split_linewidth, mean_linewidth, markersize, colors,
+            _rtreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, show, split_linewidth, mean_linewidth, markersize, colors,
                              figsize, ax)
         elif len(self.shadow_tree.feature_names) == 2:  # bivar example
             _rtreeviz_bivar_heatmap(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, n_colors_in_map, colors,
@@ -945,7 +945,7 @@ class DTreeVizAPI:
                              f" You provided a dataset with {len(self.shadow_tree.feature_names)} features {self.shadow_tree.feature_names}.")
 
     def rtree_feature_space3D(self,
-                              fontsize=10, ticks_fontsize=10, fontname="Arial",
+                              fontsize=10, ticks_fontsize=8, fontname="Arial",
                               azim=0, elev=0, dist=7,
                               show={'title'}, colors=None, markersize=15,
                               n_colors_in_map=100, figsize=None, ax=None):
@@ -963,15 +963,14 @@ def _class_split_viz(node: ShadowDecTreeNode,
                      y_train: np.ndarray,
                      colors: dict,
                      node_heights,
-                     filename: str = None,
-                     ticks_fontsize: int = 8,
-                     label_fontsize: int = 9,
-                     fontname: str = "Arial",
-                     precision=1,
-                     histtype: ('bar', 'barstacked', 'strip') = 'barstacked',
-                     X: np.array = None,
-                     highlight_node: bool = False
-                     ):
+                     filename: str,
+                     ticks_fontsize: int,
+                     label_fontsize: int,
+                     fontname: str,
+                     precision: int,
+                     histtype: ('bar', 'barstacked', 'strip'),
+                     X: np.array,
+                     highlight_node: bool):
     def _get_bins(overall_range, nbins_):
         return np.linspace(start=overall_range[0], stop=overall_range[1], num=nbins_, endpoint=True)
 
@@ -1092,9 +1091,9 @@ def _class_split_viz(node: ShadowDecTreeNode,
 def _class_leaf_viz(node: ShadowDecTreeNode,
                     colors: List[str],
                     filename: str,
-                    graph_colors=None,
-                    fontname: str = "Arial",
-                    leaf_plot_type: ('pie', 'barh') = "pie"):
+                    graph_colors,
+                    fontname,
+                    leaftype):
     graph_colors = adjust_colors(graph_colors)
 
     minsize = .15
@@ -1108,29 +1107,28 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
     counts = node.class_counts()
     prediction = node.prediction_name()
 
-    if leaf_plot_type == 'pie':
+    if leaftype == 'pie':
         _draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
-    elif leaf_plot_type == 'barh':
+    elif leaftype == 'barh':
         _draw_barh_chart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
     else:
-        raise ValueError(f'Undefined leaf_plot_type = {leaf_plot_type}')
+        raise ValueError(f'Undefined leaftype = {leaftype}')
 
 
 def _regr_split_viz(node: ShadowDecTreeNode,
                     X_train: np.ndarray,
                     y_train: np.ndarray,
                     target_name: str,
-                    filename: str = None,
-                    y_range=None,
-                    ticks_fontsize: int = 8,
-                    label_fontsize: int = 9,
-                    fontname: str = "Arial",
-                    precision=1,
-                    X: np.array = None,
-                    highlight_node: bool = False,
-                    colors: dict = None):
+                    filename,
+                    y_range,
+                    ticks_fontsize,
+                    label_fontsize,
+                    fontname: str,
+                    X: np.array,
+                    highlight_node: bool,
+                    colors):
     colors = adjust_colors(colors)
 
     figsize = (2.5, 1.1)
@@ -1172,8 +1170,7 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         t.set_clip_on(False)
         ax.add_patch(t)
 
-    if node.is_categorical_split() is False:
-
+    if not node.is_categorical_split():
         xticks = list(overall_feature_range)
         if node.split() > xmin + .10 * xr and node.split() < xmax - .1 * xr:  # don't show split if too close to axis ends
             xticks += [node.split()]
@@ -1223,13 +1220,13 @@ def _regr_split_viz(node: ShadowDecTreeNode,
 def _regr_leaf_viz(node: ShadowDecTreeNode,
                    y: (pd.Series, np.ndarray),
                    target_name,
-                   filename: str = None,
-                   y_range=None,
-                   precision=1,
-                   label_fontsize: int = 9,
-                   ticks_fontsize: int = 8,
-                   fontname: str = "Arial",
-                   colors=None):
+                   filename: str,
+                   y_range,
+                   precision,
+                   label_fontsize: int,
+                   ticks_fontsize: int,
+                   fontname: str,
+                   colors):
     colors = adjust_colors(colors)
 
     samples = node.samples()
@@ -1271,7 +1268,7 @@ def _regr_leaf_viz(node: ShadowDecTreeNode,
         plt.close()
 
 
-def _draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Arial"):
+def _draw_legend(shadow_tree, target_name, filename, colors, fontname):
     colors = adjust_colors(colors)
     n_classes = shadow_tree.nclasses()
     class_values = shadow_tree.classes()
@@ -1316,7 +1313,7 @@ def _draw_legend(shadow_tree, target_name, filename, colors=None, fontname="Aria
         plt.close()
 
 
-def _draw_piechart(counts, size, colors, filename, label=None, fontname="Arial", graph_colors=None):
+def _draw_piechart(counts, size, colors, filename, label, fontname, graph_colors):
     graph_colors = adjust_colors(graph_colors)
     n_nonzero = np.count_nonzero(counts)
 
@@ -1353,7 +1350,7 @@ def _draw_piechart(counts, size, colors, filename, label=None, fontname="Arial",
     plt.close()
 
 
-def _draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial", ticks_fontsize=9, graph_colors=None):
+def _draw_barh_chart(counts, size, colors, filename, label, fontname, graph_colors):
     graph_colors = adjust_colors(graph_colors)
     n_nonzero = np.count_nonzero(counts)
 
@@ -1363,7 +1360,6 @@ def _draw_barh_chart(counts, size, colors, filename, label=None, fontname="Arial
             counts = [counts[i]]
             colors = [colors[i]]
 
-    tweak = size * .01
     fig, ax = plt.subplots(1, 1, figsize=(size, 0.2))
 
     data_cum = 0
@@ -1409,8 +1405,7 @@ def _get_num_bins(histtype, n_classes):
     return bins
 
 
-def _get_leaf_target_input(shadow_tree: ShadowDecTree,
-                           precision: int):
+def _get_leaf_target_input(shadow_tree: ShadowDecTree, precision: int):
     x = []
     y = []
     means = []
@@ -1434,11 +1429,12 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree,
 
 
 def _ctreeviz_univar(shadow_tree,
-                     fontsize=10, fontname="Arial", nbins=25, gtype='strip',
-                     show={'title', 'legend', 'splits', 'preds'},
-                     colors=None,
-                     figsize=None,
-                     ax=None):
+                     fontsize, ticks_fontsize, fontname, nbins,
+                     gtype,
+                     show,
+                     colors,
+                     figsize,
+                     ax):
     if ax is None:
         if figsize:
             fig, ax = plt.subplots(figsize=figsize)
@@ -1496,7 +1492,7 @@ def _ctreeviz_univar(shadow_tree,
         raise ValueError(f'Unrecognized gtype = {gtype}!')
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
-                   labelsize=fontsize)
+                   labelsize=ticks_fontsize)
 
     splits = [node.split() for node in shadow_tree.internal]
     splits = sorted(splits)
@@ -1531,7 +1527,7 @@ def _ctreeviz_univar(shadow_tree,
             ax.plot([split, split], split_heights, '--', color=colors['split_line'], linewidth=1)
 
 
-def _ctreeviz_bivar(shadow_tree, fontsize=10, fontname="Arial", show={'title', 'legend', 'splits'},
+def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
                     colors=None,
                     figsize=None,
                     ax=None):
@@ -1548,19 +1544,22 @@ def _ctreeviz_bivar(shadow_tree, fontsize=10, fontname="Arial", show={'title', '
     X_train = shadow_tree.X_train
     y_train = shadow_tree.y_train
     colors = adjust_colors(colors)
-    tesselation = shadow_tree.tesselation()
+    tessellation = shadow_tree.tessellation()
     n_classes = shadow_tree.nclasses()
     class_values = shadow_tree.classes()
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
+                   labelsize=ticks_fontsize)
+
     if 'splits' in show:
-        for node, bbox in tesselation:
+        for node, bbox in tessellation:
             x = bbox[0]
             y = bbox[1]
             w = bbox[2] - bbox[0]
             h = bbox[3] - bbox[1]
-            rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tesselation_alpha'],
+            rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
                                      edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
             ax.add_patch(rect)
 
@@ -1590,9 +1589,9 @@ def _ctreeviz_bivar(shadow_tree, fontsize=10, fontname="Arial", show={'title', '
     return None
 
 
-def _rtreeviz_univar(shadow_tree, fontsize: int = 10, show={'title', 'splits'},
-                     split_linewidth=.5, mean_linewidth=2, markersize=15, colors=None,
-                     figsize=None, ax=None):
+def _rtreeviz_univar(shadow_tree, fontsize, ticks_fontsize, show,
+                     split_linewidth, mean_linewidth, markersize, colors,
+                     figsize, ax):
     X_train = shadow_tree.X_train.reshape(-1, )
     y_train = shadow_tree.y_train
 
@@ -1639,7 +1638,7 @@ def _rtreeviz_univar(shadow_tree, fontsize: int = 10, show={'title', 'splits'},
             ax.plot([prevX, split], [m, m], '-', color=colors['mean_line'], linewidth=mean_linewidth)
             prevX = split
 
-    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=fontsize)
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
 
     if 'title' in show:
         title = f"Regression tree depth {shadow_tree.get_max_depth()}, samples per leaf {shadow_tree.get_min_samples_leaf()},\nTraining $R^2$={shadow_tree.get_score()}"
@@ -1649,13 +1648,13 @@ def _rtreeviz_univar(shadow_tree, fontsize: int = 10, show={'title', 'splits'},
     ax.set_ylabel(shadow_tree.target_name, fontsize=fontsize, color=colors['axis_label'])
 
 
-def _rtreeviz_bivar_heatmap(shadow_tree, fontsize=10, ticks_fontsize=12, fontname="Arial",
-                            show={'title'},
-                            n_colors_in_map=100,
-                            colors=None,
-                            markersize=15,
-                            figsize=None,
-                            ax=None) -> tree.DecisionTreeClassifier:
+def _rtreeviz_bivar_heatmap(shadow_tree, fontsize, ticks_fontsize, fontname,
+                            show,
+                            n_colors_in_map,
+                            colors,
+                            markersize,
+                            figsize,
+                            ax) -> tree.DecisionTreeClassifier:
     """
     Show tesselated 2D feature space for bivariate regression tree. X_train can
     have lots of features but features lists indexes of 2 features to train tree with.
@@ -1676,16 +1675,16 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize=10, ticks_fontsize=12, fontnam
     color_map = [rgb2hex(c.rgb, force_long=True) for c in
                  Color(colors['color_map_min']).range_to(Color(colors['color_map_max']),
                                                          n_colors_in_map)]
-    tesselation = shadow_tree.tesselation()
+    tessellation = shadow_tree.tessellation()
 
-    for node, bbox in tesselation:
+    for node, bbox in tessellation:
         pred = node.prediction()
         color = color_map[int(((pred - y_lim[0]) / y_range) * (n_colors_in_map - 1))]
         x = bbox[0]
         y = bbox[1]
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-        rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tesselation_alpha'],
+        rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
                                  edgecolor=colors['edge'], facecolor=color)
         ax.add_patch(rect)
 
@@ -1708,10 +1707,10 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize=10, ticks_fontsize=12, fontnam
     return None
 
 
-def _rtreeviz_bivar_3D(shadow_tree, fontsize=10, ticks_fontsize=10, fontname="Arial",
-                       azim=0, elev=0, dist=7,
-                       show={'title'}, colors=None, markersize=15,
-                       n_colors_in_map=100, figsize=None, ax=None):
+def _rtreeviz_bivar_3D(shadow_tree, fontsize, ticks_fontsize, fontname,
+                       azim, elev, dist,
+                       show, colors, markersize,
+                       n_colors_in_map, figsize, ax):
     X_train = shadow_tree.X_train
     y_train = shadow_tree.y_train
 
@@ -1734,7 +1733,7 @@ def _rtreeviz_bivar_3D(shadow_tree, fontsize=10, ticks_fontsize=10, fontname="Ar
         y = np.linspace(bbox[1], bbox[3], 2)
         xx, yy = np.meshgrid(x, y)
         z = np.full(xx.shape, node.prediction())
-        ax.plot_surface(xx, yy, z, alpha=colors['tesselation_alpha_3D'], shade=False,
+        ax.plot_surface(xx, yy, z, alpha=colors['tessellation_alpha_3D'], shade=False,
                         color=color_spectrum[y_to_color_index(node.prediction())],
                         edgecolor=colors['edge'], lw=.3)
 
@@ -1742,9 +1741,9 @@ def _rtreeviz_bivar_3D(shadow_tree, fontsize=10, ticks_fontsize=10, fontname="Ar
     color_spectrum = Color(colors['color_map_min']).range_to(Color(colors['color_map_max']), n_colors_in_map)
     color_spectrum = [rgb2hex(c.rgb, force_long=True) for c in color_spectrum]
     y_colors = [color_spectrum[y_to_color_index(y)] for y in y_train]
-    tesselation = shadow_tree.tesselation()
+    tessellation = shadow_tree.tessellation()
 
-    for node, bbox in tesselation:
+    for node, bbox in tessellation:
         plane(node, bbox, color_spectrum)
 
     x, y, z = X_train[:, 0], X_train[:, 1], y_train

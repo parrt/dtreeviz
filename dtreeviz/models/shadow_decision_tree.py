@@ -274,8 +274,6 @@ class ShadowDecTree(ABC):
             X_feature = X_train[:, node.feature()]
             overall_feature_range = (np.min(X_feature), np.max(X_feature))
             # print(f"range {overall_feature_range}")
-            r = overall_feature_range[1] - overall_feature_range[0]
-
             bins = np.linspace(overall_feature_range[0],
                                overall_feature_range[1], nbins + 1)
             # print(f"\tlen(bins)={len(bins):2d} bins={bins}")
@@ -287,7 +285,6 @@ class ShadowDecTree(ABC):
                 # print(f"class {cl}: goal_n={len(bins):2d} n={len(hist):2d} {hist}")
                 height_of_bins += hist
             node_heights[node.id] = np.max(height_of_bins)
-
             # print(f"\tmax={np.max(height_of_bins):2.0f}, heights={list(height_of_bins)}, {len(height_of_bins)} bins")
         return node_heights
 
@@ -337,7 +334,7 @@ class ShadowDecTree(ABC):
         walk(self.root, x, path)
         return path
 
-    def tesselation(self):
+    def tessellation(self):
         """
         Walk tree and return list of tuples containing a leaf node and bounding box list of(x1, y1, x2, y2) coordinates.
         """

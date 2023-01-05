@@ -77,8 +77,8 @@ COLORS = {'scatter_edge': GREY,
           'class_boundary': GREY,
           'warning': '#E9130D',
           'tile_alpha': 0.8,  # square tiling in decision_boundaries to show probabilities
-          'tesselation_alpha': 0.3,  # rectangular regions for decision tree feature space partitioning
-          'tesselation_alpha_3D': 0.5,
+          'tessellation_alpha': 0.3,  # rectangular regions for decision tree feature space partitioning
+          'tessellation_alpha_3D': 0.5,
           'split_line': GREY,
           'mean_line': '#f46d43',
           'axis_label': GREY,
