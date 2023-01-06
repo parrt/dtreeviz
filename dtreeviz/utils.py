@@ -7,6 +7,7 @@ from pathlib import Path
 from sys import platform as PLATFORM
 
 import graphviz
+import numpy as np
 import pandas as pd
 from matplotlib import patches as patches
 from numpy import ndarray
@@ -315,48 +316,45 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
         text.set_color(colors['text'])
         text.set_fontsize(fontsize)
 
-def _draw_wedge(ax, x, color, node, is_class):
-    def _draw_tria(tria):
+def _draw_wedge(ax, x, node, color, precision, ticks_fontsize, fontname, is_class, h=None, height_range=None, draw_label=False):
+    xmin, xmax = ax.get_xlim()
+    ymin, ymax = ax.get_ylim()
+    x_range = xmax - xmin
+    y_range = ymax - ymin
+
+    tri_width = 0.036 * x_range
+
+    def _draw_tria(tip_x, tip_y, tri_width, tri_height):
+        tria = np.array([[tip_x, tip_y], [tip_x - tri_width/2., tip_y - tri_height], [tip_x + tri_width/2., tip_y - tri_height]])
         t = patches.Polygon(tria, facecolor=color)
         t.set_clip_on(False)
         ax.add_patch(t)
-
-    xmin, xmax = ax.get_xlim()
-    ymin, ymax = ax.get_ylim()
-    xr = xmax - xmin
-    yr = ymax - ymin
-
-    if is_class:
-        hr = h / (height_range[1] - height_range[0])
-        th = yr * .15 * 1 / hr  # convert to graph coordinates (ugh)
-        tw = xr * .018
-        tipy = -0.1 * yr * .15 * 1 / hr
-        if not node.is_categorical_split():
-            # classification, normal split, with label
-            tria = np.array([[x, tipy], [x - tw, -th], [x + tw, -th]])
-            _draw_tria(tria)
-            ax.text(x, -2 * th,
+        if draw_label:
+            ax.text(tip_x, tip_y -2 * tri_height,
                     f"{myround(x, precision)}",
                     horizontalalignment='center',
                     fontsize=ticks_fontsize,
                     fontname=fontname,
-                    color=colors['text_wedge'])
+                    color=color)
+
+    if is_class:
+        hr = h / (height_range[1] - height_range[0])
+        tri_height = y_range * .15 * 1 / hr  # convert to graph coordinates (ugh)
+        tip_y = -0.1 * y_range * .15 * 1 / hr
+        if not node.is_categorical_split():
+            # classification, normal split, with label
+            _draw_tria(x, tip_y, tri_width, tri_height)
         else:
             # classification: categorical split, draw multiple wedges, no labels
-            bins = _get_bins(overall_feature_range, nbins)
+            bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
             for split_value in node.split():
                 # to display the wedge exactly in the middle of the vertical bar
                 for bin_index in range(len(bins) - 1):
                     if bins[bin_index] <= split_value <= bins[bin_index + 1]:
                         split_value = (bins[bin_index] + bins[bin_index + 1]) / 2
                         break
-                tria = np.array([[split_value, tipy], [split_value - tw, -th], [split_value + tw, -th]])
-                _draw_tria(tria)
+                _draw_tria(split_value, tip_y, tri_width, tri_height)
     else:
         # regression, no label
-        th = yr * .1
-        tw = xr * .018
-        tipy = ymin
-
-        tria = np.array([[x, tipy], [x - tw, ymin - th], [x + tw, ymin - th]])
-        _draw_tria(tria)
+        tri_height = y_range * .1
+        _draw_tria(x, ymin, tri_width, tri_height)
