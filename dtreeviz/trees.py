@@ -13,7 +13,7 @@ from dtreeviz.colors import adjust_colors
 from dtreeviz.interpretation import explain_prediction_plain_english, explain_prediction_sklearn_default
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
-from dtreeviz.utils import myround, DTreeVizRender, add_classifier_legend, _format_axes, _draw_wedge
+from dtreeviz.utils import myround, DTreeVizRender, add_classifier_legend, _format_axes, _draw_wedge, _set_wedge_ticks
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [
@@ -521,7 +521,6 @@ class DTreeVizAPI:
                 else:
                     _regr_split_viz(node, X_train, y_train,
                                     filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
-                                    precision=precision,
                                     target_name=self.shadow_tree.target_name,
                                     y_range=y_range,
                                     X=x,
@@ -960,7 +959,7 @@ def _class_split_viz(node: ShadowDecTreeNode,
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
     bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
 
-    _format_axes(ax, feature_name, None, colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=ticks_fontsize, grid=False)
+    _format_axes(ax, feature_name, None, colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=ticks_fontsize, grid=False, pad_for_wedge=True)
 
     class_names = node.shadow_tree.class_names
     class_values = node.shadow_tree.classes()
@@ -999,11 +998,12 @@ def _class_split_viz(node: ShadowDecTreeNode,
     overall_feature_range_wide = (bins[0] - 2 * bin_length, bins[len(bins) - 1] + 2 * bin_length)
 
     ax.set_xlim(*overall_feature_range_wide)
-    ax.set_xticks(overall_feature_range)
 
-    _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=True, h=h, height_range=height_range, bins=bins)
+    wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=True, h=h, height_range=height_range, bins=bins)
     if highlight_node:
-        _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=True, h=h, height_range=height_range, bins=bins)
+        _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=True, h=h, height_range=height_range, bins=bins)
+
+    _set_wedge_ticks(ax, ax_ticks=list(overall_feature_range), wedge_ticks=wedge_ticks)
 
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
@@ -1044,7 +1044,6 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                     y_train: np.ndarray,
                     target_name: str,
                     filename,
-                    precision: int,
                     y_range,
                     ticks_fontsize,
                     label_fontsize,
@@ -1059,7 +1058,7 @@ def _regr_split_viz(node: ShadowDecTreeNode,
 
     feature_name = node.feature_name()
 
-    _format_axes(ax, feature_name, target_name if node == node.shadow_tree.root else None, colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=ticks_fontsize, grid=False)
+    _format_axes(ax, feature_name, target_name if node == node.shadow_tree.root else None, colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=ticks_fontsize, grid=False, pad_for_wedge=True)
     ax.set_ylim(y_range)
 
     # Get X, y data for all samples associated with this node.
@@ -1072,10 +1071,6 @@ def _regr_split_viz(node: ShadowDecTreeNode,
     xr = xmax - xmin
 
     if not node.is_categorical_split():
-        xticks = list(overall_feature_range)
-        if node.split() > xmin + .10 * xr and node.split() < xmax - .1 * xr:  # don't show split if too close to axis ends
-            xticks += [node.split()]
-        ax.set_xticks(xticks)
 
         ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
         left, right = node.split_samples()
@@ -1089,10 +1084,13 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         ax.plot([split, overall_feature_range[1]], [np.mean(right), np.mean(right)], '--', color=colors['split_line'],
                 linewidth=1)
 
-        _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=False)
+        wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=False)
 
         if highlight_node:
-            _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
+            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
+
+        _set_wedge_ticks(ax, ax_ticks=list(overall_feature_range), wedge_ticks=wedge_ticks)
+
     else:
         left_index, right_index = node.split_samples()
         tw = (xmax - xmin) * .018
@@ -1109,10 +1107,12 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         ax.plot([xmin - tw, xmax + tw], [np.mean(y_train[right_index]), np.mean(y_train[right_index])], '--',
                 color=colors["categorical_split_right"],
                 linewidth=1)
-        ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
 
         if highlight_node:
-            _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
+            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
+
+        # no wedge ticks for categorical split
+        ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
 
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
