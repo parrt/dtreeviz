@@ -316,7 +316,7 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
         text.set_color(colors['text'])
         text.set_fontsize(fontsize)
 
-def _draw_wedge(ax, x, node, color, precision, ticks_fontsize, fontname, is_class, h=None, height_range=None, draw_label=False):
+def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=None):
     xmin, xmax = ax.get_xlim()
     ymin, ymax = ax.get_ylim()
     x_range = xmax - xmin
@@ -329,24 +329,16 @@ def _draw_wedge(ax, x, node, color, precision, ticks_fontsize, fontname, is_clas
         t = patches.Polygon(tria, facecolor=color)
         t.set_clip_on(False)
         ax.add_patch(t)
-        if draw_label:
-            ax.text(tip_x, tip_y -2 * tri_height,
-                    f"{myround(x, precision)}",
-                    horizontalalignment='center',
-                    fontsize=ticks_fontsize,
-                    fontname=fontname,
-                    color=color)
 
     if is_class:
         hr = h / (height_range[1] - height_range[0])
         tri_height = y_range * .15 * 1 / hr  # convert to graph coordinates (ugh)
         tip_y = -0.1 * y_range * .15 * 1 / hr
         if not node.is_categorical_split():
-            # classification, normal split, with label
+            # classification, normal split
             _draw_tria(x, tip_y, tri_width, tri_height)
         else:
-            # classification: categorical split, draw multiple wedges, no labels
-            bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
+            # classification: categorical split, draw multiple wedges
             for split_value in node.split():
                 # to display the wedge exactly in the middle of the vertical bar
                 for bin_index in range(len(bins) - 1):
@@ -355,6 +347,6 @@ def _draw_wedge(ax, x, node, color, precision, ticks_fontsize, fontname, is_clas
                         break
                 _draw_tria(split_value, tip_y, tri_width, tri_height)
     else:
-        # regression, no label
+        # regression
         tri_height = y_range * .1
         _draw_tria(x, ymin, tri_width, tri_height)

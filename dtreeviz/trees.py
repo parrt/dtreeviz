@@ -993,6 +993,7 @@ def _class_split_viz(node: ShadowDecTreeNode,
         nbins = nbins if nbins > feature_unique_size else feature_unique_size + 1
 
     overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
+    bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
     ax.set_xlabel(f"{feature_name}", fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -1018,7 +1019,6 @@ def _class_split_viz(node: ShadowDecTreeNode,
     else:
         X_colors = [colors[cl] for cl in class_values]
 
-        bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
         hist, bins, barcontainers = ax.hist(X_hist,
                                             color=X_colors,
                                             align='mid',
@@ -1040,9 +1040,9 @@ def _class_split_viz(node: ShadowDecTreeNode,
     ax.set_xticks(overall_feature_range)
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'], labelsize=ticks_fontsize)
 
-    _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], precision=precision, ticks_fontsize=ticks_fontsize, fontname=fontname, is_class=True, h=h, height_range=height_range, draw_label=True)
+    _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=True, h=h, height_range=height_range, bins=bins)
     if highlight_node:
-        _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], precision=precision, ticks_fontsize=ticks_fontsize, fontname=fontname, is_class=True, h=h, height_range=height_range)
+        _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=True, h=h, height_range=height_range, bins=bins)
 
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
@@ -1138,10 +1138,10 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         ax.plot([split, overall_feature_range[1]], [np.mean(right), np.mean(right)], '--', color=colors['split_line'],
                 linewidth=1)
 
-        _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], precision=precision, ticks_fontsize=ticks_fontsize, fontname=fontname, is_class=False, draw_label=True)
+        _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=False)
 
         if highlight_node:
-            _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], precision=precision, ticks_fontsize=ticks_fontsize, fontname=fontname, is_class=False)
+            _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
     else:
         left_index, right_index = node.split_samples()
         tw = (xmax - xmin) * .018
@@ -1161,7 +1161,7 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
 
         if highlight_node:
-            _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], precision=precision, ticks_fontsize=ticks_fontsize, fontname=fontname, is_class=False)
+            _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
 
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
