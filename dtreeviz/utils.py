@@ -314,6 +314,7 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
     for text in leg.get_texts():
         text.set_color(colors['text'])
         text.set_fontsize(fontsize)
+        text.set_fontname(fontname)
 
 
 def _format_axes(ax, xlabel, ylabel, colors, fontsize, fontname, ticks_fontsize=None, grid=False):
