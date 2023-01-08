@@ -1223,31 +1223,10 @@ def _draw_legend(shadow_tree, target_name, filename, colors, fontname):
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
-    boxes = []
-    for i, c in enumerate(class_values):
-        box = patches.Rectangle((0, 0), 20, 10, linewidth=.4, edgecolor=colors['rect_edge'],
-                                facecolor=color_map[c], label=class_names[i])
-        boxes.append(box)
-
     fig, ax = plt.subplots(1, 1, figsize=(1, 1))
-    leg = ax.legend(handles=boxes,
-                    frameon=colors['legend_edge'] is not None,
-                    shadow=False,
-                    fancybox=colors['legend_edge'] is not None,
-                    loc='center',
-                    title=target_name,
-                    handletextpad=.35,
-                    borderpad=.8,
-                    edgecolor=colors['legend_edge'])
 
-    leg.get_frame().set_linewidth(.5)
-    leg.get_title().set_color(colors['legend_title'])
-    leg.get_title().set_fontsize(10)
-    leg.get_title().set_fontweight('bold')
-    for text in leg.get_texts():
-        text.set_color(colors['text'])
-        text.set_fontsize(10)
-        text.set_fontname(fontname)
+    add_classifier_legend(ax, class_names, class_values, facecolors=color_map, target_name=target_name,
+                          colors=colors, fontsize=10, fontname=fontname)
 
     ax.set_xlim(0, 20)
     ax.set_ylim(0, 10)
