@@ -316,6 +316,27 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
         text.set_color(colors['text'])
         text.set_fontsize(fontsize)
 
+
+def _format_axes(ax, xlabel, ylabel, colors, fontsize, fontname, ticks_fontsize=None, grid=False):
+
+    if xlabel is not None:
+        ax.set_xlabel(xlabel, fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    if ylabel is not None:
+        ax.set_ylabel(ylabel, fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    for side in ['top', 'right', 'bottom', 'left']:
+        ax.spines[side].set(linewidth=.3, color=colors['axis'])
+
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'])
+    if ticks_fontsize is not None:
+        ax.tick_params(axis='both', which='major', labelsize=ticks_fontsize)
+
+    ax.grid(visible=grid)
+
+
 def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=None):
     xmin, xmax = ax.get_xlim()
     ymin, ymax = ax.get_ylim()
