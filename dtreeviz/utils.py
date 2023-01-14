@@ -7,6 +7,7 @@ from pathlib import Path
 from sys import platform as PLATFORM
 
 import graphviz
+import numpy as np
 import pandas as pd
 from matplotlib import patches as patches
 from numpy import ndarray
@@ -317,7 +318,7 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
         text.set_fontname(fontname)
 
 
-def _format_axes(ax, xlabel, ylabel, colors, fontsize, fontname, ticks_fontsize=None, grid=False):
+def _format_axes(ax, xlabel, ylabel, colors, fontsize, fontname, ticks_fontsize=None, grid=False, pad_for_wedge=False):
 
     if xlabel is not None:
         ax.set_xlabel(xlabel, fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
@@ -333,5 +334,76 @@ def _format_axes(ax, xlabel, ylabel, colors, fontsize, fontname, ticks_fontsize=
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'])
     if ticks_fontsize is not None:
         ax.tick_params(axis='both', which='major', labelsize=ticks_fontsize)
+    if pad_for_wedge:
+        ax.tick_params(axis='x', which='major', pad=8)
 
     ax.grid(visible=grid)
+
+
+def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=None):
+
+    xmin, xmax = ax.get_xlim()
+    ymin, ymax = ax.get_ylim()
+    x_range = xmax - xmin
+    y_range = ymax - ymin
+
+    tri_width = 0.036 * x_range
+
+    wedge_ticks = []
+
+    def _draw_tria(tip_x, tip_y, tri_width, tri_height):
+        tria = np.array([[tip_x, tip_y], [tip_x - tri_width/2., tip_y - tri_height], [tip_x + tri_width/2., tip_y - tri_height]])
+        t = patches.Polygon(tria, facecolor=color)
+        t.set_clip_on(False)
+        ax.add_patch(t)
+        wedge_ticks.append(tip_x)
+
+    if is_class:
+        hr = h / (height_range[1] - height_range[0])
+        tri_height = y_range * .15 * 1 / hr  # convert to graph coordinates (ugh)
+        tip_y = -0.1 * y_range * .15 * 1 / hr
+        if not node.is_categorical_split():
+            # classification, normal split
+            _draw_tria(x, tip_y, tri_width, tri_height)
+        else:
+            # classification: categorical split, draw multiple wedges
+            for split_value in node.split():
+                # to display the wedge exactly in the middle of the vertical bar
+                for bin_index in range(len(bins) - 1):
+                    if bins[bin_index] <= split_value <= bins[bin_index + 1]:
+                        split_value = (bins[bin_index] + bins[bin_index + 1]) / 2
+                        break
+                _draw_tria(split_value, tip_y, tri_width, tri_height)
+    else:
+        # regression
+        tri_height = y_range * .1
+        _draw_tria(x, ymin, tri_width, tri_height)
+
+    return wedge_ticks
+
+
+def _set_wedge_ticks(ax, ax_ticks, wedge_ticks, separation=0.1):
+
+    xmin, xmax = ax.get_xlim()
+    x_range = xmax - xmin
+
+    # always draw provided ax_ticks
+    ticks_to_draw = ax_ticks.copy()
+
+    # deconflict wedge_ticks
+    for wedge_tick in wedge_ticks:
+        draw_wedge_tick = True
+        _i = 0
+        while _i < len(ax_ticks):
+            ax_tick = ax_ticks[_i]
+            if ax_tick - separation*x_range < wedge_tick and wedge_tick < ax_tick + separation*x_range:
+                # The wedge_tick is within separation of the ax_tick, do not draw the wedge_tick
+                draw_wedge_tick = False
+                break
+            _i += 1
+
+        if draw_wedge_tick:
+            ticks_to_draw.append(wedge_tick)
+
+    # actually draw the ticks
+    ax.set_xticks(sorted(ticks_to_draw))
