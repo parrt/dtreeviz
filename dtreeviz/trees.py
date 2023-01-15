@@ -474,6 +474,8 @@ class DTreeVizAPI:
         # Fix the mapping from target value to color for entire tree
         if self.shadow_tree.is_classifier():
             class_values = self.shadow_tree.classes()
+            if np.max(class_values) >= n_classes:
+                raise ValueError("Target label values (for now) must be 0..n-1 for n labels")
             color_map = {v: color_values[i] for i, v in enumerate(class_values)}
             _draw_legend(self.shadow_tree, self.shadow_tree.target_name, f"{tmp}/legend_{os.getpid()}.svg",
                          colors=colors,

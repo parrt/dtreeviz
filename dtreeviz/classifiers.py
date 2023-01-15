@@ -86,6 +86,9 @@ def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
     if isinstance(y, pd.Series):
         y = y.values
 
+    if np.max(y) >= len(class_names):
+        raise ValueError("Target label values (for now) must be 0..n-1 for n labels")
+
     if model.__class__.__module__.startswith('tensorflow.python.keras') or \
             model.__class__.__module__.startswith('keras'):
         if not (hasattr(model, 'predict') and callable(getattr(model, 'predict'))):
