@@ -144,8 +144,5 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         rect.set_edgecolor(colors['rect_edge'])
 
     _format_axes(ax, "Feature Importance", "Features", colors, fontsize, fontname, grid=grid)
-    # TODO this just screws up the x-axis ticks, should just leave numeric!
-    ax.set_xticks(range(0, len(shadow_tree.feature_names)))
-    ax.set_xticklabels(shadow_tree.feature_names)
 
     return ax
