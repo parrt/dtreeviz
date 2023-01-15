@@ -158,7 +158,7 @@ def _extract_final_feature_names(pipeline, features):
 
 def _normalize_class_names(class_names, nclasses):
     if class_names is None:
-        return {i: f"class {i}" for i in range(nclasses)}
+        return {i: f"Class {i}" for i in range(nclasses)}
     if isinstance(class_names, dict):
         return class_names
     elif isinstance(class_names, Sequence):
@@ -330,6 +330,10 @@ def _format_axes(ax, xlabel, ylabel, colors, fontsize, fontname, ticks_fontsize=
 
     for side in ['top', 'right', 'bottom', 'left']:
         ax.spines[side].set(linewidth=.3, color=colors['axis'])
+    for tick in ax.get_xticklabels():
+        tick.set_fontname(fontname)
+    for tick in ax.get_yticklabels():
+        tick.set_fontname(fontname)
 
     ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'])
     if ticks_fontsize is not None:

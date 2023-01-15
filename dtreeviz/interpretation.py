@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 
 from dtreeviz.colors import adjust_colors
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
+from dtreeviz.utils import _format_axes
 
 
 def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
@@ -124,18 +125,14 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
     decision_node_path = [node.id for node in decision_node_path]
 
     feature_path_importance = shadow_tree.get_feature_path_importance(decision_node_path)
+
     colors = adjust_colors(colors)
     if ax is None:
         if figsize:
             fig, ax = plt.subplots(figsize=figsize)
         else:
             fig, ax = plt.subplots()
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_linewidth(.3)
-    ax.spines['bottom'].set_linewidth(.3)
-    ax.set_xticks(range(0, len(shadow_tree.feature_names)))
-    ax.set_xticklabels(shadow_tree.feature_names)
+
     barcontainers = ax.barh(y=shadow_tree.feature_names,
                             width=feature_path_importance,
                             color=colors["hist_bar"],
@@ -145,7 +142,10 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
     for rect in barcontainers.patches:
         rect.set_linewidth(.5)
         rect.set_edgecolor(colors['rect_edge'])
-    ax.set_ylabel("features", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_xlabel("feature importance", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.grid(b=grid)
+
+    _format_axes(ax, "Feature Importance", "Features", colors, fontsize, fontname, grid=grid)
+    # TODO this just screws up the x-axis ticks, should just leave numeric!
+    ax.set_xticks(range(0, len(shadow_tree.feature_names)))
+    ax.set_xticklabels(shadow_tree.feature_names)
+
     return ax

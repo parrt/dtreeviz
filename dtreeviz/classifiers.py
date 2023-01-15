@@ -10,7 +10,7 @@ from matplotlib.collections import PatchCollection
 
 from dtreeviz import utils
 from dtreeviz.colors import adjust_colors
-from dtreeviz.utils import add_classifier_legend
+from dtreeviz.utils import add_classifier_legend, _format_axes
 
 
 def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
@@ -221,26 +221,15 @@ def decision_boundaries_bivar(model, X:np.ndarray, y:np.ndarray,
                            edgecolors=colors['scatter_edge'],
                            lw=.5)
 
-    if feature_names is not None:
-        ax.set_xlabel(f"{feature_names[0]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-        ax.set_ylabel(f"{feature_names[1]}", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    _format_axes(ax,
+        feature_names[0] if feature_names is not None else None,
+        feature_names[1] if feature_names is not None else None,
+        colors, fontsize, fontname)
 
     if 'legend' in show:
         class_names = utils._normalize_class_names(class_names, nclasses=len(class_values))
         add_classifier_legend(ax, class_names, class_values, color_map, target_name, colors,
                               fontsize=fontsize, fontname=fontname)
-
-    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
-                   labelsize=fontsize)
-    for tick in ax.get_xticklabels():
-        tick.set_fontname(fontname)
-    for tick in ax.get_yticklabels():
-        tick.set_fontname(fontname)
-    ax.spines['top'].set_visible(False)  # turns off the top "spine" completely
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_linewidth(.5)
-    ax.spines['bottom'].set_linewidth(.5)
-
 
 def _compute_tiling(model, X:np.ndarray, y:np.ndarray, binary_threshold,
                     ntiles, tile_fraction, ranges):
@@ -495,22 +484,10 @@ def decision_boundaries_univar(model, x: np.ndarray, y: np.ndarray,
                            edgecolors=colors['scatter_edge'],
                            lw=.5)
 
-    ax.spines['top'].set_visible(False)
+    _format_axes(ax, feature_name if feature_name is not None else None, None, colors, fontsize, fontname)
     ax.spines['left'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_linewidth(0.1)
     ax.set_yticks([])
-    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'],
-                   labelsize=fontsize)
-    for tick in ax.get_xticklabels():
-        tick.set_fontname(fontname)
-    for tick in ax.get_yticklabels():
-        tick.set_fontname(fontname)
     ax.set_ylim(0, mu + nclasses * yshift + 6*sigma)
-
-    if feature_name is not None:
-        ax.set_xlabel(f"{feature_name}", fontsize=fontsize, fontname=fontname,
-                      color=colors['axis_label'])
 
     if 'legend' in show:
         class_names = utils._normalize_class_names(class_names, nclasses)
