@@ -14,16 +14,20 @@ from numpy import ndarray
 from numbers import Number
 from typing import Tuple, Sequence
 
-criterion_remapping = {
-	'gini': 'Gini',
-	'entropy': 'Entropy',
-	'log_loss': 'Log Loss',
-	'friedman_mse': 'Friedman MSE',
-	'squared_error' : 'Squared Error',
-	'absolute_error': 'Absolute Error',
-	'poisson' : 'Poisson',
-	'variance': 'Variance',
-}
+def criterion_remapping(criterion):
+    criterion_remapping_dict = {
+		'gini': 'Gini',
+		'entropy': 'Entropy',
+		'log_loss': 'Log Loss',
+		'friedman_mse': 'Friedman MSE',
+		'squared_error' : 'Squared Error',
+		'absolute_error': 'Absolute Error',
+		'poisson' : 'Poisson',
+		'variance': 'Variance',
+    }
+
+    return criterion_remapping_dict.get(criterion, criterion)
+
 
 def inline_svg_images(svg) -> str:
     """
