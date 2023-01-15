@@ -219,13 +219,13 @@ class ShadowSparkTree(ShadowDecTree):
             elif name == "maxDepth":
                 return self.tree_model.getMaxDepth()
             elif name == "impurity":
-                return self.tree_model.getImpurity().upper()
+                return self.tree_model.getImpurity()
         elif ShadowSparkTree._get_pyspark_major_version() >= 2:
             if name == "minInstancesPerNode":
                 return self.tree_model.getOrDefault("minInstancesPerNode")
             elif name == "maxDepth":
                 return self.tree_model.getOrDefault("maxDepth")
             elif name == "impurity":
-                return self.tree_model.getOrDefault("impurity").upper()
+                return self.tree_model.getOrDefault("impurity")
         else:
             raise Exception("dtreeviz supports spark versions >= 2")

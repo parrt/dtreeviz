@@ -119,7 +119,7 @@ class DTreeVizAPI:
                 rect.set_linewidth(.5)
                 rect.set_edgecolor(colors['rect_edge'])
 
-            _format_axes(ax, "leaf ids", "samples count", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
+            _format_axes(ax, "Leaf IDs", "Samples Count", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
 
         elif display_type == "hist":
             n, bins, patches = ax.hist(leaf_sizes, bins=bins, color=colors["hist_bar"])
@@ -127,7 +127,7 @@ class DTreeVizAPI:
                 rect.set_linewidth(.5)
                 rect.set_edgecolor(colors['rect_edge'])
 
-            _format_axes(ax, "leaf sample", "leaf count", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
+            _format_axes(ax, "Leaf Sample", "Leaf Count", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
 
 
     def ctree_leaf_distributions(self,
@@ -204,7 +204,7 @@ class DTreeVizAPI:
             add_classifier_legend(ax, self.shadow_tree.class_names, class_values, color_map, self.shadow_tree.target_name, colors,
                                 fontname=fontname)
 
-            _format_axes(ax, "leaf ids", "samples by class", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
+            _format_axes(ax, "Leaf IDs", "Samples by Class", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
 
         elif display_type == "text":
             for leaf, samples_0, samples_1 in zip(index, leaf_samples_0, leaf_samples_1):
@@ -725,7 +725,7 @@ class DTreeVizAPI:
                 rect.set_linewidth(.5)
                 rect.set_edgecolor(colors['rect_edge'])
 
-            _format_axes(ax, "leaf ids", self.shadow_tree.criterion(), colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
+            _format_axes(ax, "Leaf IDs", self.shadow_tree.criterion(), colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
 
         elif display_type == "hist":
             n, bins, patches = ax.hist(leaf_criteria, bins=bins, color=colors["hist_bar"])
@@ -733,7 +733,7 @@ class DTreeVizAPI:
                 rect.set_linewidth(.5)
                 rect.set_edgecolor(colors['rect_edge'])
 
-            _format_axes(ax, self.shadow_tree.criterion(), "leaf count", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
+            _format_axes(ax, self.shadow_tree.criterion(), "Leaf Count", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
 
     def node_stats(self, node_id: int) -> pd.DataFrame:
         """Generate stats (count, mean, std, etc) based on data samples from a specified node.
@@ -876,7 +876,7 @@ class DTreeVizAPI:
         for i in range(len(means)):
             ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
 
-        _format_axes(ax, self.shadow_tree.target_name.lower(), "leaf", colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=None, grid=grid)
+        _format_axes(ax, self.shadow_tree.target_name, "Leaf", colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=None, grid=grid)
 
     def ctree_feature_space(self,
                             fontsize=10,
@@ -1331,7 +1331,7 @@ def _ctreeviz_univar(shadow_tree,
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
     X_colors = [color_map[cl] for cl in class_values]
 
-    _format_axes(ax, shadow_tree.feature_names, None, colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
+    _format_axes(ax, shadow_tree.feature_names[0], None, colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
     ax.yaxis.set_visible(False)
     ax.spines['left'].set_visible(False)
 
@@ -1391,7 +1391,7 @@ def _ctreeviz_univar(shadow_tree,
 
     if 'title' in show:
         accur = shadow_tree.get_score()
-        title = f"Classifier tree depth {shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
+        title = f"Classifier Tree Depth {shadow_tree.get_max_depth()}, Training Accuracy={accur * 100:.2f}%"
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     if 'splits' in show:
@@ -1447,7 +1447,7 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
 
     if 'title' in show:
         accur = shadow_tree.get_score()
-        title = f"Classifier tree depth {shadow_tree.get_max_depth()}, training accuracy={accur * 100:.2f}%"
+        title = f"Classifier Tree Depth {shadow_tree.get_max_depth()}, Training Accuracy={accur * 100:.2f}%"
         ax.set_title(title, fontsize=fontsize, color=colors['title'], )
 
     return None
@@ -1502,10 +1502,10 @@ def _rtreeviz_univar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
             ax.plot([prevX, split], [m, m], '-', color=colors['mean_line'], linewidth=mean_linewidth)
             prevX = split
 
-    _format_axes(ax, shadow_tree.feature_names, shadow_tree.target_name, colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
+    _format_axes(ax, shadow_tree.feature_names[0], shadow_tree.target_name, colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
 
     if 'title' in show:
-        title = f"Regression tree depth {shadow_tree.get_max_depth()}, samples per leaf {shadow_tree.get_min_samples_leaf()},\nTraining $R^2$={shadow_tree.get_score()}"
+        title = f"Regression Tree Depth {shadow_tree.get_max_depth()}, Samples per Leaf {shadow_tree.get_min_samples_leaf()},\nTraining $R^2$={shadow_tree.get_score()}"
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
 
@@ -1557,7 +1557,7 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize, ticks_fontsize, fontname,
 
     if 'title' in show:
         accur = shadow_tree.get_score()
-        title = f"Regression tree depth {shadow_tree.get_max_depth()}, training $R^2$={accur:.3f}"
+        title = f"Regression Tree Depth {shadow_tree.get_max_depth()}, Training $R^2$={accur:.3f}"
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     return None
@@ -1611,7 +1611,7 @@ def _rtreeviz_bivar_3D(shadow_tree, fontsize, ticks_fontsize, fontname,
 
     if 'title' in show:
         accur = shadow_tree.get_score()
-        title = f"Regression tree depth {shadow_tree.get_max_depth()}, training $R^2$={accur:.3f}"
+        title = f"Regression Tree Depth {shadow_tree.get_max_depth()}, Training $R^2$={accur:.3f}"
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
 
     return None

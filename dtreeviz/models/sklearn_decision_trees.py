@@ -36,7 +36,7 @@ class ShadowSKDTree(ShadowDecTree):
         return self.tree_model.tree_.feature
 
     def criterion(self):
-        return self.tree_model.criterion.upper()
+        return self.tree_model.criterion
 
     def get_class_weight(self):
         return self.tree_model.class_weight
