@@ -100,7 +100,7 @@ class ShadowSparkTree(ShadowDecTree):
         return self.features
 
     def criterion(self) -> str:
-        return criterion_remapping.get(self._get_tree_model_parameter_value("impurity"), self._get_tree_model_parameter_value("impurity"))
+        return criterion_remapping(self._get_tree_model_parameter_value("impurity"))
 
     def nclasses(self) -> int:
         if not self.is_classifier():
