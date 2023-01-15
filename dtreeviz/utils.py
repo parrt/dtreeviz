@@ -14,6 +14,16 @@ from numpy import ndarray
 from numbers import Number
 from typing import Tuple, Sequence
 
+criterion_remapping = {
+	'gini': 'Gini',
+	'entropy': 'Entropy',
+	'log_loss': 'Log Loss',
+	'friedman_mse': 'Friedman MSE',
+	'squared_error' : 'Squared Error',
+	'absolute_error': 'Absolute Error',
+	'poisson' : 'Poisson',
+	'variance': 'Variance',
+}
 
 def inline_svg_images(svg) -> str:
     """

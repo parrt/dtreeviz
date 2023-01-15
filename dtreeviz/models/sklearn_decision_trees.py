@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.utils import compute_class_weight
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
+from dtreeviz.utils import criterion_remapping
 
 
 class ShadowSKDTree(ShadowDecTree):
@@ -36,7 +37,7 @@ class ShadowSKDTree(ShadowDecTree):
         return self.tree_model.tree_.feature
 
     def criterion(self):
-        return self.tree_model.criterion
+        return criterion_remapping.get(self.tree_model.criterion, self.tree_model.criterion)
 
     def get_class_weight(self):
         return self.tree_model.class_weight
