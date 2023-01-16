@@ -315,7 +315,11 @@ This project is licensed under the terms of the MIT license, see [LICENSE](LICEN
 
 Notes for parrt.
 
-Update version.py, setup.py, README.
+1. Update version.py, setup.py, README.
+2. Merge dev into master
+3. Create release notes
+4. Push to pypi
+5. Announce
 
 ```
 python3 -m build
