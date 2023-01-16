@@ -589,7 +589,6 @@ class ShadowDecTreeNode():
         """
         if self.isclassifier():
             if self.shadow_tree.get_class_weight() is None:
-                # return np.array(np.round(self.shadow_tree.tree_model.tree_.value[self.id][0]), dtype=int)
                 return np.array(np.round(self.shadow_tree.get_node_nsamples_by_class(self.id)), dtype=int)
             else:
                 return np.round(

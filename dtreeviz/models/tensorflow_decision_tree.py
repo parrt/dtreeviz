@@ -152,8 +152,18 @@ class ShadowTensorflowTree(ShadowDecTree):
     def get_node_nsamples_by_class(self, id):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
-            node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
-            return node_value[0][0], node_value[0][1]
+            node = [node for node in all_nodes if node.id == id][0]
+            samples = np.array(node.samples())
+            node_values = [0] * len(self.class_names)
+            if samples.size == 0:
+                return node_values
+            node_y_data = self.y_train[samples]
+            unique, counts = np.unique(node_y_data, return_counts=True)
+
+            for i in range(len(unique)):
+                node_values[unique[i]] = counts[i]
+
+            return node_values
 
     def get_prediction(self, id):
         if self.is_classifier():
