@@ -785,16 +785,14 @@ class DTreeVizAPI:
             True if we want to display the grid lines on the visualization
         :param figsize: optional (width, height) in inches for the entire plot
             :param ax: optional matplotlib "axes" to draw into
-        :return:
-            Feature importance plot matplotlib "axes" for instance x
         """
-        return explain_prediction_sklearn_default(self.shadow_tree, x,
-                                                  colors,
-                                                  fontsize,
-                                                  fontname,
-                                                  grid,
-                                                  figsize,
-                                                  ax)
+        explain_prediction_sklearn_default(self.shadow_tree, x,
+                                           colors,
+                                           fontsize,
+                                           fontname,
+                                           grid,
+                                           figsize,
+                                           ax)
 
     def explain_prediction_path(self, x: np.ndarray) -> str:
         """Prediction path interpretation for a data instance. There will be created a range of values for each feature,

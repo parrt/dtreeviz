@@ -118,7 +118,6 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         True if we want to display the grid lines on the visualization
     :param figsize: optional (width, height) in inches for the entire plot
     :param ax: optional matplotlib "axes" to draw into
-    :return: Feature importance plot matplotlib "axes" for instance x
     """
     decision_node_path = shadow_tree.predict_path(x)
     decision_node_path = [node.id for node in decision_node_path]
@@ -148,5 +147,3 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         rect.set_edgecolor(colors['rect_edge'])
 
     _format_axes(ax, "Feature Importance", "Features", colors, fontsize, fontname, grid=grid)
-
-    return ax
