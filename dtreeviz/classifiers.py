@@ -87,7 +87,7 @@ def decision_boundaries(model, X: np.ndarray, y: np.ndarray,
         y = y.values
 
     if class_names is not None and np.max(y) >= len(class_names):
-        raise ValueError("Target label values (for now) must be 0..n-1 for n="+len(class_names)+" labels")
+        raise ValueError(f"Target label values (for now) must be 0..{len(class_names)-1} for n={len(class_names)} labels")
 
     if model.__class__.__module__.startswith('tensorflow.python.keras') or \
             model.__class__.__module__.startswith('keras'):
