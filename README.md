@@ -12,7 +12,7 @@ Currently dtreeviz supports: [scikit-learn](https://scikit-learn.org/stable), [X
 * [Tudor Lapusan](https://www.linkedin.com/in/tudor-lapusan-5902593b/)
 * [Prince Grover](https://www.linkedin.com/in/groverpr)
 
-With major code and visualization clean up contributions done by Matthew Epland (@mepland).
+With major code and visualization clean up contributions done by [Matthew Epland](https://www.linkedin.com/in/matthew-epland) (@mepland).
 
 ## Sample Visualizations
 
