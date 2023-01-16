@@ -5,7 +5,7 @@ In this moment, it contains "plain english" implementation, but others can be ad
 from collections import defaultdict
 
 import numpy as np
-import pandas
+import pandas as pd
 from matplotlib import pyplot as plt
 
 from dtreeviz.colors import adjust_colors
@@ -14,7 +14,7 @@ from dtreeviz.utils import _format_axes
 
 
 def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
-                                     x: (pandas.core.series.Series, np.ndarray)) -> str:
+                                     x: (pd.core.series.Series, np.ndarray)) -> str:
     """
     Explains the prediction path using feature value's range.
 
@@ -92,7 +92,7 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
 
 
 def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
-                                       x: (pandas.core.series.Series, np.ndarray),
+                                       x: (pd.core.series.Series, np.ndarray),
                                        colors: dict = None,
                                        fontsize: int = 10,
                                        fontname: str = "Arial",
@@ -118,8 +118,7 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         True if we want to display the grid lines on the visualization
     :param figsize: optional (width, height) in inches for the entire plot
     :param ax: optional matplotlib "axes" to draw into
-    :return:
-        Prediction feature's importance plot
+    :return: Feature importance plot matplotlib "axes" for instance x
     """
     decision_node_path = shadow_tree.predict_path(x)
     decision_node_path = [node.id for node in decision_node_path]
@@ -133,8 +132,13 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         else:
             fig, ax = plt.subplots()
 
-    barcontainers = ax.barh(y=shadow_tree.feature_names,
-                            width=feature_path_importance,
+    df = pd.DataFrame()
+    df['features'] = shadow_tree.feature_names
+    df['imp'] = feature_path_importance
+    df = df.sort_values('imp', ascending=True)
+
+    barcontainers = ax.barh(y=df['features'],
+                            width=df['imp'],
                             color=colors["hist_bar"],
                             lw=.3,
                             align='center',
