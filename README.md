@@ -12,6 +12,8 @@ Currently dtreeviz supports: [scikit-learn](https://scikit-learn.org/stable), [X
 * [Tudor Lapusan](https://www.linkedin.com/in/tudor-lapusan-5902593b/)
 * [Prince Grover](https://www.linkedin.com/in/groverpr)
 
+With major code and visualization clean up contributions done by [Matthew Epland](https://www.linkedin.com/in/matthew-epland) (@mepland).
+
 ## Sample Visualizations
 
 ### Tree visualizations
@@ -160,6 +162,7 @@ pip install dtreeviz[xgboost]    # install XGBoost related dependency
 pip install dtreeviz[pyspark]    # install pyspark related dependency
 pip install dtreeviz[lightgbm]   # install LightGBM related dependency
 pip install dtreeviz[tensorflow_decision_forests]   # install tensorflow_decision_forests related dependency
+pip install dtreeviz[all]        # install all related dependencies
 ```
 
 This should also pull in the `graphviz` Python library (>=0.9), which we are using for platform specific stuff.
@@ -283,7 +286,7 @@ To push the `dtreeviz` library to your local egg cache (force updates) during de
 python setup.py install -f
 ```
 
-E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-0.3-py3.6.egg`.
+E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-2.1.0-py3.6.egg`.
 
 ## Feedback
 
@@ -312,7 +315,11 @@ This project is licensed under the terms of the MIT license, see [LICENSE](LICEN
 
 Notes for parrt.
 
-Update version.py, setup.py, README.
+1. Update version.py, setup.py, README.
+2. Merge dev into master
+3. Create release notes
+4. Push to pypi
+5. Announce
 
 ```
 python3 -m build

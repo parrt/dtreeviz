@@ -7,11 +7,26 @@ from pathlib import Path
 from sys import platform as PLATFORM
 
 import graphviz
+import numpy as np
 import pandas as pd
 from matplotlib import patches as patches
 from numpy import ndarray
 from numbers import Number
 from typing import Tuple, Sequence
+
+def criterion_remapping(criterion):
+    criterion_remapping_dict = {
+		'gini': 'Gini',
+		'entropy': 'Entropy',
+		'log_loss': 'Log Loss',
+		'friedman_mse': 'Friedman MSE',
+		'squared_error' : 'Squared Error',
+		'absolute_error': 'Absolute Error',
+		'poisson' : 'Poisson',
+		'variance': 'Variance',
+    }
+
+    return criterion_remapping_dict.get(criterion, criterion)
 
 
 def inline_svg_images(svg) -> str:
@@ -119,7 +134,7 @@ def scale_SVG(svg:str, scale:float) -> str:
     ns = {"svg": "http://www.w3.org/2000/svg"}
     graph = root.find(".//svg:g", ns) # get first node, which is graph
     transform = graph.attrib['transform']
-    pattern = re.compile(f"scale\([0-9.]+\ [0-9.]+\)")
+    pattern = re.compile(r"scale\([0-9.]+\ [0-9.]+\)")
     scale_str = pattern.search(transform).group()
     transform = transform.replace(scale_str, f'scale({scale} {scale})')
     graph.set("transform", transform)
@@ -168,7 +183,7 @@ def _extract_final_feature_names(pipeline, features):
 
 def _normalize_class_names(class_names, nclasses):
     if class_names is None:
-        return {i: f"class {i}" for i in range(nclasses)}
+        return {i: f"Class {i}" for i in range(nclasses)}
     if isinstance(class_names, dict):
         return class_names
     elif isinstance(class_names, Sequence):
@@ -307,9 +322,9 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
                                 facecolor=facecolors[c], label=class_names[c])
         boxes.append(box)
     leg = ax.legend(handles=boxes,
-                    frameon=True,
+                    frameon=colors['legend_edge'] is not None,
                     shadow=False,
-                    fancybox=True,
+                    fancybox=colors['legend_edge'] is not None,
                     handletextpad=.35,
                     borderpad=.8,
                     bbox_to_anchor=(1.0, 1.0),
@@ -326,3 +341,99 @@ def add_classifier_legend(ax, class_names, class_values, facecolors, target_name
     for text in leg.get_texts():
         text.set_color(colors['text'])
         text.set_fontsize(fontsize)
+        text.set_fontname(fontname)
+
+
+def _format_axes(ax, xlabel, ylabel, colors, fontsize, fontname, ticks_fontsize=None, grid=False, pad_for_wedge=False):
+
+    if xlabel is not None:
+        ax.set_xlabel(xlabel, fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+    if ylabel is not None:
+        ax.set_ylabel(ylabel, fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    for side in ['top', 'right', 'bottom', 'left']:
+        ax.spines[side].set(linewidth=.3, color=colors['axis'])
+    for tick in ax.get_xticklabels():
+        tick.set_fontname(fontname)
+    for tick in ax.get_yticklabels():
+        tick.set_fontname(fontname)
+
+    ax.tick_params(axis='both', which='major', width=.3, labelcolor=colors['tick_label'])
+    if ticks_fontsize is not None:
+        ax.tick_params(axis='both', which='major', labelsize=ticks_fontsize)
+    if pad_for_wedge:
+        ax.tick_params(axis='x', which='major', pad=8)
+
+    ax.grid(visible=grid)
+
+
+def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=None):
+
+    xmin, xmax = ax.get_xlim()
+    ymin, ymax = ax.get_ylim()
+    x_range = xmax - xmin
+    y_range = ymax - ymin
+
+    tri_width = 0.036 * x_range
+
+    wedge_ticks = []
+
+    def _draw_tria(tip_x, tip_y, tri_width, tri_height):
+        tria = np.array([[tip_x, tip_y], [tip_x - tri_width/2., tip_y - tri_height], [tip_x + tri_width/2., tip_y - tri_height]])
+        t = patches.Polygon(tria, facecolor=color)
+        t.set_clip_on(False)
+        ax.add_patch(t)
+        wedge_ticks.append(tip_x)
+
+    if is_class:
+        hr = h / (height_range[1] - height_range[0])
+        tri_height = y_range * .15 * 1 / hr  # convert to graph coordinates (ugh)
+        tip_y = -0.1 * y_range * .15 * 1 / hr
+        if not node.is_categorical_split():
+            # classification, normal split
+            _draw_tria(x, tip_y, tri_width, tri_height)
+        else:
+            # classification: categorical split, draw multiple wedges
+            for split_value in node.split():
+                # to display the wedge exactly in the middle of the vertical bar
+                for bin_index in range(len(bins) - 1):
+                    if bins[bin_index] <= split_value <= bins[bin_index + 1]:
+                        split_value = (bins[bin_index] + bins[bin_index + 1]) / 2
+                        break
+                _draw_tria(split_value, tip_y, tri_width, tri_height)
+    else:
+        # regression
+        tri_height = y_range * .1
+        _draw_tria(x, ymin, tri_width, tri_height)
+
+    return wedge_ticks
+
+
+def _set_wedge_ticks(ax, ax_ticks, wedge_ticks, separation=0.1):
+
+    xmin, xmax = ax.get_xlim()
+    x_range = xmax - xmin
+
+    # always draw provided ax_ticks
+    ticks_to_draw = ax_ticks.copy()
+
+    # deconflict wedge_ticks
+    for wedge_tick in wedge_ticks:
+        draw_wedge_tick = True
+        _i = 0
+        while _i < len(ax_ticks):
+            ax_tick = ax_ticks[_i]
+            if ax_tick - separation*x_range < wedge_tick and wedge_tick < ax_tick + separation*x_range:
+                # The wedge_tick is within separation of the ax_tick, do not draw the wedge_tick
+                draw_wedge_tick = False
+                break
+            _i += 1
+
+        if draw_wedge_tick:
+            ticks_to_draw.append(wedge_tick)
+
+    # actually draw the ticks
+    ax.set_xticks(sorted(ticks_to_draw))

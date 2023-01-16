@@ -30,6 +30,13 @@ color_blind_friendly_colors = [
 
 ]
 
+mpl_colors = [
+        None,  # 0 classes
+        None,  # 1 class
+    ] + [
+        [f'C{i}' for i in range(0, n_classes)] for n_classes in range(2, 11)
+    ]
+
 
 def get_hex_colors(n_classes, cmap_name="RdYlBu"):
     """
@@ -70,11 +77,12 @@ COLORS = {'scatter_edge': GREY,
           'class_boundary': GREY,
           'warning': '#E9130D',
           'tile_alpha': 0.8,  # square tiling in decision_boundaries to show probabilities
-          'tesselation_alpha': 0.3,  # rectangular regions for decision tree feature space partitioning
-          'tesselation_alpha_3D': 0.5,
+          'tessellation_alpha': 0.3,  # rectangular regions for decision tree feature space partitioning
+          'tessellation_alpha_3D': 0.5,
           'split_line': GREY,
           'mean_line': '#f46d43',
           'axis_label': GREY,
+          'axis': GREY,
           'title': GREY,
           'legend_title': GREY,
           'legend_edge': GREY,
@@ -88,6 +96,8 @@ COLORS = {'scatter_edge': GREY,
           'wedge': WEDGE_COLOR,
           'text_wedge': WEDGE_COLOR,
           'arrow': GREY,
+          'larrow': GREY,
+          'rarrow': GREY,
           'node_label': GREY,
           'tick_label': GREY,
           'leaf_label': GREY,

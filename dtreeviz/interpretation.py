@@ -5,15 +5,16 @@ In this moment, it contains "plain english" implementation, but others can be ad
 from collections import defaultdict
 
 import numpy as np
-import pandas
+import pandas as pd
 from matplotlib import pyplot as plt
 
 from dtreeviz.colors import adjust_colors
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
+from dtreeviz.utils import _format_axes
 
 
 def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
-                                     x: (pandas.core.series.Series, np.ndarray)) -> str:
+                                     x: (pd.core.series.Series, np.ndarray)) -> str:
     """
     Explains the prediction path using feature value's range.
 
@@ -91,7 +92,7 @@ def explain_prediction_plain_english(shadow_tree: ShadowDecTree,
 
 
 def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
-                                       x: (pandas.core.series.Series, np.ndarray),
+                                       x: (pd.core.series.Series, np.ndarray),
                                        colors: dict = None,
                                        fontsize: int = 10,
                                        fontname: str = "Arial",
@@ -117,27 +118,26 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
         True if we want to display the grid lines on the visualization
     :param figsize: optional (width, height) in inches for the entire plot
     :param ax: optional matplotlib "axes" to draw into
-    :return:
-        Prediction feature's importance plot
     """
     decision_node_path = shadow_tree.predict_path(x)
     decision_node_path = [node.id for node in decision_node_path]
 
     feature_path_importance = shadow_tree.get_feature_path_importance(decision_node_path)
+
     colors = adjust_colors(colors)
     if ax is None:
         if figsize:
             fig, ax = plt.subplots(figsize=figsize)
         else:
             fig, ax = plt.subplots()
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_linewidth(.3)
-    ax.spines['bottom'].set_linewidth(.3)
-    ax.set_xticks(range(0, len(shadow_tree.feature_names)))
-    ax.set_xticklabels(shadow_tree.feature_names)
-    barcontainers = ax.barh(y=shadow_tree.feature_names,
-                            width=feature_path_importance,
+
+    df = pd.DataFrame()
+    df['features'] = shadow_tree.feature_names
+    df['imp'] = feature_path_importance
+    df = df.sort_values('imp', ascending=True)
+
+    barcontainers = ax.barh(y=df['features'],
+                            width=df['imp'],
                             color=colors["hist_bar"],
                             lw=.3,
                             align='center',
@@ -145,7 +145,5 @@ def explain_prediction_sklearn_default(shadow_tree: ShadowDecTree,
     for rect in barcontainers.patches:
         rect.set_linewidth(.5)
         rect.set_edgecolor(colors['rect_edge'])
-    ax.set_ylabel("features", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.set_xlabel("feature importance", fontsize=fontsize, fontname=fontname, color=colors['axis_label'])
-    ax.grid(b=grid)
-    return ax
+
+    _format_axes(ax, "Feature Importance", "Features", colors, fontsize, fontname, grid=grid)

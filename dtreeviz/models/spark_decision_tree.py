@@ -6,6 +6,7 @@ import numpy as np
 import pyspark
 
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
+from dtreeviz.utils import criterion_remapping
 
 from pyspark.ml.classification import DecisionTreeClassificationModel
 from pyspark.ml.regression import DecisionTreeRegressionModel
@@ -99,7 +100,7 @@ class ShadowSparkTree(ShadowDecTree):
         return self.features
 
     def criterion(self) -> str:
-        return self._get_tree_model_parameter_value("impurity")
+        return criterion_remapping(self._get_tree_model_parameter_value("impurity"))
 
     def nclasses(self) -> int:
         if not self.is_classifier():
@@ -219,13 +220,13 @@ class ShadowSparkTree(ShadowDecTree):
             elif name == "maxDepth":
                 return self.tree_model.getMaxDepth()
             elif name == "impurity":
-                return self.tree_model.getImpurity().upper()
+                return self.tree_model.getImpurity()
         elif ShadowSparkTree._get_pyspark_major_version() >= 2:
             if name == "minInstancesPerNode":
                 return self.tree_model.getOrDefault("minInstancesPerNode")
             elif name == "maxDepth":
                 return self.tree_model.getOrDefault("maxDepth")
             elif name == "impurity":
-                return self.tree_model.getOrDefault("impurity").upper()
+                return self.tree_model.getOrDefault("impurity")
         else:
             raise Exception("dtreeviz supports spark versions >= 2")
