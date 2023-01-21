@@ -892,7 +892,7 @@ class DTreeVizAPI:
         # TODO: check if we can find some common functionality between univar and bivar visualisations and refactor
         #  to a single method.
         if len(features) == 1:     # univar example
-            _ctreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, fontname, nbins, gtype, show, colors, features, figsize, ax)
+            _ctreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, fontname, nbins, gtype, show, colors, features[0], figsize, ax)
         elif len(features) == 2:   # bivar example
             _ctreeviz_bivar(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, colors, features, figsize, ax)
         else:
@@ -903,10 +903,10 @@ class DTreeVizAPI:
                             mean_linewidth=2, markersize=15, colors=None, fontname="Arial",
                             n_colors_in_map=100, features=None,
                             figsize=None, ax=None):
-        if len(self.shadow_tree.feature_names) == 1:  # univar example
+        if len(features) == 1:  # univar example
             _rtreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, split_linewidth, mean_linewidth, markersize, colors,
-                             features, figsize, ax)
-        elif len(self.shadow_tree.feature_names) == 2:  # bivar example
+                             features[0], figsize, ax)
+        elif len(features) == 2:  # bivar example
             _rtreeviz_bivar_heatmap(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, n_colors_in_map, colors,
                                     markersize, features, figsize, ax)
         else:
@@ -1324,26 +1324,27 @@ def _ctreeviz_univar(shadow_tree,
         else:
             fig, ax = plt.subplots()
 
-    X_train = shadow_tree.X_train.reshape(-1, )
+    featidx = shadow_tree.feature_names.index(feature)
+    X_train = shadow_tree.X_train
     y_train = shadow_tree.y_train
     colors = adjust_colors(colors)
     n_classes = shadow_tree.nclasses()
-    overall_feature_range = (np.min(X_train), np.max(X_train))
+    overall_feature_range = (np.min(X_train[:,featidx]), np.max(X_train[:,featidx]))
     class_values = shadow_tree.classes()
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
     X_colors = [color_map[cl] for cl in class_values]
 
-    featidx = shadow_tree.feature_names.index(feature)
 
     _format_axes(ax, shadow_tree.feature_names[featidx], None, colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
     ax.yaxis.set_visible(False)
     ax.spines['left'].set_visible(False)
 
-    X_hist = [X_train[y_train == cl] for cl in class_values]
+    X_hist = [X_train[y_train == cl,featidx] for cl in class_values]
 
     if gtype == 'barstacked':
-        bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
+        bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1],
+                           num=nbins, endpoint=True)
         hist, bins, barcontainers = ax.hist(X_hist,
                                             color=X_colors,
                                             align='mid',
@@ -1372,7 +1373,7 @@ def _ctreeviz_univar(shadow_tree,
     else:
         raise ValueError(f'Unrecognized gtype = {gtype}!')
 
-    splits = [node.split() for node in shadow_tree.internal]
+    splits = [node.split() for node in shadow_tree.internal if node.feature()==featidx]
     splits = sorted(splits)
 
     if 'preds' in show:  # this gets the horiz bars showing prediction region
