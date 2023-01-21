@@ -152,10 +152,10 @@ def ctreeviz_bivar(tree_model,
                                                 tree_index)
     model = DTreeVizAPI(shadow_tree)
     model.ctree_feature_space(fontsize=fontsize,
-                            fontname=fontname,
-                            show=show,
-                            colors=colors,
-                            ax=ax)
+                              fontname=fontname,
+                              show=show,
+                              colors=colors,
+                              ax=ax)
 
 def dtreeviz(tree_model,
              X_train: (pd.DataFrame, np.ndarray) = None,
