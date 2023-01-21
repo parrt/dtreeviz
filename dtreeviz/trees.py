@@ -1447,7 +1447,8 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
         ax.scatter(h[:, featidx[0]], h[:, featidx[1]], marker='o', s=dot_w, c=color_map[i],
                    edgecolors=colors['scatter_edge'], lw=.3)
 
-    _format_axes(ax, shadow_tree.feature_names[featidx[0]], shadow_tree.feature_names[featidx[1]], colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
+    _format_axes(ax, shadow_tree.feature_names[featidx[0]], shadow_tree.feature_names[featidx[1]],
+                 colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
 
     if 'legend' in show:
         add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors,
@@ -1526,7 +1527,7 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize, ticks_fontsize, fontname,
                             markersize,
                             features,
                             figsize,
-                            ax) -> tree.DecisionTreeClassifier:
+                            ax):
     """
     Show tesselated 2D feature space for bivariate regression tree. X_train can
     have lots of features but features lists indexes of 2 features to train tree with.
@@ -1563,17 +1564,16 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize, ticks_fontsize, fontname,
         ax.add_patch(rect)
 
     color_map = [color_map[int(((y - y_lim[0]) / y_range) * (n_colors_in_map - 1))] for y in y_train]
-    x, y, z = X_train[:, 0], X_train[:, 1], y_train
-    ax.scatter(x, y, marker='o', c=color_map, edgecolor=colors['scatter_edge'], lw=.3, s=markersize)
+    ax.scatter(X_train[:, featidx[0]], X_train[:, featidx[1]], marker='o', c=color_map,
+               edgecolor=colors['scatter_edge'], lw=.3, s=markersize)
 
-    _format_axes(ax, shadow_tree.feature_names[featidx[0]], shadow_tree.feature_names[featidx[1]], colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
+    _format_axes(ax, shadow_tree.feature_names[featidx[0]], shadow_tree.feature_names[featidx[1]],
+                 colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
 
     if 'title' in show:
         accur = shadow_tree.get_score()
         title = f"Regression Tree Depth {shadow_tree.get_max_depth()}, Training $R^2$={accur:.3f}"
         ax.set_title(title, fontsize=fontsize, color=colors['title'])
-
-    return None
 
 
 def _rtreeviz_bivar_3D(shadow_tree, fontsize, ticks_fontsize, fontname,
