@@ -891,6 +891,8 @@ class DTreeVizAPI:
                             ax=None):
         # TODO: check if we can find some common functionality between univar and bivar visualisations and refactor
         #  to a single method.
+        if features is None:
+            features = self.shadow_tree.feature_names[0:2] # pick first two features if none given
         if len(features) == 1:     # univar example
             _ctreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, fontname, nbins, gtype, show, colors, features[0], figsize, ax)
         elif len(features) == 2:   # bivar example
@@ -903,6 +905,8 @@ class DTreeVizAPI:
                             mean_linewidth=2, markersize=15, colors=None, fontname="Arial",
                             n_colors_in_map=100, features=None,
                             figsize=None, ax=None):
+        if features is None:
+            features = self.shadow_tree.feature_names[0:2] # pick first two features if none given
         if len(features) == 1:  # univar example
             _rtreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, split_linewidth, mean_linewidth, markersize, colors,
                              features[0], figsize, ax)
@@ -917,14 +921,21 @@ class DTreeVizAPI:
                               fontsize=10, ticks_fontsize=8, fontname="Arial",
                               azim=0, elev=0, dist=7,
                               show={'title'}, colors=None, markersize=15,
-                              n_colors_in_map=100, figsize=None, ax=None):
+                              n_colors_in_map=100,
+                              features=None,
+                              figsize=None, ax=None):
         """
         Show 3D feature space for bivariate regression tree. X_train should have
         just the 2 variables used for training.
         """
-        _rtreeviz_bivar_3D(self.shadow_tree, fontsize, ticks_fontsize, fontname, azim, elev, dist, show, colors,
-                           markersize,
-                           n_colors_in_map, figsize, ax)
+        if features is None:
+            features = self.shadow_tree.feature_names[0:2] # pick first two features if none given
+        _rtreeviz_bivar_3D(self.shadow_tree, fontsize, ticks_fontsize, fontname,
+                           azim, elev, dist,
+                           show, colors, markersize,
+                           n_colors_in_map,
+                           features,
+                           figsize, ax)
 
 
 def _class_split_viz(node: ShadowDecTreeNode,
