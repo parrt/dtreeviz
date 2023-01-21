@@ -1465,8 +1465,11 @@ def _rtreeviz_univar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
                      split_linewidth, mean_linewidth, markersize, colors,
                      feature,
                      figsize, ax):
-    X_train = shadow_tree.X_train.reshape(-1, )
+    featidx = shadow_tree.feature_names.index(feature)
+    X_train = shadow_tree.X_train
     y_train = shadow_tree.y_train
+    if X_train is None or y_train is None:
+        raise ValueError(f"X_train and y_train must not be none")
 
     if ax is None:
         if figsize:
@@ -1474,30 +1477,26 @@ def _rtreeviz_univar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
         else:
             fig, ax = plt.subplots()
 
-    if X_train is None or y_train is None:
-        raise ValueError(f"x_train and y_train must not be none")
-
     colors = adjust_colors(colors)
 
     y_range = (min(y_train), max(y_train))  # same y axis for all
-    overall_feature_range = (np.min(X_train), np.max(X_train))
+    overall_feature_range = (np.min(X_train[:,featidx]), np.max(X_train[:,featidx]))
 
     splits = []
     for node in shadow_tree.internal:
-        splits.append(node.split())
+        if node.feature()==featidx:
+            splits.append(node.split())
     splits = sorted(splits)
     bins = [overall_feature_range[0]] + splits + [overall_feature_range[1]]
-
-    featidx = shadow_tree.feature_names.index(feature)
 
     means = []
     for i in range(len(bins) - 1):
         left = bins[i]
         right = bins[i + 1]
-        inrange = y_train[(X_train >= left) & (X_train <= right)]
+        inrange = y_train[(X_train[:,featidx] >= left) & (X_train[:,featidx] <= right)]
         means.append(np.mean(inrange))
 
-    ax.scatter(X_train, y_train, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'],
+    ax.scatter(X_train[:,featidx], y_train, marker='o', alpha=colors['scatter_marker_alpha'], c=colors['scatter_marker'],
                s=markersize,
                edgecolor=colors['scatter_edge'], lw=.3)
 
