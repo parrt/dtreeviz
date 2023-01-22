@@ -1347,9 +1347,8 @@ def _ctreeviz_univar(shadow_tree,
     X_colors = [color_map[cl] for cl in class_values]
 
 
-    _format_axes(ax, shadow_tree.feature_names[featidx], None, colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
-    ax.yaxis.set_visible(False)
-    ax.spines['left'].set_visible(False)
+    _format_axes(ax, shadow_tree.feature_names[featidx], 'Count' if gtype=='barstacked' else None,
+                 colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
 
     X_hist = [X_train[y_train == cl,featidx] for cl in class_values]
 
@@ -1372,6 +1371,8 @@ def _ctreeviz_univar(shadow_tree,
         ax.set_yticks([0, max([max(h) for h in hist])])
     elif gtype == 'strip':
         # user should pass in short and wide fig
+        ax.spines['left'].set_visible(False)
+        ax.yaxis.set_visible(False)
         sigma = .013
         mu = .08
         class_step = .08
