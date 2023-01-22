@@ -935,7 +935,10 @@ class DTreeVizAPI:
             if n_features >= 2:
                 features = self.shadow_tree.feature_names[0:2] # pick first one/two features if none given
             else:
-                raise ValueError(f"rtree_feature_space3D() requires at least 2 features; found {n_features}")
+                raise ValueError(f"rtree_feature_space3D() requires at least two features; but the model has {n_features}")
+        elif len(features)!=2:
+            raise ValueError(f"rtree_feature_space3D() requires exactly two features; found {len(features)}")
+
         _rtreeviz_bivar_3D(self.shadow_tree, fontsize, ticks_fontsize, fontname,
                            azim, elev, dist,
                            show, colors, markersize,
