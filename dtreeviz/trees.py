@@ -931,7 +931,8 @@ class DTreeVizAPI:
         just the 2 variables used for training.
         """
         if features is None:
-            features = self.shadow_tree.feature_names[0:2] # pick first two features if none given
+            n_features = len(self.shadow_tree.feature_names)
+            features = self.shadow_tree.feature_names[0:min(n_features,2)] # pick first one/two features if none given
         _rtreeviz_bivar_3D(self.shadow_tree, fontsize, ticks_fontsize, fontname,
                            azim, elev, dist,
                            show, colors, markersize,
