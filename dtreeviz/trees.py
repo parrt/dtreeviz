@@ -933,7 +933,7 @@ class DTreeVizAPI:
         if features is None:
             n_features = len(self.shadow_tree.feature_names)
             if n_features >= 2:
-                features = self.shadow_tree.feature_names[0:2] # pick first one/two features if none given
+                features = self.shadow_tree.feature_names[0:2] # pick first two features if none given
             else:
                 raise ValueError(f"rtree_feature_space3D() requires at least two features; but the model has {n_features}")
         elif len(features)!=2:
