@@ -892,7 +892,8 @@ class DTreeVizAPI:
         # TODO: check if we can find some common functionality between univar and bivar visualisations and refactor
         #  to a single method.
         if features is None:
-            features = self.shadow_tree.feature_names[0:2] # pick first two features if none given
+            n_features = len(self.shadow_tree.feature_names)
+            features = self.shadow_tree.feature_names[0:min(n_features,2)] # pick first one/two features if none given
         if len(features) == 1:     # univar example
             _ctreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, fontname, nbins, gtype, show, colors, features[0], figsize, ax)
         elif len(features) == 2:   # bivar example
@@ -906,7 +907,8 @@ class DTreeVizAPI:
                             n_colors_in_map=100, features=None,
                             figsize=None, ax=None):
         if features is None:
-            features = self.shadow_tree.feature_names[0:2] # pick first two features if none given
+            n_features = len(self.shadow_tree.feature_names)
+            features = self.shadow_tree.feature_names[0:min(n_features,2)] # pick first one/two features if none given
         if len(features) == 1:  # univar example
             _rtreeviz_univar(self.shadow_tree, fontsize, ticks_fontsize, fontname, show, split_linewidth, mean_linewidth, markersize, colors,
                              features[0], figsize, ax)
