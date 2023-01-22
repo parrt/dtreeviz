@@ -132,6 +132,7 @@ class DTreeVizAPI:
 
     def ctree_leaf_distributions(self,
                                  display_type: str = "plot",
+                                 xaxis_display_type: str = "individual",
                                  plot_ylim: int = None,
                                  colors: dict = None,
                                  fontsize: int = 10,
@@ -155,6 +156,8 @@ class DTreeVizAPI:
 
         :param display_type: str, optional
            'plot' or 'text'
+        :param xaxis_display_type: str, optional
+           'individual', displays every node ID individually, or 'auto', let matplotlib automatically manage the node ID ticks
         :param plot_ylim: int, optional
             The max value for oY. This is useful in case we have few leaves with big sample values which 'shadow'
             the other leaves values.
@@ -181,15 +184,23 @@ class DTreeVizAPI:
                 else:
                     fig, ax = plt.subplots()
 
-            ax.set_xticks(range(0, len(index)))
-            ax.set_xticklabels(index)
+            if xaxis_display_type == 'individual':
+                x = range(0, len(index))
+                ax.set_xticks(x)
+                ax.set_xticklabels(index)
+            elif xaxis_display_type == 'auto':
+                x = np.array(index)
+                ax.set_xlim(np.min(x)-1, np.max(x)+1)
+            else:
+                raise ValueError(f'Unknown xaxis_display_type = {xaxis_display_type}, only individual and auto are supported.')
+
             if plot_ylim is not None:
                 ax.set_ylim(0, plot_ylim)
 
-            bar_container0 = ax.bar(range(0, len(index)), leaf_samples_0, color=colors_classes[0], lw=.3,
+            bar_container0 = ax.bar(x, leaf_samples_0, color=colors_classes[0], lw=.3,
                                     align='center',
                                     width=1)
-            bar_container1 = ax.bar(range(0, len(index)), leaf_samples_1, bottom=leaf_samples_0,
+            bar_container1 = ax.bar(x, leaf_samples_1, bottom=leaf_samples_0,
                                     color=colors_classes[1],
                                     lw=.3, align='center', width=1)
             for bar_container in [bar_container0, bar_container1]:
