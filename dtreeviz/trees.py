@@ -192,8 +192,6 @@ class DTreeVizAPI:
                 x = np.array(index)
                 ax.set_xlim(np.min(x)-1, np.max(x)+1)
             elif xaxis_display_type == 'y_sorted':
-                # sort by leaf_samples_1 desc
-                # leaf_samples_1, leaf_samples_0, index = zip(*sorted(zip(leaf_samples_1, leaf_samples_0, index), reverse=True))
                 # sort by leaf_samples_0 + leaf_samples_1 desc
                 _, leaf_samples_0, leaf_samples_1, index = zip(*sorted(zip(np.array(leaf_samples_0)+np.array(leaf_samples_1), leaf_samples_0, leaf_samples_1, index), reverse=True))
                 x = range(0, len(index))
