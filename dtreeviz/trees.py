@@ -894,7 +894,7 @@ class DTreeVizAPI:
         for i in range(len(means)):
             ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
 
-        _format_axes(ax, self.shadow_tree.target_name, "Leaf", colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=None, grid=grid)
+        _format_axes(ax, self.shadow_tree.target_name, "Leaf IDs", colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=None, grid=grid)
 
     def ctree_feature_space(self,
                             fontsize=10,
