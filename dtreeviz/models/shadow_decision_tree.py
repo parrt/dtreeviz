@@ -334,37 +334,6 @@ class ShadowDecTree(ABC):
         walk(self.root, x, path)
         return path
 
-    def tessellation(self):
-        """
-        Walk tree and return list of tuples containing a leaf node and bounding box list of(x1, y1, x2, y2) coordinates.
-        """
-        bboxes = []
-
-        def walk(t, bbox):
-            if t is None:
-                return None
-            # print(f"Node {t.id} bbox {bbox} {'   LEAF' if t.isleaf() else ''}")
-            if t.isleaf():
-                bboxes.append((t, bbox))
-                return t
-            # shrink bbox for left, right and recurse
-            s = t.split()
-            if t.feature() == 0:
-                walk(t.left, (bbox[0], bbox[1], s, bbox[3]))
-                walk(t.right, (s, bbox[1], bbox[2], bbox[3]))
-            else:
-                walk(t.left, (bbox[0], bbox[1], bbox[2], s))
-                walk(t.right, (bbox[0], s, bbox[2], bbox[3]))
-
-        # create bounding box in feature space (not zeroed)
-        f1_values = self.X_train[:, 0]
-        f2_values = self.X_train[:, 1]
-        overall_bbox = (np.min(f1_values), np.min(f2_values),  # x,y of lower left edge
-                        np.max(f1_values), np.max(f2_values))  # x,y of upper right edge
-        walk(self.root, overall_bbox)
-
-        return bboxes
-
     def get_leaf_sample_counts(self, min_samples=0, max_samples=None):
         """
         Get the number of samples for each leaf.
