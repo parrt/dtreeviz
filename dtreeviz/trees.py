@@ -157,7 +157,7 @@ class DTreeVizAPI:
         :param display_type: str, optional
            'plot' or 'text'
         :param xaxis_display_type: str, optional
-           'individual', displays every node ID individually, or 'auto', let matplotlib automatically manage the node ID ticks
+           'individual', displays every node ID individually, 'auto', let matplotlib automatically manage the node ID ticks, 'y_sorted', display in y order with no x-axis tick labels
         :param plot_ylim: int, optional
             The max value for oY. This is useful in case we have few leaves with big sample values which 'shadow'
             the other leaves values.
@@ -191,8 +191,17 @@ class DTreeVizAPI:
             elif xaxis_display_type == 'auto':
                 x = np.array(index)
                 ax.set_xlim(np.min(x)-1, np.max(x)+1)
+            elif xaxis_display_type == 'y_sorted':
+                # sort by leaf_samples_1 desc
+                # leaf_samples_1, leaf_samples_0, index = zip(*sorted(zip(leaf_samples_1, leaf_samples_0, index), reverse=True))
+                # sort by leaf_samples_0 + leaf_samples_1 desc
+                _, leaf_samples_0, leaf_samples_1, index = zip(*sorted(zip(np.array(leaf_samples_0)+np.array(leaf_samples_1), leaf_samples_0, leaf_samples_1, index), reverse=True))
+                x = range(0, len(index))
+                ax.set_xticks(x)
+                ax.set_xticklabels([])
+                ax.tick_params(axis='x', which='both', bottom=False)
             else:
-                raise ValueError(f'Unknown xaxis_display_type = {xaxis_display_type}, only individual and auto are supported.')
+                raise ValueError(f'Unknown xaxis_display_type = {xaxis_display_type}!')
 
             if plot_ylim is not None:
                 ax.set_ylim(0, plot_ylim)
