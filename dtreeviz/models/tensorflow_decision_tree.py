@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
+import tensorflow_decision_forests
 from tensorflow_decision_forests.component.py_tree.node import LeafNode
 from tensorflow_decision_forests.keras import RandomForestModel
 from tensorflow_decision_forests.tensorflow.core import Task
@@ -55,6 +56,8 @@ class ShadowTensorflowTree(ShadowDecTree):
         return self.children_right
 
     def is_classifier(self) -> bool:
+        if tensorflow_decision_forests.__version__<'1.2.0':
+            return self.model._task == Task.CLASSIFICATION
         return self.model.task == Task.CLASSIFICATION
 
     def get_class_weights(self):
