@@ -55,7 +55,7 @@ class ShadowTensorflowTree(ShadowDecTree):
         return self.children_right
 
     def is_classifier(self) -> bool:
-        return self.model._task == Task.CLASSIFICATION
+        return self.model.task == Task.CLASSIFICATION
 
     def get_class_weights(self):
         raise VisualisationNotYetSupportedError("get_class_weights()", "TensorFlow Decision Forests")
