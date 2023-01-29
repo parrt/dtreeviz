@@ -448,28 +448,29 @@ def tessellate(root, X_train, featidx):
     f1_values = X_train[:, featidx[0]]
     f2_values = X_train[:, featidx[1]]
 
-    def walk(t, bbox):
+    def walk(t, bbox, nsplits):
         if t is None:
             return
         # print(f"Node {t.id}: split {t.split()} featidx {t.feature()} bbox {bbox} {'   LEAF' if t.isleaf() else ''}")
-        if t.isleaf():
+        if t.isleaf() and nsplits>0:
+            # Only record bboxes where tree has split on one of the features of interest
             bboxes.append((t, bbox))
             return
         # shrink bbox for left, right and recurse
         s = t.split()
         if t.feature() == featidx[0]:
-            walk(t.left, (bbox[0], bbox[1], s, bbox[3]))
-            walk(t.right, (s, bbox[1], bbox[2], bbox[3]))
+            walk(t.left, (bbox[0], bbox[1], s, bbox[3]), nsplits+1)
+            walk(t.right, (s, bbox[1], bbox[2], bbox[3]), nsplits+1)
         elif t.feature() == featidx[1]:
-            walk(t.left, (bbox[0], bbox[1], bbox[2], s))
-            walk(t.right, (bbox[0], s, bbox[2], bbox[3]))
+            walk(t.left, (bbox[0], bbox[1], bbox[2], s), nsplits+1)
+            walk(t.right, (bbox[0], s, bbox[2], bbox[3]), nsplits+1)
         else:
-            walk(t.left, bbox)
-            walk(t.right, bbox)
+            walk(t.left, bbox, nsplits)
+            walk(t.right, bbox, nsplits)
 
     # create bounding box in feature space (not zeroed)
     overall_bbox = (np.min(f1_values), np.min(f2_values),  # x,y of lower left edge
                     np.max(f1_values), np.max(f2_values))  # x,y of upper right edge
-    walk(root, overall_bbox)
+    walk(root, overall_bbox, 0)
 
     return bboxes
