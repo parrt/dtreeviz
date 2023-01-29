@@ -889,6 +889,48 @@ class DTreeVizAPI:
                             features=None,
                             figsize=None,
                             ax=None):
+        """
+        Decision trees partition feature space into rectangular regions
+        through the series of splits (at internal decision nodes) along the
+        path from the root to a leaf while making a prediction for an input
+        instance. The complete tessellation of feature space is the collection
+        of regions inscribed by all paths from the root to a leaf.
+
+        This function isolates one or two features of interest according to
+        the features parameter and generates a plot.  For one feature, the
+        resulting plot has that feature on the X axis and the associated class
+        targets at different elevations (with some noise) on the Y axis to
+        separate them.  (Use gtype='barstacked' to get a histogram instead.)
+        For two features, the plot has the two features of
+        interest on the X and Y axes and plots the 2D coordinate for each
+        training data instance. Each marker and region has a unique color
+        according to the classification label.
+
+        Decision nodes associated with features not in the features parameter
+        do not contribute to the tessellation of the feature space. Paths from
+        the root to leaves in the decision tree do not contribute a region unless
+        one or more of the features of interest is tested.  Given a model
+        trained with exactly two features, calling this function with those
+        two features results in disjoint regions. Any coordinate in 2D feature
+        space would always lead to a unique leaf.
+
+        When the model is trained on more than two features, however, the same
+        coordinate in the 2D feature space of interest could appear in
+        multiple paths from the root to a leaf. Consequently, it is possible
+        for regions to overlap because the tree is testing other variables
+        along those paths (so that each coordinate in d-space for d model
+        features still reaches a unique leaf).  Overlapping regions simply
+        means another feature would disambiguate those regions during model
+        inference.
+
+        :param gtype: {'strip','barstacked'}
+        :param show: Plot elements to show: {'title', 'legend', 'splits'}
+        :param features: A list of strings containing one or two features of interest.
+                         If none is specified, the first feature(s) in X_training dataframe are used.
+        :param figsize: Width and height in inches for the figure; use something like (5,1)
+                        for len(features)==1 and (5,3) for len(features)==1.
+        """
+
         # TODO: check if we can find some common functionality between univar and bivar visualisations and refactor
         #  to a single method.
         if features is None:
@@ -941,7 +983,7 @@ class DTreeVizAPI:
         :param show: which or all of {'title', 'splits'} to show
         :param features: A list of strings containing one or two features of interest.
                          If none is specified, the first feature(s) in X_training dataframe are used.
-        :param figsize: Width and height in inchesFor the figure; use something like (5,1)
+        :param figsize: Width and height in inches for the figure; use something like (5,1)
                         for len(features)==1 and (5,3) for len(features)==1.
         """
         if features is None:
