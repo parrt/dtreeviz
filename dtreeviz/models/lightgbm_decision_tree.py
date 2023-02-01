@@ -193,7 +193,7 @@ class ShadowLightGBMTree(ShadowDecTree):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
             node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
-            return np.argmax((node_value[0][0], node_value[0][1]))
+            return np.argmax(node_value[0])
         elif not self.is_classifier():
             node_samples = [node.samples() for node in all_nodes if node.id == id][0]
             return np.mean(self.y_train[node_samples])
