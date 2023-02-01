@@ -76,7 +76,7 @@ class ShadowLightGBMTree(ShadowDecTree):
 
     def is_classifier(self) -> bool:
         objective = self.booster.dump_model(num_iteration=1)["objective"]
-        if "binary" in objective:
+        if "binary" in objective or "multiclass" in objective:
             return True
         elif objective in ["regression", "regression_l1", "huber", "fair", "poisson", "quantile", "mape", "gamma",
                            "tweedie"]:
@@ -187,7 +187,7 @@ class ShadowLightGBMTree(ShadowDecTree):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
             node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
-            return node_value[0][0], node_value[0][1]
+            return node_value[0]
 
     def get_prediction(self, id):
         all_nodes = self.internal + self.leaves
