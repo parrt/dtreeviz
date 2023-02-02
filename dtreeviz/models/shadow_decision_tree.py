@@ -372,9 +372,9 @@ class ShadowDecTree(ABC):
         :return: tuple
             Contains a list of leaf ids and a two lists of leaf samples(one for each class)
         """
-        leaf_samples = [(node.id, node.n_sample_classes()[0], node.n_sample_classes()[1]) for node in self.leaves]
-        index, leaf_sample_0, leaf_samples_1 = zip(*leaf_samples)
-        return index, leaf_sample_0, leaf_samples_1
+        leaf_samples = [(node.id, self.get_node_nsamples_by_class(node.id)) for node in self.leaves]
+        index, leaf_samples= zip(*leaf_samples)
+        return index, leaf_samples
 
     def _get_tree_nodes(self):
         # use locals not args to walk() for recursion speed in python
@@ -492,49 +492,11 @@ class ShadowDecTreeNode():
         """
         return self.shadow_tree.get_node_nsamples(self.id)
 
-    # TODO
-    # implementation should happen in shadow tree implementations, we already have methods for this
-    # this implementation will work also for validation dataset.... think how to separate model interpretation using training vs validation dataset.
-    # def n_sample_classes(self):
-    #     """Used for binary classification only.
-    #
-    #     Returns the sample count values for each classes.
-    #     """
-    #     samples = np.array(self.samples())
-    #     if samples.size == 0:
-    #         return [0, 0]
-    #
-    #     node_y_data = self.shadow_tree.y_train[samples]
-    #     unique, counts = np.unique(node_y_data, return_counts=True)
-    #
-    #     if len(unique) == 2:
-    #         return [counts[0], counts[1]]
-    #     elif len(unique) == 1:  # one node can contain samples from only on class
-    #         if unique[0] == 0:
-    #             return [counts[0], 0]
-    #         elif unique[0] == 1:
-    #             return [0, counts[0]]
-
     def n_sample_classes(self):
-        """Used for binary classification only.
+        """Used for classification only.
 
-        Returns the sample count values for each classes.
+        Returns the count values for each class.
         """
-        # samples = np.array(self.samples())
-        # if samples.size == 0:
-        #     return [0, 0]
-        #
-        # node_y_data = self.shadow_tree.y_train[samples]
-        # unique, counts = np.unique(node_y_data, return_counts=True)
-        #
-        # if len(unique) == 2:
-        #     return [counts[0], counts[1]]
-        # elif len(unique) == 1:  # one node can contain samples from only on class
-        #     if unique[0] == 0:
-        #         return [counts[0], 0]
-        #     elif unique[0] == 1:
-        #         return [0, counts[0]]
-
 
         samples = np.array(self.samples())
         node_values = [0] * len(self.shadow_tree.class_names)
