@@ -131,7 +131,7 @@ class DTreeVizAPI:
 
 
     def ctree_leaf_distributions(self,
-                                 display_type: str = "plot",
+                                 display_type: ("plot", "text") = "plot",
                                  plot_ylim: int = None,
                                  colors: dict = None,
                                  fontsize: int = 10,
@@ -169,7 +169,6 @@ class DTreeVizAPI:
             :param ax: optional matplotlib "axes" to draw into
         """
         index, leaf_samples = self.shadow_tree.get_leaf_sample_counts_by_class()
-
         if display_type == "plot":
             colors = adjust_colors(colors)
             colors_classes = colors['classes'][self.shadow_tree.nclasses()]
@@ -189,8 +188,6 @@ class DTreeVizAPI:
             for leaf_sample in leaf_samples:
                 for i, leaf_count in enumerate(leaf_sample):
                     leaf_samples_hist[i].append(leaf_count)
-
-            print(leaf_samples_hist)
 
             bar_containers = []
             bottom_values = np.full(len(index), 0)
@@ -216,8 +213,8 @@ class DTreeVizAPI:
             _format_axes(ax, "Leaf IDs", "Samples by Class", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
 
         elif display_type == "text":
-            for leaf, samples_0, samples_1 in zip(index, leaf_samples_0, leaf_samples_1):
-                print(f"leaf {leaf}, samples : {samples_0}, {samples_1}")
+            for i, leaf in enumerate(index):
+                print(f"leaf {leaf}, samples : {leaf_samples[i]}")
 
     def view(self,
              precision: int = 2,
