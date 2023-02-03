@@ -370,7 +370,7 @@ class ShadowDecTree(ABC):
         """ Get the number of samples by class for each leaf.
 
         :return: tuple
-            Contains a list of leaf ids and a two lists of leaf samples(one for each class)
+            Contains a list of leaf ids and other list with number of samples for each leaf
         """
         leaf_samples = [(node.id, self.get_node_nsamples_by_class(node.id)) for node in self.leaves]
         index, leaf_samples= zip(*leaf_samples)

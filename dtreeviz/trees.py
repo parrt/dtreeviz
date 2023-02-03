@@ -146,7 +146,6 @@ class DTreeVizAPI:
         50/50.
         You could get all the samples from these leaves (using node_stats() function) and look over/understand what they have in common.
         Now, you can understand your data in a model driven way.
-        Right now it supports only binary classifications decision trees.
 
         Usage example :
         viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
