@@ -131,7 +131,7 @@ class DTreeVizAPI:
 
 
     def ctree_leaf_distributions(self,
-                                 display_type: str = "plot",
+                                 display_type: ("plot", "text") = "plot",
                                  plot_ylim: int = None,
                                  colors: dict = None,
                                  fontsize: int = 10,
@@ -146,7 +146,6 @@ class DTreeVizAPI:
         50/50.
         You could get all the samples from these leaves (using node_stats() function) and look over/understand what they have in common.
         Now, you can understand your data in a model driven way.
-        Right now it supports only binary classifications decision trees.
 
         Usage example :
         viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
@@ -169,8 +168,7 @@ class DTreeVizAPI:
         :param figsize: optional (width, height) in inches for the entire plot
             :param ax: optional matplotlib "axes" to draw into
         """
-        index, leaf_samples_0, leaf_samples_1 = self.shadow_tree.get_leaf_sample_counts_by_class()
-
+        index, leaf_samples = self.shadow_tree.get_leaf_sample_counts_by_class()
         if display_type == "plot":
             colors = adjust_colors(colors)
             colors_classes = colors['classes'][self.shadow_tree.nclasses()]
@@ -186,13 +184,21 @@ class DTreeVizAPI:
             if plot_ylim is not None:
                 ax.set_ylim(0, plot_ylim)
 
-            bar_container0 = ax.bar(range(0, len(index)), leaf_samples_0, color=colors_classes[0], lw=.3,
-                                    align='center',
-                                    width=1)
-            bar_container1 = ax.bar(range(0, len(index)), leaf_samples_1, bottom=leaf_samples_0,
-                                    color=colors_classes[1],
+            leaf_samples_hist = [[] for i in range(self.shadow_tree.nclasses())]
+            for leaf_sample in leaf_samples:
+                for i, leaf_count in enumerate(leaf_sample):
+                    leaf_samples_hist[i].append(leaf_count)
+
+            bar_containers = []
+            bottom_values = np.full(len(index), 0)
+            for i, leaf_sample in enumerate(leaf_samples_hist):
+                bar_container = ax.bar(range(0, len(index)), leaf_sample, bottom=bottom_values,
+                                    color=colors_classes[i],
                                     lw=.3, align='center', width=1)
-            for bar_container in [bar_container0, bar_container1]:
+                bottom_values = bottom_values + np.array(leaf_sample)
+                bar_containers.append(bar_container)
+
+            for bar_container in bar_containers:
                 for rect in bar_container.patches:
                     rect.set_linewidth(.5)
                     rect.set_edgecolor(colors['rect_edge'])
@@ -207,8 +213,8 @@ class DTreeVizAPI:
             _format_axes(ax, "Leaf IDs", "Samples by Class", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
 
         elif display_type == "text":
-            for leaf, samples_0, samples_1 in zip(index, leaf_samples_0, leaf_samples_1):
-                print(f"leaf {leaf}, samples : {samples_0}, {samples_1}")
+            for i, leaf in enumerate(index):
+                print(f"leaf {leaf}, samples : {leaf_samples[i]}")
 
     def view(self,
              precision: int = 2,
