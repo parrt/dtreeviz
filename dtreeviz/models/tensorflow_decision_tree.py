@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import List, Mapping
-
+import pandas as pd
+from pandas.api.types import is_numeric_dtype
 import numpy as np
 import tensorflow_decision_forests
 from tensorflow_decision_forests.component.py_tree.node import LeafNode
@@ -33,6 +34,19 @@ class ShadowTensorflowTree(ShadowDecTree):
         self.column_dataspec = self._get_column_dataspec()
         self.node_to_samples = None  # lazy initialization
         self.thresholds = None  # lazy  initialization
+        self.catvar_maps = {}
+
+        # might have strings not just numbers
+        if isinstance(X_train, pd.core.frame.DataFrame):
+            catcols = X_train.select_dtypes(exclude=["number"]).columns.to_list()
+            print(catcols)
+            for col in catcols:
+                X_train[col] = X_train[col].astype('category')
+                # track category string -> code map for each column
+                # used later when tf-df node gives us string values
+                uniq_cat_values = X_train[col].cat.categories.to_list()
+                self.catvar_maps[col] = {s:i for i,s in enumerate(uniq_cat_values)}
+                X_train[col] = X_train[col].cat.codes
 
         super().__init__(model, X_train, y_train, feature_names, target_name, class_names)
 

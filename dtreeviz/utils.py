@@ -397,13 +397,17 @@ def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=No
             _draw_tria(x, tip_y, tri_width, tri_height)
         else:
             # classification: categorical split, draw multiple wedges
-            for split_value in node.split():
-                # to display the wedge exactly in the middle of the vertical bar
-                for bin_index in range(len(bins) - 1):
-                    if bins[bin_index] <= split_value <= bins[bin_index + 1]:
-                        split_value = (bins[bin_index] + bins[bin_index + 1]) / 2
-                        break
-                _draw_tria(split_value, tip_y, tri_width, tri_height)
+            # @Tudor: here is a case where we might need to avoid drawing a triangle for now as it's categorical
+            # @Tudor: currently can be just one split; wondering why this is a loop.
+            split = node.split()
+            if not (isinstance(split, list) and isinstance(split[0], str)):
+                for split_value in split:
+                    # to display the wedge exactly in the middle of the vertical bar
+                    for bin_index in range(len(bins) - 1):
+                        if bins[bin_index] <= split_value <= bins[bin_index + 1]:
+                            split_value = (bins[bin_index] + bins[bin_index + 1]) / 2
+                            break
+                    _draw_tria(split_value, tip_y, tri_width, tri_height)
     else:
         # regression
         tri_height = y_range * .1
