@@ -1100,9 +1100,14 @@ def _class_split_viz(node: ShadowDecTreeNode,
         # keep the bar widths as uniform as possible for all node visualisations
         nbins = nbins if nbins > feature_unique_size else feature_unique_size + 1
 
-    overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
-    bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
+    # only for str categorical features which are str type, int categorical features can work fine as numerical ones
+    if node.is_categorical_split() and type(X_feature[0]) == str:
+        # TODO think if the len() should be from all training[feature] data vs only data from this specific node ?
+        overall_feature_range = (0, len(np.unique(X_feature)) - 1)
+    else:
+        overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
+    bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
     _format_axes(ax, feature_name, None, colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=ticks_fontsize, grid=False, pad_for_wedge=True)
 
     class_names = node.shadow_tree.class_names
@@ -1143,9 +1148,23 @@ def _class_split_viz(node: ShadowDecTreeNode,
 
     ax.set_xlim(*overall_feature_range_wide)
 
-    wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=True, h=h, height_range=height_range, bins=bins)
-    if highlight_node:
-        _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=True, h=h, height_range=height_range, bins=bins)
+    if node.is_categorical_split() and type(X_feature[0]) == str:
+        # run draw to refresh the figure to get the xticklabels
+        plt.draw()
+        node_split = list(map(str, node.split()))
+        # get the label text and its position from the figure
+        label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
+        wedge_ticks_position = [label_index[split] for split in node_split]
+        wedge_ticks = _draw_wedge(ax, x=wedge_ticks_position, node=node, color=colors['wedge'], is_class=True, h=h,
+                                  height_range=height_range, bins=bins)
+        if highlight_node:
+            highlight_value = [label_index[X[node.feature()]]]
+            _ = _draw_wedge(ax, x=highlight_value, node=node, color=colors['highlight'], is_class=True, h=h,
+                            height_range=height_range, bins=bins)
+    else:
+        wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=True, h=h, height_range=height_range, bins=bins)
+        if highlight_node:
+            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=True, h=h, height_range=height_range, bins=bins)
 
     _set_wedge_ticks(ax, ax_ticks=list(overall_feature_range), wedge_ticks=wedge_ticks)
 
