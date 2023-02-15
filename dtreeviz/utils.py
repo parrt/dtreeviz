@@ -397,7 +397,7 @@ def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=No
             _draw_tria(x, tip_y, tri_width, tri_height)
         else:
             # classification: categorical split, draw multiple wedges
-            for split_value in node.split():
+            for split_value in x:
                 # to display the wedge exactly in the middle of the vertical bar
                 for bin_index in range(len(bins) - 1):
                     if bins[bin_index] <= split_value <= bins[bin_index + 1]:
