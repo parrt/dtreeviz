@@ -1220,7 +1220,6 @@ def _regr_split_viz(node: ShadowDecTreeNode,
     fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     feature_name = node.feature_name()
-
     _format_axes(ax, feature_name, target_name if node == node.shadow_tree.root else None, colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=ticks_fontsize, grid=False, pad_for_wedge=True)
     ax.set_ylim(y_range)
 
@@ -1228,7 +1227,13 @@ def _regr_split_viz(node: ShadowDecTreeNode,
     X_feature = X_train[:, node.feature()]
     X_feature, y_train = X_feature[node.samples()], y_train[node.samples()]
 
-    overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
+    # only for str categorical features which are str type, int categorical features can work fine as numerical ones
+    if node.is_categorical_split() and type(X_feature[0]) == str:
+        # TODO think if the len() should be from all training[feature] data vs only data from this specific node ?
+        overall_feature_range = (0, len(np.unique(X_feature)) - 1)
+    else:
+        overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
+
     ax.set_xlim(*overall_feature_range)
     xmin, xmax = overall_feature_range
     xr = xmax - xmin
@@ -1271,11 +1276,15 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                 color=colors["categorical_split_right"],
                 linewidth=1)
 
-        if highlight_node:
-            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
+        # if highlight_node:
+        #     plt.draw()
+        #     print(f"ax.get_xticklabels() {ax.get_xticklabels()}")
+            # _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
 
-        # no wedge ticks for categorical split
-        ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
+        # no wedge ticks for categorical split, just the x_ticks in case the categorival value is not a string
+        # if it's a string, then the xticks label will be handle automatically by ax.scatter plot
+        if type(X_feature[0]) is not str:
+            ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
 
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
