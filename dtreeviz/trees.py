@@ -1276,15 +1276,20 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                 color=colors["categorical_split_right"],
                 linewidth=1)
 
-        # if highlight_node:
-        #     plt.draw()
-        #     print(f"ax.get_xticklabels() {ax.get_xticklabels()}")
-            # _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
-
         # no wedge ticks for categorical split, just the x_ticks in case the categorival value is not a string
         # if it's a string, then the xticks label will be handle automatically by ax.scatter plot
         if type(X_feature[0]) is not str:
             ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
+
+        if highlight_node:
+            highlight_value = X[node.feature()]
+            if type(X_feature[0]) is str:
+                plt.draw()
+                # get the label text and its position from the figure
+                label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
+                highlight_value = label_index[X[node.feature()]]
+            _ = _draw_wedge(ax, x=highlight_value, node=node, color=colors['highlight'], is_class=False)
+
 
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
