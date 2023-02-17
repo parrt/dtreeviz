@@ -1510,6 +1510,8 @@ def _ctreeviz_univar(shadow_tree,
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
     X_colors = [color_map[cl] for cl in class_values]
 
+    if is_string_dtype(X_train[featidx]):
+        raise ValueError(f"ctree_feature_space only supports numeric feature spaces")
 
     _format_axes(ax, shadow_tree.feature_names[featidx], 'Count' if gtype=='barstacked' else None,
                  colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
@@ -1609,6 +1611,9 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
+    if is_string_dtype(X_train[featidx[0]]) or is_string_dtype(X_train[featidx[1]]):
+        raise ValueError(f"ctree_feature_space only supports numeric feature spaces")
+
     dot_w = 25
     X_hist = [X_train[y_train == cl] for cl in class_values]
     for i, h in enumerate(X_hist):
@@ -1624,12 +1629,11 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
         for node, bbox in tessellation:
             x = bbox[0]
             y = bbox[1]
-            if is_numeric_dtype(x) and is_numeric_dtype(y):
-                w = bbox[2] - bbox[0]
-                h = bbox[3] - bbox[1]
-                rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
-                                         edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
-                ax.add_patch(rect)
+            w = bbox[2] - bbox[0]
+            h = bbox[3] - bbox[1]
+            rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
+                                     edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
+            ax.add_patch(rect)
 
     if 'legend' in show:
         add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors,
@@ -1652,6 +1656,9 @@ def _rtreeviz_univar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
     y_train = shadow_tree.y_train
     if X_train is None or y_train is None:
         raise ValueError(f"X_train and y_train must not be none")
+
+    if is_string_dtype(X_train[featidx]):
+        raise ValueError(f"rtree_feature_space only supports numeric feature spaces")
 
     if ax is None:
         if figsize:
@@ -1731,6 +1738,9 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize, ticks_fontsize, fontname,
                                                          n_colors_in_map)]
     featidx = [shadow_tree.feature_names.index(f) for f in features]
 
+    if is_string_dtype(X_train[featidx[0]]) or is_string_dtype(X_train[featidx[1]]):
+        raise ValueError(f"rtree_feature_space only supports numeric feature spaces")
+
     tessellation = tessellate(shadow_tree.root, X_train, featidx)
 
     for node, bbox in tessellation:
@@ -1795,8 +1805,11 @@ def _rtreeviz_bivar_3D(shadow_tree, fontsize, ticks_fontsize, fontname,
     y_colors = [color_spectrum[y_to_color_index(y)] for y in y_train]
 
     featidx = [shadow_tree.feature_names.index(f) for f in features]
-    x, y, z = X_train[:, featidx[0]], X_train[:, featidx[1]], y_train
 
+    if is_string_dtype(X_train[featidx[0]]) or is_string_dtype(X_train[featidx[1]]):
+        raise ValueError(f"rtree_feature_space only supports numeric feature spaces")
+
+    x, y, z = X_train[:, featidx[0]], X_train[:, featidx[1]], y_train
     tessellation = tessellate(shadow_tree.root, X_train, featidx)
 
     for node, bbox in tessellation:
