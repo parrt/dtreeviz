@@ -6,6 +6,8 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_string_dtype, is_numeric_dtype
+
 from colour import Color, rgb2hex
 from sklearn import tree
 
@@ -1576,8 +1578,10 @@ def _ctreeviz_univar(shadow_tree,
 
     if 'splits' in show:
         split_heights = [*ax.get_ylim()]
+        # No idea how to plot splits for catvars so just do for numeric values
         for split in splits:
-            ax.plot([split, split], split_heights, '--', color=colors['split_line'], linewidth=1)
+            if is_numeric_dtype(split):
+                ax.plot([split, split], split_heights, '--', color=colors['split_line'], linewidth=1)
 
 
 def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
