@@ -1580,10 +1580,8 @@ def _ctreeviz_univar(shadow_tree,
 
     if 'splits' in show:
         split_heights = [*ax.get_ylim()]
-        # No idea how to plot splits for catvars so just do for numeric values
         for split in splits:
-            if is_numeric_dtype(split):
-                ax.plot([split, split], split_heights, '--', color=colors['split_line'], linewidth=1)
+            ax.plot([split, split], split_heights, '--', color=colors['split_line'], linewidth=1)
 
 
 def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
