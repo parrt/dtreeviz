@@ -476,3 +476,12 @@ def tessellate(root, X_train, featidx):
     walk(root, overall_bbox, 0)
 
     return bboxes
+
+
+def is_numeric(A:np.ndarray) -> bool:
+    try:
+        A.astype(float)
+        return True
+    except ValueError as e:
+        pass
+    return False

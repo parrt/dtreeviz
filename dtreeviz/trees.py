@@ -6,7 +6,6 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_string_dtype, is_numeric_dtype
 
 from colour import Color, rgb2hex
 from sklearn import tree
@@ -15,7 +14,8 @@ from dtreeviz.colors import adjust_colors
 from dtreeviz.interpretation import explain_prediction_plain_english, explain_prediction_sklearn_default
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
-from dtreeviz.utils import myround, DTreeVizRender, add_classifier_legend, _format_axes, _draw_wedge, _set_wedge_ticks, tessellate
+from dtreeviz.utils import myround, DTreeVizRender, add_classifier_legend, _format_axes, _draw_wedge, \
+                           _set_wedge_ticks, tessellate, is_numeric
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [
@@ -1510,7 +1510,8 @@ def _ctreeviz_univar(shadow_tree,
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
     X_colors = [color_map[cl] for cl in class_values]
 
-    if is_string_dtype(X_train[featidx]):
+    # if np.numeric(X_train[:,featidx])
+    if not is_numeric(X_train[:,featidx]):
         raise ValueError(f"ctree_feature_space only supports numeric feature spaces")
 
     _format_axes(ax, shadow_tree.feature_names[featidx], 'Count' if gtype=='barstacked' else None,
@@ -1609,7 +1610,7 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
-    if is_string_dtype(X_train[featidx[0]]) or is_string_dtype(X_train[featidx[1]]):
+    if not is_numeric(X_train[:,featidx[0]]) or not is_numeric(X_train[:,featidx[1]]):
         raise ValueError(f"ctree_feature_space only supports numeric feature spaces")
 
     dot_w = 25
@@ -1655,8 +1656,8 @@ def _rtreeviz_univar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
     if X_train is None or y_train is None:
         raise ValueError(f"X_train and y_train must not be none")
 
-    if is_string_dtype(X_train[featidx]):
-        raise ValueError(f"rtree_feature_space only supports numeric feature spaces")
+    if not is_numeric(X_train[:,featidx]):
+       raise ValueError(f"rtree_feature_space only supports numeric feature spaces")
 
     if ax is None:
         if figsize:
@@ -1736,7 +1737,7 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize, ticks_fontsize, fontname,
                                                          n_colors_in_map)]
     featidx = [shadow_tree.feature_names.index(f) for f in features]
 
-    if is_string_dtype(X_train[featidx[0]]) or is_string_dtype(X_train[featidx[1]]):
+    if not is_numeric(X_train[:,featidx[0]]) or not is_numeric(X_train[:,featidx[1]]):
         raise ValueError(f"rtree_feature_space only supports numeric feature spaces")
 
     tessellation = tessellate(shadow_tree.root, X_train, featidx)
@@ -1804,8 +1805,8 @@ def _rtreeviz_bivar_3D(shadow_tree, fontsize, ticks_fontsize, fontname,
 
     featidx = [shadow_tree.feature_names.index(f) for f in features]
 
-    if is_string_dtype(X_train[featidx[0]]) or is_string_dtype(X_train[featidx[1]]):
-        raise ValueError(f"rtree_feature_space only supports numeric feature spaces")
+    if not is_numeric(X_train[:,featidx[0]]) or not is_numeric(X_train[:,featidx[1]]):
+        raise ValueError(f"rtree_feature_space3D only supports numeric feature spaces")
 
     x, y, z = X_train[:, featidx[0]], X_train[:, featidx[1]], y_train
     tessellation = tessellate(shadow_tree.root, X_train, featidx)
