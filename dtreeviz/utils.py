@@ -443,6 +443,8 @@ def tessellate(root, X_train, featidx):
     """
     Walk tree and return list of tuples containing a leaf node and bounding box list
     of(x1, y1, x2, y2) coordinates.
+
+    Does not work for catvars!
     """
     bboxes = []  # filled in by walk()
     f1_values = X_train[:, featidx[0]]

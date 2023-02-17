@@ -63,5 +63,7 @@ viz_cmodel = dtreeviz.model(cmodel,
 # viz_cmodel.view().show()
 #viz_cmodel.view().show() # crashes in pie chart. can't figure out why
 
-viz_cmodel.ctree_feature_space(features=['island'], show={'splits','legend'}, figsize=(5,1.5))
+viz_cmodel.ctree_feature_space(features=['flipper_length_mm','island'], show={'splits','legend'}, figsize=(5,5))
+
+# viz_cmodel.ctree_feature_space(features=['island'], show={'splits','legend'}, figsize=(5,1.5))
 plt.show()

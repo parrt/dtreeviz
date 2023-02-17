@@ -1609,16 +1609,6 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
-    if 'splits' in show:
-        for node, bbox in tessellation:
-            x = bbox[0]
-            y = bbox[1]
-            w = bbox[2] - bbox[0]
-            h = bbox[3] - bbox[1]
-            rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
-                                     edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
-            ax.add_patch(rect)
-
     dot_w = 25
     X_hist = [X_train[y_train == cl] for cl in class_values]
     for i, h in enumerate(X_hist):
@@ -1627,6 +1617,19 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
 
     _format_axes(ax, shadow_tree.feature_names[featidx[0]], shadow_tree.feature_names[featidx[1]],
                  colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
+
+    if 'splits' in show:
+        plt.draw()
+        print("labels", ax.get_xticklabels(), ax.get_yticklabels())
+        for node, bbox in tessellation:
+            x = bbox[0]
+            y = bbox[1]
+            if is_numeric_dtype(x) and is_numeric_dtype(y):
+                w = bbox[2] - bbox[0]
+                h = bbox[3] - bbox[1]
+                rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
+                                         edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
+                ax.add_patch(rect)
 
     if 'legend' in show:
         add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors,
