@@ -370,7 +370,7 @@ def _format_axes(ax, xlabel, ylabel, colors, fontsize, fontname, ticks_fontsize=
     ax.grid(visible=grid)
 
 
-def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=None):
+def _draw_wedge(ax, x, node, color, is_classifier, h=None, height_range=None, bins=None):
 
     xmin, xmax = ax.get_xlim()
     ymin, ymax = ax.get_ylim()
@@ -388,7 +388,7 @@ def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=No
         ax.add_patch(t)
         wedge_ticks.append(tip_x)
 
-    if is_class:
+    if is_classifier:
         hr = h / (height_range[1] - height_range[0])
         tri_height = y_range * .15 * 1 / hr  # convert to graph coordinates (ugh)
         tip_y = -0.1 * y_range * .15 * 1 / hr
