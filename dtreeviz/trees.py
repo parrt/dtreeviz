@@ -1156,7 +1156,8 @@ def _class_split_viz(node: ShadowDecTreeNode,
         node_split = list(map(str, node.split()))
         # get the label text and its position from the figure
         label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
-        wedge_ticks_position = [label_index[split] for split in node_split]
+        # get tick positions, ignoring "out of dictionary" symbol added by tensorflow trees for "unknown symbol"
+        wedge_ticks_position = [label_index[split] for split in node_split if split!='<OOD>']
         wedge_ticks = _draw_wedge(ax, x=wedge_ticks_position, node=node, color=colors['wedge'], is_class=True, h=h,
                                   height_range=height_range, bins=bins)
         if highlight_node:
