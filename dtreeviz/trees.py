@@ -1157,7 +1157,7 @@ def _class_split_viz(node: ShadowDecTreeNode,
         # get the label text and its position from the figure
         label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
         # get tick positions, ignoring "out of dictionary" symbol added by tensorflow trees for "unknown symbol"
-        wedge_ticks_position = [label_index[split] for split in node_split if split!='<OOD>']
+        wedge_ticks_position = [label_index[split] for split in node_split if split in label_index]
         wedge_ticks = _draw_wedge(ax, x=wedge_ticks_position, node=node, color=colors['wedge'], is_class=True, h=h,
                                   height_range=height_range, bins=bins)
         if highlight_node:
@@ -1239,10 +1239,8 @@ def _regr_split_viz(node: ShadowDecTreeNode,
 
     ax.set_xlim(*overall_feature_range)
     xmin, xmax = overall_feature_range
-    xr = xmax - xmin
 
     if not node.is_categorical_split():
-
         ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
         left, right = node.split_samples()
         left = y_train[left]
@@ -1279,8 +1277,8 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                 color=colors["categorical_split_right"],
                 linewidth=1)
 
-        # no wedge ticks for categorical split, just the x_ticks in case the categorival value is not a string
-        # if it's a string, then the xticks label will be handle automatically by ax.scatter plot
+        # no wedge ticks for categorical split, just the x_ticks in case the categorical value is not a string
+        # if it's a string, then the xticks label will be handled automatically by ax.scatter plot
         if type(X_feature[0]) is not str:
             ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
 
@@ -1292,7 +1290,6 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                 label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
                 highlight_value = label_index[X[node.feature()]]
             _ = _draw_wedge(ax, x=highlight_value, node=node, color=colors['highlight'], is_class=False)
-
 
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
@@ -1330,7 +1327,6 @@ def _regr_leaf_viz(node: ShadowDecTreeNode,
                 xy=(.5, 0), xytext=(.5, -.5 * ticklabelpad), ha='center', va='top',
                 xycoords='axes fraction', textcoords='offset points',
                 fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
-
 
     mu = .5
     sigma = .08
