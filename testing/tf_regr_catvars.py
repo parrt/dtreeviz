@@ -12,7 +12,7 @@ import dtreeviz
 
 from matplotlib import pyplot as plt
 
-def split_dataset(dataset, test_ratio=0.30, seed=1234):
+def split_dataset(dataset, test_ratio=0.20, seed=1234):
   """
   Splits a panda dataframe in two, usually for train/test sets.
   Using the same random seed ensures we get the same split so
@@ -39,13 +39,14 @@ print(f"{len(df_train_abalone)} examples in training, {len(df_test_abalone)} exa
 train_ds = tfdf.keras.pd_dataframe_to_tf_dataset(df_train_abalone, label=abalone_label, task=tfdf.keras.Task.REGRESSION)
 test_ds = tfdf.keras.pd_dataframe_to_tf_dataset(df_test_abalone, label=abalone_label, task=tfdf.keras.Task.REGRESSION)
 
-m = tfdf.keras.RandomForestModel(task=tfdf.keras.Task.REGRESSION,
-                                      max_depth=5,      # don't let the tree get too big
-                                      random_seed=1234, # create same tree every time
-                                      verbose=0)
+m = tfdf.keras.RandomForestModel(num_trees=1,
+                                 task=tfdf.keras.Task.REGRESSION,
+                                  max_depth=5,      # don't let the tree get too big
+                                  random_seed=1234, # create same tree every time
+                                  verbose=0)
 m.fit(x=train_ds)
 
-which_tree = 3
+which_tree = 0
 v = dtreeviz.model(m, tree_index=which_tree,
                            X_train=df_train_abalone[abalone_features],
                            y_train=df_train_abalone[abalone_label],

@@ -1261,21 +1261,12 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         _set_wedge_ticks(ax, ax_ticks=list(overall_feature_range), wedge_ticks=wedge_ticks)
 
     else:
-        left_index, right_index = node.split_samples()
+        # Display the scatter plot at discrete catvar values
+        # Since split might be on an unordered set, can't show avg lines as we can for numeric X values
         tw = (xmax - xmin) * .018
-
         ax.set_xlim(overall_feature_range[0] - tw, overall_feature_range[1] + tw)
-        ax.scatter(X_feature[left_index], y_train[left_index], s=5, c=colors["categorical_split_left"],
+        ax.scatter(X_feature, y_train, s=5, c=colors["scatter_marker"],
                    alpha=colors['scatter_marker_alpha'], lw=.3)
-        ax.scatter(X_feature[right_index], y_train[right_index], s=5, c=colors["categorical_split_right"],
-                   alpha=colors['scatter_marker_alpha'], lw=.3)
-
-        ax.plot([xmin - tw, xmax + tw], [np.mean(y_train[left_index]), np.mean(y_train[left_index])], '--',
-                color=colors["categorical_split_left"],
-                linewidth=1)
-        ax.plot([xmin - tw, xmax + tw], [np.mean(y_train[right_index]), np.mean(y_train[right_index])], '--',
-                color=colors["categorical_split_right"],
-                linewidth=1)
 
         # no wedge ticks for categorical split, just the x_ticks in case the categorical value is not a string
         # if it's a string, then the xticks label will be handled automatically by ax.scatter plot
