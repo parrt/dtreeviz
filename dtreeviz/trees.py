@@ -1625,7 +1625,6 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
 
     if 'splits' in show:
         plt.draw()
-        print("labels", ax.get_xticklabels(), ax.get_yticklabels())
         for node, bbox in tessellation:
             x = bbox[0]
             y = bbox[1]
