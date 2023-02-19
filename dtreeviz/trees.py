@@ -1158,16 +1158,16 @@ def _class_split_viz(node: ShadowDecTreeNode,
         label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
         # get tick positions, ignoring "out of dictionary" symbol added by tensorflow trees for "unknown symbol"
         wedge_ticks_position = [label_index[split] for split in node_split if split in label_index]
-        wedge_ticks = _draw_wedge(ax, x=wedge_ticks_position, node=node, color=colors['wedge'], is_class=True, h=h,
+        wedge_ticks = _draw_wedge(ax, x=wedge_ticks_position, node=node, color=colors['wedge'], is_classifier=True, h=h,
                                   height_range=height_range, bins=bins)
         if highlight_node:
             highlight_value = [label_index[X[node.feature()]]]
-            _ = _draw_wedge(ax, x=highlight_value, node=node, color=colors['highlight'], is_class=True, h=h,
+            _ = _draw_wedge(ax, x=highlight_value, node=node, color=colors['highlight'], is_classifier=True, h=h,
                             height_range=height_range, bins=bins)
     else:
-        wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=True, h=h, height_range=height_range, bins=bins)
+        wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_classifier=True, h=h, height_range=height_range, bins=bins)
         if highlight_node:
-            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=True, h=h, height_range=height_range, bins=bins)
+            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_classifier=True, h=h, height_range=height_range, bins=bins)
 
     _set_wedge_ticks(ax, ax_ticks=list(overall_feature_range), wedge_ticks=wedge_ticks)
 
@@ -1253,10 +1253,10 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         ax.plot([split, overall_feature_range[1]], [np.mean(right), np.mean(right)], '--', color=colors['split_line'],
                 linewidth=1)
 
-        wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=False)
+        wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_classifier=False)
 
         if highlight_node:
-            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
+            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_classifier=False)
 
         _set_wedge_ticks(ax, ax_ticks=list(overall_feature_range), wedge_ticks=wedge_ticks)
 
@@ -1268,13 +1268,15 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         ax.scatter(X_feature, y_train, s=5, c=colors["scatter_marker"],
                    alpha=colors['scatter_marker_alpha'], lw=.3)
 
+        # always draw the wedges to identify which cat values are "in set" and which are not
         plt.draw()
         node_split = list(map(str, node.split()))
         # get the label text and its position from the figure
         label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
         # get tick positions, ignoring "out of dictionary" symbol added by tensorflow trees for "unknown symbol"
         wedge_ticks_position = [label_index[split] for split in node_split if split in label_index]
-        wedge_ticks = _draw_wedge(ax, x=node_split, node=node, color=colors['wedge'], is_class=False)
+        height_range = (.5, 1.5)
+        _draw_wedge(ax, x=wedge_ticks_position, node=node, color=colors['wedge'], height_range=height_range, is_classifier=False)
 
         # no wedge ticks for categorical split, just the x_ticks in case the categorical value is not a string
         # if it's a string, then the xticks label will be handled automatically by ax.scatter plot
@@ -1288,7 +1290,7 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                 # get the label text and its position from the figure
                 label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
                 highlight_value = label_index[X[node.feature()]]
-            _ = _draw_wedge(ax, x=highlight_value, node=node, color=colors['highlight'], is_class=False)
+            _ = _draw_wedge(ax, x=highlight_value, node=node, color=colors['highlight'], is_classifier=False)
 
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
