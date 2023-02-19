@@ -1,14 +1,11 @@
 import tensorflow_decision_forests as tfdf
 
-import tensorflow as tf
-
-import os
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-import math
 
 import dtreeviz
+
+np.random.seed(2)
 
 from matplotlib import pyplot as plt
 
@@ -32,14 +29,14 @@ smap = {i:s for i,s in enumerate(states)}
 print(smap)
 df[label] = iris.target
 
-df['state'] = np.random.randint(1, 51, 150)
+df['state'] = np.random.randint(0, 50, 150)
 df['state'] = df['state'].map(smap)
 #df.loc[(df['iris']==1)&(df['petal_length']<3.0), 'state'] = 10
 df.loc[df['iris']==1, 'state'] = 'utah'
 
 print(features, classes)
-print(df['state'].unique())
-print(df)
+# print(df['state'].unique())
+# print(df)
 
 m = tfdf.keras.RandomForestModel(num_trees=1, verbose=0, random_seed=1234)
 tensors = tfdf.keras.pd_dataframe_to_tf_dataset(df, label=label)
