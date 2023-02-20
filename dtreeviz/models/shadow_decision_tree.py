@@ -272,6 +272,7 @@ class ShadowDecTree(ABC):
             # print(f"node feature {node.feature_name()}, id {node.id}")
             X_feature = X_train[:, node.feature()]
             if node.is_categorical_split():
+                print("feat", node.feature(), X_feature)
                 overall_feature_range = (0, len(np.unique(X_train[:, node.feature()])) - 1)
             else:
                 overall_feature_range = (np.min(X_feature), np.max(X_feature))
@@ -419,6 +420,17 @@ class ShadowDecTree(ABC):
 
     @staticmethod
     def get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names=None, tree_index=None):
+        """Get an internal representation of the tree obtained from a specific library"""
+        # Sanity check
+        if isinstance(X_train, pd.DataFrame):
+            nancols = X_train.columns[X_train.isnull().any().values].tolist()
+            if len(nancols)>0:
+                raise ValueError(f"dtreeviz does not support NaN (see column(s) {', '.join(nancols)})")
+        elif isinstance(X_train, np.ndarray):
+            nancols = np.where(pd.isnull(X_train).any(axis=0))[0].astype(str).tolist()
+            if len(nancols)>0:
+                raise ValueError(f"dtreeviz does not support NaN (see column index(es) {', '.join(nancols)})")
+
         """
         To check to which library the tree_model belongs we are using string checks instead of isinstance()
         because we don't want all the libraries to be installed as mandatory, except sklearn.
