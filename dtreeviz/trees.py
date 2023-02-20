@@ -1115,6 +1115,13 @@ def _class_split_viz(node: ShadowDecTreeNode,
     class_names = node.shadow_tree.class_names
     class_values = node.shadow_tree.classes()
     X_hist = [X_node_feature[y_train == cl] for cl in class_values]
+
+    # for multiclass examples, there could be scenarios where a node won't contain all the class value labels which will
+    # generate a matplotlib exception. To solve this, we need to filter only the class values which belong to a node and
+    # theirs corresponding colors.
+    X_colors = [colors[cl] for i, cl in enumerate(class_values) if len(X_hist[i]) > 0]
+    X_hist = [hist for hist in X_hist if len(hist) > 0]
+
     if histtype == 'strip':
         ax.yaxis.set_visible(False)
         ax.spines['left'].set_visible(False)
@@ -1129,8 +1136,6 @@ def _class_split_viz(node: ShadowDecTreeNode,
             ax.scatter(bucket, y_noise, alpha=alpha, marker='o', s=dot_w, c=colors[i],
                        edgecolors=colors['edge'], lw=.3)
     else:
-        X_colors = [colors[cl] for cl in class_values]
-
         hist, bins, barcontainers = ax.hist(X_hist,
                                             color=X_colors,
                                             align='mid',
