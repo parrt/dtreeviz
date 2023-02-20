@@ -286,7 +286,7 @@ To push the `dtreeviz` library to your local egg cache (force updates) during de
 python setup.py install -f
 ```
 
-E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-2.1.0-py3.6.egg`.
+E.g., on Terence's box, it add `/Users/parrt/anaconda3/lib/python3.6/site-packages/dtreeviz-2.1.4-py3.6.egg`.
 
 ## Feedback
 
@@ -311,17 +311,3 @@ for depicting hierarchical structures](https://www.cc.gatech.edu/~john.stasko/pa
 
 This project is licensed under the terms of the MIT license, see [LICENSE](LICENSE).
 
-## Deploy
-
-Notes for parrt.
-
-1. Update version.py, setup.py, README.
-2. Merge dev into master
-3. Create release notes
-4. Push to pypi
-5. Announce
-
-```
-python3 -m build
-twine upload dist/dtreeviz-1.4.0.tar.gz dist/dtreeviz-1.4.0-py3-none-any.whl 
-```

@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import List, Mapping
 
 import numpy as np
+import tensorflow_decision_forests
 from tensorflow_decision_forests.component.py_tree.node import LeafNode
 from tensorflow_decision_forests.keras import RandomForestModel
 from tensorflow_decision_forests.tensorflow.core import Task
@@ -55,7 +56,9 @@ class ShadowTensorflowTree(ShadowDecTree):
         return self.children_right
 
     def is_classifier(self) -> bool:
-        return self.model._task == Task.CLASSIFICATION
+        if tensorflow_decision_forests.__version__<'1.2.0':
+            return self.model._task == Task.CLASSIFICATION
+        return self.model.task == Task.CLASSIFICATION
 
     def get_class_weights(self):
         raise VisualisationNotYetSupportedError("get_class_weights()", "TensorFlow Decision Forests")
@@ -152,18 +155,8 @@ class ShadowTensorflowTree(ShadowDecTree):
     def get_node_nsamples_by_class(self, id):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
-            node = [node for node in all_nodes if node.id == id][0]
-            samples = np.array(node.samples())
-            node_values = [0] * len(self.class_names)
-            if samples.size == 0:
-                return node_values
-            node_y_data = self.y_train[samples]
-            unique, counts = np.unique(node_y_data, return_counts=True)
-
-            for i in range(len(unique)):
-                node_values[unique[i]] = counts[i]
-
-            return node_values
+            node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
+            return node_value[0]
 
     def get_prediction(self, id):
         if self.is_classifier():

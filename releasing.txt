@@ -1,0 +1,12 @@
+# Releasing dtreeviz
+
+1. Update version.py, setup.py, README.
+2. Merge dev into master
+3. Create release notes
+4. Push to pypi
+5. Announce
+
+```
+python3 -m build
+twine upload dist/dtreeviz-2.1.2.tar.gz dist/dtreeviz-2.1.2-py3-none-any.whl 
+```

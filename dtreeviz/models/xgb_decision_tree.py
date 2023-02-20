@@ -200,20 +200,20 @@ class ShadowXGBDTree(ShadowDecTree):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
             node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
-            return node_value[0][0], node_value[0][1]
+            return node_value[0]
 
     def get_prediction(self, id):
         all_nodes = self.internal + self.leaves
         if self.is_classifier():
             node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
-            return np.argmax((node_value[0][0], node_value[0][1]))
+            return np.argmax(node_value[0])
         elif not self.is_classifier():
             node_samples = [node.samples() for node in all_nodes if node.id == id][0]
             return np.mean(self.y_train[node_samples])
 
     def is_classifier(self):
         objective_name = self.config["learner"]["objective"]["name"].split(":")[0]
-        if objective_name == "binary":
+        if objective_name == "binary" or objective_name == "multi":
             return True
         elif objective_name == "reg":
             return False

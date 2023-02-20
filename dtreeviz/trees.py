@@ -131,7 +131,7 @@ class DTreeVizAPI:
 
 
     def ctree_leaf_distributions(self,
-                                 display_type: str = "plot",
+                                 display_type: ("plot", "text") = "plot",
                                  xaxis_display_type: str = "individual",
                                  plot_ylim: int = None,
                                  colors: dict = None,
@@ -147,7 +147,6 @@ class DTreeVizAPI:
         50/50.
         You could get all the samples from these leaves (using node_stats() function) and look over/understand what they have in common.
         Now, you can understand your data in a model driven way.
-        Right now it supports only binary classifications decision trees.
 
         Usage example :
         viz_model = dtreeviz.model(tree_model, X_train=dataset[features], y_train=dataset[target],
@@ -172,8 +171,7 @@ class DTreeVizAPI:
         :param figsize: optional (width, height) in inches for the entire plot
             :param ax: optional matplotlib "axes" to draw into
         """
-        index, leaf_samples_0, leaf_samples_1 = self.shadow_tree.get_leaf_sample_counts_by_class()
-
+        index, leaf_samples = self.shadow_tree.get_leaf_sample_counts_by_class()
         if display_type == "plot":
             colors = adjust_colors(colors)
             colors_classes = colors['classes'][self.shadow_tree.nclasses()]
@@ -204,13 +202,21 @@ class DTreeVizAPI:
             if plot_ylim is not None:
                 ax.set_ylim(0, plot_ylim)
 
-            bar_container0 = ax.bar(x, leaf_samples_0, color=colors_classes[0], lw=.3,
-                                    align='center',
-                                    width=1)
-            bar_container1 = ax.bar(x, leaf_samples_1, bottom=leaf_samples_0,
-                                    color=colors_classes[1],
+            leaf_samples_hist = [[] for i in range(self.shadow_tree.nclasses())]
+            for leaf_sample in leaf_samples:
+                for i, leaf_count in enumerate(leaf_sample):
+                    leaf_samples_hist[i].append(leaf_count)
+
+            bar_containers = []
+            bottom_values = np.full(len(index), 0)
+            for i, leaf_sample in enumerate(leaf_samples_hist):
+                bar_container = ax.bar(range(0, len(index)), leaf_sample, bottom=bottom_values,
+                                    color=colors_classes[i],
                                     lw=.3, align='center', width=1)
-            for bar_container in [bar_container0, bar_container1]:
+                bottom_values = bottom_values + np.array(leaf_sample)
+                bar_containers.append(bar_container)
+
+            for bar_container in bar_containers:
                 for rect in bar_container.patches:
                     rect.set_linewidth(.5)
                     rect.set_edgecolor(colors['rect_edge'])
@@ -225,8 +231,8 @@ class DTreeVizAPI:
             _format_axes(ax, "Leaf IDs", "Samples by Class", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
 
         elif display_type == "text":
-            for leaf, samples_0, samples_1 in zip(index, leaf_samples_0, leaf_samples_1):
-                print(f"leaf {leaf}, samples : {samples_0}, {samples_1}")
+            for i, leaf in enumerate(index):
+                print(f"leaf {leaf}, samples : {leaf_samples[i]}")
 
     def view(self,
              precision: int = 2,
@@ -907,6 +913,48 @@ class DTreeVizAPI:
                             features=None,
                             figsize=None,
                             ax=None):
+        """
+        Decision trees partition feature space into rectangular regions
+        through the series of splits (at internal decision nodes) along the
+        path from the root to a leaf while making a prediction for an input
+        instance. The complete tessellation of feature space is the collection
+        of regions inscribed by all paths from the root to a leaf.
+
+        This function isolates one or two features of interest according to
+        the features parameter and generates a plot.  For one feature, the
+        resulting plot has that feature on the X axis and the associated class
+        targets at different elevations (with some noise) on the Y axis to
+        separate them.  (Use gtype='barstacked' to get a histogram instead.)
+        For two features, the plot has the two features of
+        interest on the X and Y axes and plots the 2D coordinate for each
+        training data instance. Each marker and region has a unique color
+        according to the classification label.
+
+        Decision nodes associated with features not in the features parameter
+        do not contribute to the tessellation of the feature space. Paths from
+        the root to leaves in the decision tree do not contribute a region unless
+        one or more of the features of interest is tested.  Given a model
+        trained with exactly two features, calling this function with those
+        two features results in disjoint regions. Any coordinate in 2D feature
+        space would always lead to a unique leaf.
+
+        When the model is trained on more than two features, however, the same
+        coordinate in the 2D feature space of interest could appear in
+        multiple paths from the root to a leaf. Consequently, it is possible
+        for regions to overlap because the tree is testing other variables
+        along those paths (so that each coordinate in d-space for d model
+        features still reaches a unique leaf).  Overlapping regions simply
+        means another feature would disambiguate those regions during model
+        inference.
+
+        :param gtype: {'strip','barstacked'}
+        :param show: Plot elements to show: {'title', 'legend', 'splits'}
+        :param features: A list of strings containing one or two features of interest.
+                         If none is specified, the first feature(s) in X_training dataframe are used.
+        :param figsize: Width and height in inches for the figure; use something like (5,1)
+                        for len(features)==1 and (5,3) for len(features)==1.
+        """
+
         # TODO: check if we can find some common functionality between univar and bivar visualisations and refactor
         #  to a single method.
         if features is None:
@@ -924,6 +972,44 @@ class DTreeVizAPI:
                             mean_linewidth=2, markersize=15, colors=None, fontname="Arial",
                             n_colors_in_map=100, features=None,
                             figsize=None, ax=None):
+        """
+        Decision trees partition feature space into rectangular regions
+        through the series of splits (at internal decision nodes) along the
+        path from the root to a leaf while making a prediction for an input
+        instance. The complete tessellation of feature space is the collection
+        of regions inscribed by all paths from the root to a leaf.
+
+        This function isolates one or two features of interest according to
+        the features parameter and generates a plot.  For one feature, the
+        resulting plot has that feature on the X axis and the regression
+        target on the Y axis. For two features, the plot has the two features
+        of interest on the X and Y axes and a colored heat map to indicate the
+        regression target. The darker the color, the larger the regression
+        value.
+
+        Decision nodes associated with features not in the features parameter
+        do not contribute to the tessellation of the feature space. Paths from
+        the root to leaves in the decision tree do not contribute a region unless
+        one or more of the features of interest is tested.  Given a model
+        trained with exactly two features, calling this function with those
+        two features results in disjoint regions. Any coordinate in 2D feature
+        space would always lead to a unique leaf.
+
+        When the model is trained on more than two features, however, the same
+        coordinate in the 2D feature space of interest could appear in
+        multiple paths from the root to a leaf. Consequently, it is possible
+        for regions to overlap because the tree is testing other variables
+        along those paths (so that each coordinate in d-space for d model
+        features still reaches a unique leaf).  Overlapping regions simply
+        means another feature would disambiguate those regions during model
+        inference.
+
+        :param show: which or all of {'title', 'splits'} to show
+        :param features: A list of strings containing one or two features of interest.
+                         If none is specified, the first feature(s) in X_training dataframe are used.
+        :param figsize: Width and height in inches for the figure; use something like (5,1)
+                        for len(features)==1 and (5,3) for len(features)==1.
+        """
         if features is None:
             n_features = len(self.shadow_tree.feature_names)
             features = self.shadow_tree.feature_names[0:min(n_features,2)] # pick first one/two features if none given
@@ -945,8 +1031,42 @@ class DTreeVizAPI:
                               features=None,
                               figsize=None, ax=None):
         """
-        Show 3D feature space for bivariate regression tree. X_train should have
-        just the 2 variables used for training.
+        Decision trees partition feature space into rectangular regions
+        through the series of splits (at internal decision nodes) along the
+        path from the root to a leaf while making a prediction for an input
+        instance. The complete tessellation of feature space is the collection
+        of regions inscribed by all paths from the root to a leaf.
+
+        This function isolates two features of interest according to
+        the features parameter and generates a 3D plot.  The plot has the two features
+        of interest on the X and Y axes and the regression target on the Z axis.
+        The darker the region color, the larger the regression value.
+
+        Decision nodes associated with features not in the features parameter
+        do not contribute to the tessellation of the feature space. Paths from
+        the root to leaves in the decision tree do not contribute a region unless
+        one or more of the features of interest is tested.  Given a model
+        trained with exactly two features, calling this function with those
+        two features results in disjoint regions. Any coordinate in 2D feature
+        space would always lead to a unique leaf.
+
+        When the model is trained on more than two features, however, the same
+        coordinate in the 2D feature space of interest could appear in
+        multiple paths from the root to a leaf. Consequently, it is possible
+        for regions to overlap vertically in the 3D plot because the tree is
+        testing other variables along those paths (so that each coordinate
+        in d-space for d model features still reaches a unique leaf).
+        Overlapping regions simply means another feature would disambiguate
+        those regions during model inference.
+
+        :param azim: Angle rotation around the z axis (default 0)
+        :param elev: Elevation in degrees above the x-y axis (2D feature space) (default 0)
+        :param dist: Distance of the camera to the plot (default is 7)
+        :param show: which or all of {'title', 'splits'} to show
+        :param features: A list of strings containing one or two features of interest.
+                         If none is specified, the first feature(s) in X_training dataframe are used.
+        :param figsize: Width and height in inchesFor the figure; use something like (5,1)
+                        for len(features)==1 and (5,3) for len(features)==1.
         """
         if features is None:
             n_features = len(self.shadow_tree.feature_names)
