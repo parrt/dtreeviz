@@ -405,20 +405,8 @@ def _draw_wedge(ax, x, node, color, is_classifier, h=None, height_range=None, bi
                 _draw_tria(split_value, tip_y, tri_width, tri_height)
     else:
         # regression
-        if not node.is_categorical_split():
-            # numeric split
-            tri_height = y_range * .1
-            _draw_tria(x, ymin, tri_width, tri_height)
-        else:
-            # regression: categorical split, draw multiple wedges
-            # TODO: not correct but about right; a bit too tall.
-            w,h = ax.get_figure().get_size_inches()
-            hr = h / (height_range[1] - height_range[0])
-            tri_height = y_range * .15 * 1 / hr  # convert to graph coordinates (ugh)
-            tip_y = ymin
-            for split_value in x:
-                _draw_tria(split_value, tip_y, tri_width, tri_height)
-
+        tri_height = y_range * .1
+        _draw_tria(x, ymin, tri_width, tri_height)
     return wedge_ticks
 
 
