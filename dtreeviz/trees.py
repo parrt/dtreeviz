@@ -1282,16 +1282,6 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                 color=colors["categorical_split_right"],
                 linewidth=1)
 
-        # always draw the wedges to identify which cat values are "in set" and which are not
-        plt.draw()
-        node_split = list(map(str, node.split()))
-        # get the label text and its position from the figure
-        label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
-        # get tick positions, ignoring "out of dictionary" symbol added by tensorflow trees for "unknown symbol"
-        wedge_ticks_position = [label_index[split] for split in node_split if split in label_index]
-        height_range = (.5, 1.5)
-        _draw_wedge(ax, x=wedge_ticks_position, node=node, color=colors['wedge'], height_range=height_range, is_classifier=False)
-
         # no wedge ticks for categorical split, just the x_ticks in case the categorical value is not a string
         # if it's a string, then the xticks label will be handled automatically by ax.scatter plot
         if type(X_feature[0]) is not str:
