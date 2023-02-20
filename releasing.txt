@@ -7,6 +7,6 @@
 5. Announce
 
 ```
-python3 -m build
+python -m build
 twine upload dist/dtreeviz-2.2.0.tar.gz dist/dtreeviz-2.2.0-py3-none-any.whl 
 ```
