@@ -8,5 +8,5 @@
 
 ```
 python3 -m build
-twine upload dist/dtreeviz-2.1.2.tar.gz dist/dtreeviz-2.1.2-py3-none-any.whl 
+twine upload dist/dtreeviz-2.2.0-py3-none-any.whl 
 ```
