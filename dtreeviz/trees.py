@@ -6,6 +6,7 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
 from colour import Color, rgb2hex
 from sklearn import tree
 
@@ -13,7 +14,8 @@ from dtreeviz.colors import adjust_colors
 from dtreeviz.interpretation import explain_prediction_plain_english, explain_prediction_sklearn_default
 from dtreeviz.models.shadow_decision_tree import ShadowDecTree
 from dtreeviz.models.shadow_decision_tree import ShadowDecTreeNode
-from dtreeviz.utils import myround, DTreeVizRender, add_classifier_legend, _format_axes, _draw_wedge, _set_wedge_ticks, tessellate
+from dtreeviz.utils import myround, DTreeVizRender, add_classifier_legend, _format_axes, _draw_wedge, \
+                           _set_wedge_ticks, tessellate, is_numeric
 
 # How many bins should we have based upon number of classes
 NUM_BINS = [
@@ -1100,14 +1102,26 @@ def _class_split_viz(node: ShadowDecTreeNode,
         # keep the bar widths as uniform as possible for all node visualisations
         nbins = nbins if nbins > feature_unique_size else feature_unique_size + 1
 
-    overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
-    bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
+    # only for str categorical features which are str type, int categorical features can work fine as numerical ones
+    if node.is_categorical_split() and type(X_feature[0]) == str:
+        # TODO think if the len() should be from all training[feature] data vs only data from this specific node ?
+        overall_feature_range = (0, len(np.unique(X_feature)) - 1)
+    else:
+        overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
 
+    bins = np.linspace(start=overall_feature_range[0], stop=overall_feature_range[1], num=nbins, endpoint=True)
     _format_axes(ax, feature_name, None, colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=ticks_fontsize, grid=False, pad_for_wedge=True)
 
     class_names = node.shadow_tree.class_names
     class_values = node.shadow_tree.classes()
     X_hist = [X_node_feature[y_train == cl] for cl in class_values]
+
+    # for multiclass examples, there could be scenarios where a node won't contain all the class value labels which will
+    # generate a matplotlib exception. To solve this, we need to filter only the class values which belong to a node and
+    # theirs corresponding colors.
+    X_colors = [colors[cl] for i, cl in enumerate(class_values) if len(X_hist[i]) > 0]
+    X_hist = [hist for hist in X_hist if len(hist) > 0]
+
     if histtype == 'strip':
         ax.yaxis.set_visible(False)
         ax.spines['left'].set_visible(False)
@@ -1122,8 +1136,6 @@ def _class_split_viz(node: ShadowDecTreeNode,
             ax.scatter(bucket, y_noise, alpha=alpha, marker='o', s=dot_w, c=colors[i],
                        edgecolors=colors['edge'], lw=.3)
     else:
-        X_colors = [colors[cl] for cl in class_values]
-
         hist, bins, barcontainers = ax.hist(X_hist,
                                             color=X_colors,
                                             align='mid',
@@ -1143,9 +1155,24 @@ def _class_split_viz(node: ShadowDecTreeNode,
 
     ax.set_xlim(*overall_feature_range_wide)
 
-    wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=True, h=h, height_range=height_range, bins=bins)
-    if highlight_node:
-        _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=True, h=h, height_range=height_range, bins=bins)
+    if node.is_categorical_split() and type(X_feature[0]) == str:
+        # run draw to refresh the figure to get the xticklabels
+        plt.draw()
+        node_split = list(map(str, node.split()))
+        # get the label text and its position from the figure
+        label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
+        # get tick positions, ignoring "out of dictionary" symbol added by tensorflow trees for "unknown symbol"
+        wedge_ticks_position = [label_index[split] for split in node_split if split in label_index]
+        wedge_ticks = _draw_wedge(ax, x=wedge_ticks_position, node=node, color=colors['wedge'], is_classifier=True, h=h,
+                                  height_range=height_range, bins=bins)
+        if highlight_node:
+            highlight_value = [label_index[X[node.feature()]]]
+            _ = _draw_wedge(ax, x=highlight_value, node=node, color=colors['highlight'], is_classifier=True, h=h,
+                            height_range=height_range, bins=bins)
+    else:
+        wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_classifier=True, h=h, height_range=height_range, bins=bins)
+        if highlight_node:
+            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_classifier=True, h=h, height_range=height_range, bins=bins)
 
     _set_wedge_ticks(ax, ax_ticks=list(overall_feature_range), wedge_ticks=wedge_ticks)
 
@@ -1201,7 +1228,6 @@ def _regr_split_viz(node: ShadowDecTreeNode,
     fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     feature_name = node.feature_name()
-
     _format_axes(ax, feature_name, target_name if node == node.shadow_tree.root else None, colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=ticks_fontsize, grid=False, pad_for_wedge=True)
     ax.set_ylim(y_range)
 
@@ -1209,13 +1235,17 @@ def _regr_split_viz(node: ShadowDecTreeNode,
     X_feature = X_train[:, node.feature()]
     X_feature, y_train = X_feature[node.samples()], y_train[node.samples()]
 
-    overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
+    # only for str categorical features which are str type, int categorical features can work fine as numerical ones
+    if node.is_categorical_split() and type(X_feature[0]) == str:
+        # TODO think if the len() should be from all training[feature] data vs only data from this specific node ?
+        overall_feature_range = (0, len(np.unique(X_feature)) - 1)
+    else:
+        overall_feature_range = (np.min(X_train[:, node.feature()]), np.max(X_train[:, node.feature()]))
+
     ax.set_xlim(*overall_feature_range)
     xmin, xmax = overall_feature_range
-    xr = xmax - xmin
 
     if not node.is_categorical_split():
-
         ax.scatter(X_feature, y_train, s=5, c=colors['scatter_marker'], alpha=colors['scatter_marker_alpha'], lw=.3)
         left, right = node.split_samples()
         left = y_train[left]
@@ -1228,10 +1258,10 @@ def _regr_split_viz(node: ShadowDecTreeNode,
         ax.plot([split, overall_feature_range[1]], [np.mean(right), np.mean(right)], '--', color=colors['split_line'],
                 linewidth=1)
 
-        wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_class=False)
+        wedge_ticks = _draw_wedge(ax, x=node.split(), node=node, color=colors['wedge'], is_classifier=False)
 
         if highlight_node:
-            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
+            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_classifier=False)
 
         _set_wedge_ticks(ax, ax_ticks=list(overall_feature_range), wedge_ticks=wedge_ticks)
 
@@ -1252,11 +1282,19 @@ def _regr_split_viz(node: ShadowDecTreeNode,
                 color=colors["categorical_split_right"],
                 linewidth=1)
 
-        if highlight_node:
-            _ = _draw_wedge(ax, x=X[node.feature()], node=node, color=colors['highlight'], is_class=False)
+        # no wedge ticks for categorical split, just the x_ticks in case the categorical value is not a string
+        # if it's a string, then the xticks label will be handled automatically by ax.scatter plot
+        if type(X_feature[0]) is not str:
+            ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
 
-        # no wedge ticks for categorical split
-        ax.set_xticks(np.unique(np.concatenate((X_feature, np.asarray(overall_feature_range)))))
+        if highlight_node:
+            highlight_value = X[node.feature()]
+            if type(X_feature[0]) is str:
+                plt.draw()
+                # get the label text and its position from the figure
+                label_index = dict([(label.get_text(), label.get_position()[0]) for label in ax.get_xticklabels()])
+                highlight_value = label_index[X[node.feature()]]
+            _ = _draw_wedge(ax, x=highlight_value, node=node, color=colors['highlight'], is_classifier=False)
 
     if filename is not None:
         plt.savefig(filename, bbox_inches='tight', pad_inches=0)
@@ -1294,7 +1332,6 @@ def _regr_leaf_viz(node: ShadowDecTreeNode,
                 xy=(.5, 0), xytext=(.5, -.5 * ticklabelpad), ha='center', va='top',
                 xycoords='axes fraction', textcoords='offset points',
                 fontsize=label_fontsize, fontname=fontname, color=colors['axis_label'])
-
 
     mu = .5
     sigma = .08
@@ -1475,6 +1512,9 @@ def _ctreeviz_univar(shadow_tree,
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
     X_colors = [color_map[cl] for cl in class_values]
 
+    # if np.numeric(X_train[:,featidx])
+    if not is_numeric(X_train[:,featidx]):
+        raise ValueError(f"ctree_feature_space only supports numeric feature spaces")
 
     _format_axes(ax, shadow_tree.feature_names[featidx], 'Count' if gtype=='barstacked' else None,
                  colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
@@ -1572,15 +1612,8 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
     color_values = colors['classes'][n_classes]
     color_map = {v: color_values[i] for i, v in enumerate(class_values)}
 
-    if 'splits' in show:
-        for node, bbox in tessellation:
-            x = bbox[0]
-            y = bbox[1]
-            w = bbox[2] - bbox[0]
-            h = bbox[3] - bbox[1]
-            rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
-                                     edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
-            ax.add_patch(rect)
+    if not is_numeric(X_train[:,featidx[0]]) or not is_numeric(X_train[:,featidx[1]]):
+        raise ValueError(f"ctree_feature_space only supports numeric feature spaces")
 
     dot_w = 25
     X_hist = [X_train[y_train == cl] for cl in class_values]
@@ -1590,6 +1623,17 @@ def _ctreeviz_bivar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
 
     _format_axes(ax, shadow_tree.feature_names[featidx[0]], shadow_tree.feature_names[featidx[1]],
                  colors, fontsize, fontname, ticks_fontsize=ticks_fontsize, grid=False)
+
+    if 'splits' in show:
+        plt.draw()
+        for node, bbox in tessellation:
+            x = bbox[0]
+            y = bbox[1]
+            w = bbox[2] - bbox[0]
+            h = bbox[3] - bbox[1]
+            rect = patches.Rectangle((x, y), w, h, angle=0, linewidth=.3, alpha=colors['tessellation_alpha'],
+                                     edgecolor=colors['rect_edge'], facecolor=color_map[node.prediction()])
+            ax.add_patch(rect)
 
     if 'legend' in show:
         add_classifier_legend(ax, shadow_tree.class_names, class_values, color_map, shadow_tree.target_name, colors,
@@ -1612,6 +1656,9 @@ def _rtreeviz_univar(shadow_tree, fontsize, ticks_fontsize, fontname, show,
     y_train = shadow_tree.y_train
     if X_train is None or y_train is None:
         raise ValueError(f"X_train and y_train must not be none")
+
+    if not is_numeric(X_train[:,featidx]):
+       raise ValueError(f"rtree_feature_space only supports numeric feature spaces")
 
     if ax is None:
         if figsize:
@@ -1691,6 +1738,9 @@ def _rtreeviz_bivar_heatmap(shadow_tree, fontsize, ticks_fontsize, fontname,
                                                          n_colors_in_map)]
     featidx = [shadow_tree.feature_names.index(f) for f in features]
 
+    if not is_numeric(X_train[:,featidx[0]]) or not is_numeric(X_train[:,featidx[1]]):
+        raise ValueError(f"rtree_feature_space only supports numeric feature spaces")
+
     tessellation = tessellate(shadow_tree.root, X_train, featidx)
 
     for node, bbox in tessellation:
@@ -1755,8 +1805,11 @@ def _rtreeviz_bivar_3D(shadow_tree, fontsize, ticks_fontsize, fontname,
     y_colors = [color_spectrum[y_to_color_index(y)] for y in y_train]
 
     featidx = [shadow_tree.feature_names.index(f) for f in features]
-    x, y, z = X_train[:, featidx[0]], X_train[:, featidx[1]], y_train
 
+    if not is_numeric(X_train[:,featidx[0]]) or not is_numeric(X_train[:,featidx[1]]):
+        raise ValueError(f"rtree_feature_space3D only supports numeric feature spaces")
+
+    x, y, z = X_train[:, featidx[0]], X_train[:, featidx[1]], y_train
     tessellation = tessellate(shadow_tree.root, X_train, featidx)
 
     for node, bbox in tessellation:

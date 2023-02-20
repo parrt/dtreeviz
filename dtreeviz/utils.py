@@ -370,8 +370,7 @@ def _format_axes(ax, xlabel, ylabel, colors, fontsize, fontname, ticks_fontsize=
     ax.grid(visible=grid)
 
 
-def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=None):
-
+def _draw_wedge(ax, x, node, color, is_classifier, h=None, height_range=None, bins=None):
     xmin, xmax = ax.get_xlim()
     ymin, ymax = ax.get_ylim()
     x_range = xmax - xmin
@@ -388,7 +387,7 @@ def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=No
         ax.add_patch(t)
         wedge_ticks.append(tip_x)
 
-    if is_class:
+    if is_classifier:
         hr = h / (height_range[1] - height_range[0])
         tri_height = y_range * .15 * 1 / hr  # convert to graph coordinates (ugh)
         tip_y = -0.1 * y_range * .15 * 1 / hr
@@ -397,7 +396,10 @@ def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=No
             _draw_tria(x, tip_y, tri_width, tri_height)
         else:
             # classification: categorical split, draw multiple wedges
-            for split_value in node.split():
+            # If we're highlighting a node, x will be one value not multiple.
+            if np.size(x)==1:
+                x = [x] # normalize to a list even if one value
+            for split_value in x:
                 # to display the wedge exactly in the middle of the vertical bar
                 for bin_index in range(len(bins) - 1):
                     if bins[bin_index] <= split_value <= bins[bin_index + 1]:
@@ -408,7 +410,6 @@ def _draw_wedge(ax, x, node, color, is_class, h=None, height_range=None, bins=No
         # regression
         tri_height = y_range * .1
         _draw_tria(x, ymin, tri_width, tri_height)
-
     return wedge_ticks
 
 
@@ -443,6 +444,8 @@ def tessellate(root, X_train, featidx):
     """
     Walk tree and return list of tuples containing a leaf node and bounding box list
     of(x1, y1, x2, y2) coordinates.
+
+    Does not work for catvars!
     """
     bboxes = []  # filled in by walk()
     f1_values = X_train[:, featidx[0]]
@@ -474,3 +477,12 @@ def tessellate(root, X_train, featidx):
     walk(root, overall_bbox, 0)
 
     return bboxes
+
+
+def is_numeric(A:np.ndarray) -> bool:
+    try:
+        A.astype(float)
+        return True
+    except ValueError as e:
+        pass
+    return False

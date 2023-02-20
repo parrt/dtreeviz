@@ -42,7 +42,7 @@ def test_class_weight(shadow_dec_tree):
 
 
 def test_criterion(shadow_dec_tree):
-    assert shadow_dec_tree.criterion() == "GINI"
+    assert shadow_dec_tree.criterion() == "Gini"
 
 
 def test_nclasses(shadow_dec_tree):

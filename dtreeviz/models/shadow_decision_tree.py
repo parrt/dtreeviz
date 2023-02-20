@@ -268,21 +268,27 @@ class ShadowDecTree(ABC):
     def get_split_node_heights(self, X_train, y_train, nbins) -> Mapping[int, int]:
         class_values = np.unique(y_train)
         node_heights = {}
-        # print(f"Goal {nbins} bins")
         for node in self.internal:
-            # print(node.feature_name(), node.id)
+            # print(f"node feature {node.feature_name()}, id {node.id}")
             X_feature = X_train[:, node.feature()]
-            overall_feature_range = (np.min(X_feature), np.max(X_feature))
-            # print(f"range {overall_feature_range}")
+            if node.is_categorical_split():
+                overall_feature_range = (0, len(np.unique(X_train[:, node.feature()])) - 1)
+            else:
+                overall_feature_range = (np.min(X_feature), np.max(X_feature))
+
             bins = np.linspace(overall_feature_range[0],
                                overall_feature_range[1], nbins + 1)
-            # print(f"\tlen(bins)={len(bins):2d} bins={bins}")
             X, y = X_feature[node.samples()], y_train[node.samples()]
+
+            # in case there is a categorical split node, we can convert the values to numbers because we need them
+            # only for getting the distribution values
+            if node.is_categorical_split():
+                X = pd.Series(X).astype("category").cat.codes
+
             X_hist = [X[y == cl] for cl in class_values]
             height_of_bins = np.zeros(nbins)
             for i, _ in enumerate(class_values):
                 hist, foo = np.histogram(X_hist[i], bins=bins, range=overall_feature_range)
-                # print(f"class {cl}: goal_n={len(bins):2d} n={len(hist):2d} {hist}")
                 height_of_bins += hist
             node_heights[node.id] = np.max(height_of_bins)
             # print(f"\tmax={np.max(height_of_bins):2.0f}, heights={list(height_of_bins)}, {len(height_of_bins)} bins")
@@ -413,6 +419,17 @@ class ShadowDecTree(ABC):
 
     @staticmethod
     def get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names=None, tree_index=None):
+        """Get an internal representation of the tree obtained from a specific library"""
+        # Sanity check
+        if isinstance(X_train, pd.DataFrame):
+            nancols = X_train.columns[X_train.isnull().any().values].tolist()
+            if len(nancols)>0:
+                raise ValueError(f"dtreeviz does not support NaN (see column(s) {', '.join(nancols)})")
+        elif isinstance(X_train, np.ndarray):
+            nancols = np.where(pd.isnull(X_train).any(axis=0))[0].astype(str).tolist()
+            if len(nancols)>0:
+                raise ValueError(f"dtreeviz does not support NaN (see column index(es) {', '.join(nancols)})")
+
         """
         To check to which library the tree_model belongs we are using string checks instead of isinstance()
         because we don't want all the libraries to be installed as mandatory, except sklearn.

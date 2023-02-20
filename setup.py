@@ -14,7 +14,7 @@ extra_tensorflow = ['tensorflow_decision_forests']
 
 setup(
     name='dtreeviz',
-    version='2.1.4',
+    version='2.2.0',
     url='https://github.com/parrt/dtreeviz',
     license='MIT',
     packages=find_packages(),
