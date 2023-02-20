@@ -272,7 +272,6 @@ class ShadowDecTree(ABC):
             # print(f"node feature {node.feature_name()}, id {node.id}")
             X_feature = X_train[:, node.feature()]
             if node.is_categorical_split():
-                print("feat", node.feature(), X_feature)
                 overall_feature_range = (0, len(np.unique(X_train[:, node.feature()])) - 1)
             else:
                 overall_feature_range = (np.min(X_feature), np.max(X_feature))
