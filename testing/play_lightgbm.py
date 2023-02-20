@@ -19,6 +19,7 @@ dataset.fillna({"Age":dataset.Age.mean()}, inplace=True)
 # Encode categorical variables
 dataset["Sex"] = dataset.Sex.astype("category")#.cat.codes
 dataset["Cabin"] = dataset.Cabin.astype("category").cat.codes
+dataset.fillna({"Embarked":"?"}, inplace=True)
 dataset["Embarked"] = dataset.Embarked.astype("category")#.cat.codes
 print(dataset.dtypes)
 
