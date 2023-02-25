@@ -133,6 +133,7 @@ class DTreeVizAPI:
     def ctree_leaf_distributions(self,
                                  display_type: ("plot", "text") = "plot",
                                  xaxis_display_type: str = "individual",
+                                 show_leaf_id_list: list = None,
                                  plot_ylim: int = None,
                                  colors: dict = None,
                                  fontsize: int = 10,
@@ -157,6 +158,8 @@ class DTreeVizAPI:
            'plot' or 'text'
         :param xaxis_display_type: str, optional
            'individual', displays every node ID individually, 'auto', let matplotlib automatically manage the node ID ticks, 'y_sorted', display in y order with no x-axis tick labels
+        :param show_leaf_id_list: list, optional
+           The allowed list of node id values to plot
         :param plot_ylim: int, optional
             The max value for oY. This is useful in case we have few leaves with big sample values which 'shadow'
             the other leaves values.
@@ -188,8 +191,13 @@ class DTreeVizAPI:
                     leaf_samples_hist[i].append(leaf_count)
             leaf_samples_hist = np.array(leaf_samples_hist)
 
+            if show_leaf_id_list is not None:
+                _mask = np.isin(index, show_leaf_id_list)
+                leaf_samples_hist = leaf_samples_hist[:, _mask]
+                index = tuple(np.array(index)[_mask])
+
             if xaxis_display_type == 'individual':
-                x = range(0, len(index))
+                x = np.arange(0, len(index))
                 ax.set_xticks(x)
                 ax.set_xticklabels(index)
             elif xaxis_display_type == 'auto':
@@ -204,7 +212,7 @@ class DTreeVizAPI:
                 leaf_samples_hist = leaf_samples_hist[:, _sort]
                 index = tuple(np.array(index)[_sort])
 
-                x = range(0, len(index))
+                x = np.arange(0, len(index))
                 ax.set_xticks(x)
                 ax.set_xticklabels([])
                 ax.tick_params(axis='x', which='both', bottom=False)
