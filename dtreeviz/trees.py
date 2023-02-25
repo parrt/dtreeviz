@@ -182,6 +182,12 @@ class DTreeVizAPI:
                 else:
                     fig, ax = plt.subplots()
 
+            leaf_samples_hist = [[] for i in range(self.shadow_tree.nclasses())]
+            for leaf_sample in leaf_samples:
+                for i, leaf_count in enumerate(leaf_sample):
+                    leaf_samples_hist[i].append(leaf_count)
+            leaf_samples_hist = np.array(leaf_samples_hist)
+
             if xaxis_display_type == 'individual':
                 x = range(0, len(index))
                 ax.set_xticks(x)
@@ -190,8 +196,14 @@ class DTreeVizAPI:
                 x = np.array(index)
                 ax.set_xlim(np.min(x)-1, np.max(x)+1)
             elif xaxis_display_type == 'y_sorted':
-                # sort by leaf_samples_0 + leaf_samples_1 desc
-                _, leaf_samples_0, leaf_samples_1, index = zip(*sorted(zip(np.array(leaf_samples_0)+np.array(leaf_samples_1), leaf_samples_0, leaf_samples_1, index), reverse=True))
+                # sort by total y = sum(classes), then class 0, 1, 2, ...
+                sort_cols = [np.sum(leaf_samples_hist, axis=0)]
+                for i in range(leaf_samples_hist.shape[0]):
+                    sort_cols.append(leaf_samples_hist[i])
+                _sort = np.lexsort(sort_cols[::-1])[::-1]
+                leaf_samples_hist = leaf_samples_hist[:, _sort]
+                index = tuple(np.array(index)[_sort])
+
                 x = range(0, len(index))
                 ax.set_xticks(x)
                 ax.set_xticklabels([])
@@ -202,21 +214,13 @@ class DTreeVizAPI:
             if plot_ylim is not None:
                 ax.set_ylim(0, plot_ylim)
 
-            leaf_samples_hist = [[] for i in range(self.shadow_tree.nclasses())]
-            for leaf_sample in leaf_samples:
-                for i, leaf_count in enumerate(leaf_sample):
-                    leaf_samples_hist[i].append(leaf_count)
-
-            bar_containers = []
-            bottom_values = np.full(len(index), 0)
-            for i, leaf_sample in enumerate(leaf_samples_hist):
-                bar_container = ax.bar(range(0, len(index)), leaf_sample, bottom=bottom_values,
+            bottom_values = np.zeros(len(index))
+            for i in range(leaf_samples_hist.shape[0]):
+                bar_container = ax.bar(x, leaf_samples_hist[i], bottom=bottom_values,
                                     color=colors_classes[i],
                                     lw=.3, align='center', width=1)
-                bottom_values = bottom_values + np.array(leaf_sample)
-                bar_containers.append(bar_container)
+                bottom_values = bottom_values + leaf_samples_hist[i]
 
-            for bar_container in bar_containers:
                 for rect in bar_container.patches:
                     rect.set_linewidth(.5)
                     rect.set_edgecolor(colors['rect_edge'])
