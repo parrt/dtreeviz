@@ -1,6 +1,6 @@
 import os
 import tempfile
-from typing import Mapping, List
+from typing import Mapping, List, Callable
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -134,6 +134,9 @@ class DTreeVizAPI:
 
     def ctree_leaf_distributions(self,
                                  display_type: ("plot", "text") = "plot",
+                                 xaxis_display_type: str = "individual",
+                                 show_leaf_id_list: list = None,
+                                 show_leaf_filter: Callable[[np.ndarray], bool] = None,
                                  plot_ylim: int = None,
                                  colors: dict = None,
                                  fontsize: int = 10,
@@ -156,6 +159,16 @@ class DTreeVizAPI:
 
         :param display_type: str, optional
            'plot' or 'text'
+        :param xaxis_display_type: str, optional
+           'individual': Displays every node ID individually
+           'auto': Let matplotlib automatically manage the node ID ticks
+           'y_sorted': Display in y order with no x-axis tick labels
+        :param show_leaf_id_list: list, optional
+           The allowed list of node id values to plot
+        :param show_leaf_filter: Callable[[np.ndarray], bool], optional
+           The filtering function to apply to leaf values before displaying the leaves.
+           The function is applied to a numpy array with the class i sample value in row i.
+           For example, to view only those leaves with more than 100 total samples, and more than 5 class 1 samples, use show_leaf_filter = lambda x: (100 < np.sum(x)) & (5 < x[1])
         :param plot_ylim: int, optional
             The max value for oY. This is useful in case we have few leaves with big sample values which 'shadow'
             the other leaves values.
@@ -181,26 +194,54 @@ class DTreeVizAPI:
                 else:
                     fig, ax = plt.subplots()
 
-            ax.set_xticks(range(0, len(index)))
-            ax.set_xticklabels(index)
-            if plot_ylim is not None:
-                ax.set_ylim(0, plot_ylim)
-
             leaf_samples_hist = [[] for i in range(self.shadow_tree.nclasses())]
             for leaf_sample in leaf_samples:
                 for i, leaf_count in enumerate(leaf_sample):
                     leaf_samples_hist[i].append(leaf_count)
+            leaf_samples_hist = np.array(leaf_samples_hist)
 
-            bar_containers = []
-            bottom_values = np.full(len(index), 0)
-            for i, leaf_sample in enumerate(leaf_samples_hist):
-                bar_container = ax.bar(range(0, len(index)), leaf_sample, bottom=bottom_values,
+            if show_leaf_id_list is not None:
+                _mask = np.isin(index, show_leaf_id_list)
+                leaf_samples_hist = leaf_samples_hist[:, _mask]
+                index = tuple(np.array(index)[_mask])
+            if show_leaf_filter is not None:
+                _mask = np.apply_along_axis(show_leaf_filter, 0, leaf_samples_hist)
+                leaf_samples_hist = leaf_samples_hist[:, _mask]
+                index = tuple(np.array(index)[_mask])
+
+            if xaxis_display_type == 'individual':
+                x = np.arange(0, len(index))
+                ax.set_xticks(x)
+                ax.set_xticklabels(index)
+            elif xaxis_display_type == 'auto':
+                x = np.array(index)
+                ax.set_xlim(np.min(x)-1, np.max(x)+1)
+            elif xaxis_display_type == 'y_sorted':
+                # sort by total y = sum(classes), then class 0, 1, 2, ...
+                sort_cols = [np.sum(leaf_samples_hist, axis=0)]
+                for i in range(leaf_samples_hist.shape[0]):
+                    sort_cols.append(leaf_samples_hist[i])
+                _sort = np.lexsort(sort_cols[::-1])[::-1]
+                leaf_samples_hist = leaf_samples_hist[:, _sort]
+                index = tuple(np.array(index)[_sort])
+
+                x = np.arange(0, len(index))
+                ax.set_xticks(x)
+                ax.set_xticklabels([])
+                ax.tick_params(axis='x', which='both', bottom=False)
+            else:
+                raise ValueError(f'Unknown xaxis_display_type = {xaxis_display_type}!')
+
+            if plot_ylim is not None:
+                ax.set_ylim(0, plot_ylim)
+
+            bottom_values = np.zeros(len(index))
+            for i in range(leaf_samples_hist.shape[0]):
+                bar_container = ax.bar(x, leaf_samples_hist[i], bottom=bottom_values,
                                     color=colors_classes[i],
                                     lw=.3, align='center', width=1)
-                bottom_values = bottom_values + np.array(leaf_sample)
-                bar_containers.append(bar_container)
+                bottom_values = bottom_values + leaf_samples_hist[i]
 
-            for bar_container in bar_containers:
                 for rect in bar_container.patches:
                     rect.set_linewidth(.5)
                     rect.set_edgecolor(colors['rect_edge'])
@@ -884,7 +925,7 @@ class DTreeVizAPI:
         for i in range(len(means)):
             ax.plot(means[i], means_range[i], color=colors['split_line'], linewidth=prediction_line_width)
 
-        _format_axes(ax, self.shadow_tree.target_name, "Leaf", colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=None, grid=grid)
+        _format_axes(ax, self.shadow_tree.target_name, "Leaf IDs", colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=None, grid=grid)
 
     def ctree_feature_space(self,
                             fontsize=10,
