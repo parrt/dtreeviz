@@ -168,7 +168,7 @@ class DTreeVizAPI:
         :param show_leaf_filter: Callable[[np.ndarray], bool], optional
            The filtering function to apply to leaf values before displaying the leaves.
            The function is applied to a numpy array with the class i sample value in row i.
-           For example, to filter to leaves with 100 < total samples, and 5 < class 1 samples, use show_leaf_filter = lambda x: (100 < np.sum(x)) & (5 < x[1])
+           For example, to view only those leaves with more than 100 total samples, and more than 5 class 1 samples, use show_leaf_filter = lambda x: (100 < np.sum(x)) & (5 < x[1])
         :param plot_ylim: int, optional
             The max value for oY. This is useful in case we have few leaves with big sample values which 'shadow'
             the other leaves values.
