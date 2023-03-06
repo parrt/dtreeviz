@@ -803,8 +803,8 @@ class DTreeVizAPI:
         """
 
         node_samples = self.shadow_tree.get_node_samples()
-        df = pd.DataFrame(self.shadow_tree.X_train, columns=self.shadow_tree.feature_names)
-        return df.iloc[node_samples[node_id]].describe()
+        df = pd.DataFrame(self.shadow_tree.X_train, columns=self.shadow_tree.feature_names).convert_dtypes()
+        return df.iloc[node_samples[node_id]].describe(include='all')
 
     def instance_feature_importance(self, x,
                                    colors: dict = None,
