@@ -1252,6 +1252,10 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
     counts = node.class_counts()
     prediction = node.prediction_name()
 
+    # when using another dataset than the training dataset, some leaves could have 0 samples.
+    # Trying to make a pie chart will raise some deprecation
+    if sum(counts) == 0:
+        return
     if leaftype == 'pie':
         _draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
