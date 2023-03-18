@@ -94,8 +94,19 @@ class ShadowSKDTree(ShadowDecTree):
         return self.tree_model.tree_.feature[id]
 
     def get_node_nsamples_by_class(self, id):
+        # This is the code to return the nsamples/class from tree metadata. It's faster, but the visualisations cannot
+        # be made on new datasets.
+        # if self.is_classifier():
+        #     return self.tree_model.tree_.value[id][0]
+
+        # This code allows us to return the nsamples/class based on a dataset, train or validation
         if self.is_classifier():
-            return self.tree_model.tree_.value[id][0]
+            all_nodes = self.internal + self.leaves
+            node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
+            if self.get_class_weights() is None:
+                return node_value[0]
+            else:
+                return node_value[0] * self.get_class_weights()
 
     def get_prediction(self, id):
         if self.is_classifier():
