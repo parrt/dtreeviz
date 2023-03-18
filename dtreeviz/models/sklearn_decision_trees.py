@@ -14,9 +14,11 @@ class ShadowSKDTree(ShadowDecTree):
                  y_train,
                  feature_names: List[str] = None,
                  target_name: str = None,
-                 class_names: (List[str], Mapping[int, str]) = None):
+                 class_names: (List[str], Mapping[int, str]) = None,
+                 X_test: bool = False):
 
         self.node_to_samples = None
+        self.X_test=X_test
         super().__init__(tree_model, X_train, y_train, feature_names, target_name, class_names)
 
     def is_fit(self):

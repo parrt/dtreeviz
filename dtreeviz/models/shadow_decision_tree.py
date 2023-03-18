@@ -418,7 +418,7 @@ class ShadowDecTree(ABC):
         return y_train
 
     @staticmethod
-    def get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names=None, tree_index=None):
+    def get_shadow_tree(tree_model, X_train, y_train, feature_names, target_name, class_names=None, tree_index=None, X_test=False):
         """Get an internal representation of the tree obtained from a specific library"""
         # Sanity check
         if isinstance(X_train, pd.DataFrame):
@@ -443,7 +443,7 @@ class ShadowDecTree(ABC):
         elif isinstance(tree_model, (sklearn.tree.DecisionTreeRegressor, sklearn.tree.DecisionTreeClassifier)):
             from dtreeviz.models import sklearn_decision_trees
             return sklearn_decision_trees.ShadowSKDTree(tree_model, X_train, y_train, feature_names,
-                                                        target_name, class_names)
+                                                        target_name, class_names, X_test=X_test)
         elif str(type(tree_model)).endswith("xgboost.core.Booster'>"):
             from dtreeviz.models import xgb_decision_tree
             return xgb_decision_tree.ShadowXGBDTree(tree_model, tree_index, X_train, y_train,

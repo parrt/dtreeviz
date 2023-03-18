@@ -36,8 +36,9 @@ class DTreeVizAPI:
     however, this object encapsulates the key functionality and API but delegates tree model adaptation
     from sklearn etc... to dtreeviz.models.ShadowDecTree subclasses.
     """
-    def __init__(self, shahdow_tree: ShadowDecTree):
+    def __init__(self, shahdow_tree: ShadowDecTree, org_tree=None):
         self.shadow_tree = shahdow_tree
+        self.org_tree = org_tree
 
     def leaf_sizes(self,
                    display_type: str = "plot",
@@ -557,7 +558,9 @@ class DTreeVizAPI:
                                 filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
                                 graph_colors=colors,
                                 fontname=fontname,
-                                leaftype=leaftype)
+                                leaftype=leaftype,
+                                X_apply=self.org_tree.apply(self.shadow_tree.X_train) if vars(self.shadow_tree).get("X_test", False) else None,
+                                y_test=self.shadow_tree.y_train)
                 leaves.append(class_leaf_node(node))
             else:
                 # for now, always gen leaf
@@ -1144,10 +1147,16 @@ def _class_split_viz(node: ShadowDecTreeNode,
                                             label=class_names)
         # Alter appearance of each bar
         for patch in barcontainers:
-            for rect in patch.patches:
+            try:
+                rects = patch.patches
+            except AttributeError:
+                continue
+            for rect in rects:
+                if rect is None:
+                    continue
                 rect.set_linewidth(.5)
                 rect.set_edgecolor(colors['rect_edge'])
-        ax.set_yticks([0, max([max(h) for h in hist])])
+        ax.set_yticks([0, np.max(hist)])
 
     # set an empty space at the beginning and the end of the node visualisation for better clarity
     bin_length = bins[1] - bins[0]
@@ -1186,7 +1195,9 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
                     filename: str,
                     graph_colors,
                     fontname,
-                    leaftype):
+                    leaftype,
+                    X_apply=None,
+                    y_test=None):
     graph_colors = adjust_colors(graph_colors)
 
     minsize = .15
@@ -1197,7 +1208,10 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
     size = min(size, maxsize)
 
     # we visually need n=1 and n=9 to appear different but diff between 300 and 400 is no big deal
-    counts = node.class_counts()
+    if X_apply is not None:
+        counts = np.array([sum(y_test[X_apply == node.id] == cl) for cl in node.shadow_tree.classes()])
+    else:
+        counts = node.class_counts()
     prediction = node.prediction_name()
 
     if leaftype == 'pie':
@@ -1835,7 +1849,8 @@ def model(model,
           tree_index: int = None,
           feature_names: List[str] = None,
           target_name: str = None,
-          class_names: (List[str], Mapping[int, str]) = None) -> DTreeVizAPI:
+          class_names: (List[str], Mapping[int, str]) = None,
+          X_test: bool = False) -> DTreeVizAPI:
     """
     Given a decision tree-based model from a supported decision-tree library, training data, and
     information about the data, create a model adaptor that provides a consistent interface for
@@ -1854,6 +1869,6 @@ def model(model,
     """
     shadow_tree = ShadowDecTree.get_shadow_tree(model, X_train, y_train,
                                                 feature_names, target_name, class_names,
-                                                tree_index)
-    dtreeviz_model = DTreeVizAPI(shadow_tree)
+                                                tree_index, X_test)
+    dtreeviz_model = DTreeVizAPI(shadow_tree, model)
     return dtreeviz_model
