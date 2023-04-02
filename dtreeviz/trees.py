@@ -2,6 +2,7 @@ import os
 import tempfile
 from typing import Mapping, List
 
+import matplotlib
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1142,12 +1143,22 @@ def _class_split_viz(node: ShadowDecTreeNode,
                                             histtype=histtype,
                                             bins=bins,
                                             label=class_names)
+
         # Alter appearance of each bar
-        for patch in barcontainers:
-            for rect in patch.patches:
+        if isinstance(barcontainers[0], matplotlib.container.BarContainer):
+            for patch in barcontainers:
+                for rect in patch.patches:
+                    rect.set_linewidth(.5)
+                    rect.set_edgecolor(colors['rect_edge'])
+            ax.set_yticks([0, max([max(h) for h in hist])])
+        elif isinstance(barcontainers[0], matplotlib.patches.Rectangle):
+            # In case a node will contains samples from only one class.
+            for rect in barcontainers.patches:
                 rect.set_linewidth(.5)
                 rect.set_edgecolor(colors['rect_edge'])
-        ax.set_yticks([0, max([max(h) for h in hist])])
+            ax.set_yticks([0, max(hist)])
+
+
 
     # set an empty space at the beginning and the end of the node visualisation for better clarity
     bin_length = bins[1] - bins[0]
