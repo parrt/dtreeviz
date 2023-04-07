@@ -255,7 +255,7 @@ def dtreeviz(tree_model,
                       instance_orientation,
                       show_root_edge_labels, show_node_labels, show_just_path, fancy, histtype, highlight_path, X,
                       max_X_features_LR, max_X_features_TD, depth_range_to_display, label_fontsize, ticks_fontsize,
-                      fontname, title, title_fontsize, colors, scale)
+                      fontname, title, title_fontsize, colors=colors, scale=scale)
 
 
 def viz_leaf_samples(tree_model,
