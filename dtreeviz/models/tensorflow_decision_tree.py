@@ -160,6 +160,10 @@ class ShadowTensorflowTree(ShadowDecTree):
 
     def get_prediction(self, id):
         if self.is_classifier():
+            # In a GBT model, the trees are always regressive trees (even if the GBT is a classifier). So we don't
+            # have the probability attribute
+            if "tensorflow_decision_forests.keras.GradientBoostedTreesModel" in str(type(self.model)):
+                return self.tree_nodes[id].value.value
             return np.argmax(self.tree_nodes[id].value.probability)
         else:
             return self.tree_nodes[id].value.value
