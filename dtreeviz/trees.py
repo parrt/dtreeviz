@@ -1375,8 +1375,7 @@ def _regr_leaf_viz(node: ShadowDecTreeNode,
     figsize = (.75, .8)
 
     fig, ax = plt.subplots(1, 1, figsize=figsize)
-
-    m = np.mean(y)
+    m = node.prediction()
 
     _format_axes(ax, None, None, colors, fontsize=label_fontsize, fontname=fontname, ticks_fontsize=ticks_fontsize, grid=False)
     ax.set_ylim(y_range)
@@ -1530,7 +1529,7 @@ def _get_leaf_target_input(shadow_tree: ShadowDecTree, precision: int):
     for i, node in enumerate(shadow_tree.leaves):
         leaf_index_sample = node.samples()
         leaf_target = shadow_tree.y_train[leaf_index_sample]
-        leaf_target_mean = np.mean(leaf_target)
+        leaf_target_mean = node.prediction()
         np.random.seed(0)  # generate the same list of random values for each call
         X = np.random.normal(i, sigma, size=len(leaf_target))
 
