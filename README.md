@@ -256,9 +256,17 @@ print( stderr )
 
 If you are having issues with run command you can try copying the following files from: https://github.com/xflr6/graphviz/tree/master/graphviz.
 
-Place them in the AppData\Local\Continuum\anaconda3\Lib\site-packages\graphviz folder. 
+Place them in the AppData\Local\Continuum\anaconda3\Lib\site-packages\graphviz folder.  
 
 Clean out the __pycache__ directory too.
+
+For graphviz windows install 8.0.5 and python interface v0.18+ :  
+```python
+import graphviz.backend as be
+cmd = ["dot", "-V"]
+stdout = be.execute.run_check(cmd, capture_output=True, check=True, quiet=False)
+print( stdout )
+```
 
 Jupyter Lab and Jupyter notebook both show the inline .svg images well.
 
