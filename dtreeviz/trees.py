@@ -338,11 +338,12 @@ class DTreeVizAPI:
 
         def split_node(name, node_name, split):
             if fancy:
+                filepath = os.path.join(tmp, f"node{node.id}_{os.getpid()}.svg")
                 labelgraph = node_label(node) if show_node_labels else ''
                 html = f"""<table border="0">
                     {labelgraph}
                     <tr>
-                            <td><img src="{tmp}/node{node.id}_{os.getpid()}.svg"/></td>
+                            <td><img src="{filepath}"/></td>
                     </tr>
                     </table>"""
             else:
@@ -356,10 +357,11 @@ class DTreeVizAPI:
         def regr_leaf_node(node, label_fontsize: int = 12):
             # always generate fancy regr leaves for now but shrink a bit for nonfancy.
             labelgraph = node_label(node) if show_node_labels else ''
+            filepath = os.path.join(tmp, f"leaf{node.id}_{os.getpid()}.svg")
             html = f"""<table border="0">
                 {labelgraph}
                 <tr>
-                        <td><img src="{tmp}/leaf{node.id}_{os.getpid()}.svg"/></td>
+                        <td><img src="{filepath}"/></td>
                 </tr>
                 </table>"""
             if node.id in highlight_path:
@@ -369,10 +371,11 @@ class DTreeVizAPI:
 
         def class_leaf_node(node, label_fontsize: int = 12):
             labelgraph = node_label(node) if show_node_labels else ''
+            filepath = os.path.join(tmp, f"leaf{node.id}_{os.getpid()}.svg")
             html = f"""<table border="0" CELLBORDER="0">
                 {labelgraph}
                 <tr>
-                        <td><img src="{tmp}/leaf{node.id}_{os.getpid()}.svg"/></td>
+                        <td><img src="{filepath}"/></td>
                 </tr>
                 </table>"""
             if node.id in highlight_path:
@@ -384,6 +387,7 @@ class DTreeVizAPI:
             return f'<tr><td CELLPADDING="0" CELLSPACING="0"><font face="{fontname}" color="{colors["node_label"]}" point-size="14"><i>Node {node.id}</i></font></td></tr>'
 
         def class_legend_html():
+            filepath = os.path.join(tmp, f"legend_{os.getpid()}.svg")
             return f"""
                 <table border="0" cellspacing="0" cellpadding="0">
                     <tr>
