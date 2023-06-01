@@ -391,7 +391,7 @@ class DTreeVizAPI:
             return f"""
                 <table border="0" cellspacing="0" cellpadding="0">
                     <tr>
-                        <td border="0" cellspacing="0" cellpadding="0"><img src="{tmp}/legend_{os.getpid()}.svg"/></td>
+                        <td border="0" cellspacing="0" cellpadding="0"><img src="{filepath}"/></td>
                     </tr>
                 </table>
                 """
