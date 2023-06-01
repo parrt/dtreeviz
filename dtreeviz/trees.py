@@ -527,7 +527,7 @@ class DTreeVizAPI:
             if np.max(class_values) >= n_classes:
                 raise ValueError(f"Target label values (for now) must be 0..{n_classes-1} for n={n_classes} labels")
             color_map = {v: color_values[i] for i, v in enumerate(class_values)}
-            _draw_legend(self.shadow_tree, self.shadow_tree.target_name, f"{tmp}/legend_{os.getpid()}.svg",
+            _draw_legend(self.shadow_tree, self.shadow_tree.target_name, os.path.join(tmp, f"legend_{os.getpid()}.svg"),
                          colors=colors,
                          fontname=fontname)
 
@@ -560,7 +560,7 @@ class DTreeVizAPI:
             if fancy:
                 if self.shadow_tree.is_classifier():
                     _class_split_viz(node, X_train, y_train,
-                                     filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
+                                     filename=os.path.join(tmp, f"/node{node.id}_{os.getpid()}.svg"),
                                      precision=precision,
                                      colors={**color_map, **colors},
                                      histtype=histtype,
@@ -572,7 +572,7 @@ class DTreeVizAPI:
                                      highlight_node=node.id in highlight_path)
                 else:
                     _regr_split_viz(node, X_train, y_train,
-                                    filename=f"{tmp}/node{node.id}_{os.getpid()}.svg",
+                                    filename=os.path.join(tmp, f"node{node.id}_{os.getpid()}.svg"),
                                     target_name=self.shadow_tree.target_name,
                                     y_range=y_range,
                                     X=x,
@@ -596,7 +596,7 @@ class DTreeVizAPI:
                     continue
             if self.shadow_tree.is_classifier():
                 _class_leaf_viz(node, colors=color_values,
-                                filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
+                                filename=os.path.join(tmp, f"/leaf{node.id}_{os.getpid()}.svg"),
                                 graph_colors=colors,
                                 fontname=fontname,
                                 leaftype=leaftype)
@@ -606,7 +606,7 @@ class DTreeVizAPI:
                 _regr_leaf_viz(node,
                                y_train,
                                target_name=self.shadow_tree.target_name,
-                               filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
+                               filename=os.path.join(tmp, f"/leaf{node.id}_{os.getpid()}.svg"),
                                y_range=y_range,
                                precision=precision,
                                ticks_fontsize=ticks_fontsize,
