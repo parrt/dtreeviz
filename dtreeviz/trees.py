@@ -560,7 +560,7 @@ class DTreeVizAPI:
             if fancy:
                 if self.shadow_tree.is_classifier():
                     _class_split_viz(node, X_train, y_train,
-                                     filename=os.path.join(tmp, f"/node{node.id}_{os.getpid()}.svg"),
+                                     filename=os.path.join(tmp, f"node{node.id}_{os.getpid()}.svg"),
                                      precision=precision,
                                      colors={**color_map, **colors},
                                      histtype=histtype,
@@ -596,7 +596,7 @@ class DTreeVizAPI:
                     continue
             if self.shadow_tree.is_classifier():
                 _class_leaf_viz(node, colors=color_values,
-                                filename=os.path.join(tmp, f"/leaf{node.id}_{os.getpid()}.svg"),
+                                filename=os.path.join(tmp, f"leaf{node.id}_{os.getpid()}.svg"),
                                 graph_colors=colors,
                                 fontname=fontname,
                                 leaftype=leaftype)
@@ -606,7 +606,7 @@ class DTreeVizAPI:
                 _regr_leaf_viz(node,
                                y_train,
                                target_name=self.shadow_tree.target_name,
-                               filename=os.path.join(tmp, f"/leaf{node.id}_{os.getpid()}.svg"),
+                               filename=os.path.join(tmp, f"leaf{node.id}_{os.getpid()}.svg"),
                                y_range=y_range,
                                precision=precision,
                                ticks_fontsize=ticks_fontsize,
