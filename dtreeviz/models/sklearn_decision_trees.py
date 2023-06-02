@@ -147,4 +147,4 @@ class ShadowSKDTree(ShadowDecTree):
         return self.tree_model.min_samples_leaf
 
     def shouldGoLeftAtSplit(self, id, x):
-        return x < self.get_node_split(id)
+        return x <= self.get_node_split(id)
