@@ -595,12 +595,12 @@ class DTreeVizAPI:
                 if node.level not in range(depth_range_to_display[0], depth_range_to_display[1] + 1):
                     continue
             if self.shadow_tree.is_classifier():
-                _class_leaf_viz(node, colors=color_values,
+                if _class_leaf_viz(node, colors=color_values,
                                 filename=f"{tmp}/leaf{node.id}_{os.getpid()}.svg",
                                 graph_colors=colors,
                                 fontname=fontname,
-                                leaftype=leaftype)
-                leaves.append(class_leaf_node(node))
+                                leaftype=leaftype):
+                    leaves.append(class_leaf_node(node))
             else:
                 # for now, always gen leaf
                 _regr_leaf_viz(node,
@@ -1255,13 +1255,15 @@ def _class_leaf_viz(node: ShadowDecTreeNode,
     # when using another dataset than the training dataset, some leaves could have 0 samples.
     # Trying to make a pie chart will raise some deprecation
     if sum(counts) == 0:
-        return
+        return False
     if leaftype == 'pie':
         _draw_piechart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
+        return True
     elif leaftype == 'barh':
         _draw_barh_chart(counts, size=size, colors=colors, filename=filename, label=f"n={nsamples}\n{prediction}",
                       graph_colors=graph_colors, fontname=fontname)
+        return True
     else:
         raise ValueError(f'Undefined leaftype = {leaftype}')
 
