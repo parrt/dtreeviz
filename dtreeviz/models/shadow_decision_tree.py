@@ -457,7 +457,8 @@ class ShadowDecTree(ABC):
             from dtreeviz.models import lightgbm_decision_tree
             return lightgbm_decision_tree.ShadowLightGBMTree(tree_model, tree_index, X_train, y_train,
                                                              feature_names, target_name, class_names)
-        elif "tensorflow_decision_forests.keras.RandomForestModel" in str(type(tree_model)):
+        elif any(tf_model in str(type(tree_model)) for tf_model in ["tensorflow_decision_forests.keras.RandomForestModel",
+                                                                    "tensorflow_decision_forests.keras.GradientBoostedTreesModel"]):
             from dtreeviz.models import tensorflow_decision_tree
             return tensorflow_decision_tree.ShadowTensorflowTree(tree_model, tree_index, X_train, y_train,
                                                                  feature_names, target_name, class_names)
@@ -465,7 +466,8 @@ class ShadowDecTree(ABC):
             raise ValueError(
                 f"Tree model must be in (DecisionTreeRegressor, DecisionTreeClassifier, "
                 "xgboost.core.Booster, lightgbm.basic.Booster, pyspark DecisionTreeClassificationModel, "
-                f"pyspark DecisionTreeClassificationModel, tensorflow_decision_forests.keras.RandomForestModel) "
+                f"pyspark DecisionTreeClassificationModel, tensorflow_decision_forests.keras.RandomForestModel, "
+                f"tensorflow_decision_forests.keras.GradientBoostedTreesModel) "
                 f"but you passed a {tree_model.__class__.__name__}!")
 
 
@@ -560,6 +562,9 @@ class ShadowDecTreeNode():
         Return prediction class or value otherwise.
         """
         if self.isclassifier():
+            # In a GBT model, the trees are always regressive trees (even if the GBT is a classifier).
+            if "tensorflow_decision_forests.keras.GradientBoostedTreesModel" in str(type(self.shadow_tree.tree_model)):
+                return round(self.prediction(), 6)
             if self.shadow_tree.class_names is not None:
                 return self.shadow_tree.class_names[self.prediction()]
         return self.prediction()
