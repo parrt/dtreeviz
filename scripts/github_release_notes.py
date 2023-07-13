@@ -22,7 +22,7 @@ print()
 print("## Issues fixed")
 for x in issues:
     labels = [l.name for l in x.labels]
-    if x.pull_request is None and not ("type:improvement" in labels or "type:feature" in labels):
+    if x.pull_request is None and not ("bug" in labels):
         print("* [%s](%s) (%s)" % (x.title, x.html_url, ", ".join([l.name for l in x.labels])))
 
 # dump improvements closed for this release (issues or pulls)
@@ -30,7 +30,8 @@ print()
 print("## Improvements, features")
 for x in issues:
     labels = [l.name for l in x.labels]
-    if ("enhancement" in labels):
+    print(labels)
+    if ("enhancement" in labels or "clean up" in labels):
         print("* [%s](%s) (%s)" % (x.title, x.html_url, ", ".join(labels)))
 
 # dump contributors
