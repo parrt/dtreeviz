@@ -523,7 +523,8 @@ class ShadowDecTreeNode():
             return node_values
         node_y_data = self.shadow_tree.y_train[samples]
         unique, counts = np.unique(node_y_data, return_counts=True)
-
+        if unique.dtype != 'int':
+            raise ValueError(f"Target values should be type int got {unique.dtype}")
         for i in range(len(unique)):
             node_values[unique[i]] = counts[i]
 
