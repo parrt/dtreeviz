@@ -172,16 +172,23 @@ class ShadowSparkTree(ShadowDecTree):
         return self.get_features()[id]
 
     def get_node_nsamples_by_class(self, id):
-        def _get_value(spark_version):
-            if spark_version >= 3:
-                return np.array(self.tree_nodes[id].impurityStats().stats())
-            elif spark_version >= 2:
-                return np.array(list(self.tree_nodes[id].impurityStats().stats()))
-            else:
-                raise Exception("dtreeviz supports spark versions >= 2")
-
+        all_nodes = self.internal + self.leaves
         if self.is_classifier():
-            return _get_value(ShadowSparkTree._get_pyspark_major_version())
+            node_value = [node.n_sample_classes() for node in all_nodes if node.id == id]
+            return node_value[0]
+
+        # This is the code to return the nsamples/class from tree metadata. It's faster, but the visualisations cannot
+        # be made on new datasets.
+        # def _get_value(spark_version):
+        #     if spark_version >= 3:
+        #         return np.array(self.tree_nodes[id].impurityStats().stats())
+        #     elif spark_version >= 2:
+        #         return np.array(list(self.tree_nodes[id].impurityStats().stats()))
+        #     else:
+        #         raise Exception("dtreeviz supports spark versions >= 2")
+        #
+        # if self.is_classifier():
+        #     return _get_value(ShadowSparkTree._get_pyspark_major_version())
 
     def get_prediction(self, id):
         return self.tree_nodes[id].prediction()
