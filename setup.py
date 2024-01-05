@@ -32,7 +32,7 @@ setup(
         'lightgbm': extra_lightgbm,
         'tensorflow_decision_forests': extra_tensorflow,
         'all': extra_xgboost + extra_pyspark + extra_lightgbm + extra_tensorflow,
-        'develop': ['pytest']
+        'dev': ['pytest']
     },
     python_requires='>=3.6',
     author='Terence Parr, Tudor Lapusan, and Prince Grover',
