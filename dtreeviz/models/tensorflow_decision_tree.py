@@ -56,7 +56,8 @@ class ShadowTensorflowTree(ShadowDecTree):
         return self.children_right
 
     def is_classifier(self) -> bool:
-        if tensorflow_decision_forests.__version__<'1.2.0':
+        tfdf_version = tensorflow_decision_forests.__version__.split('.')
+        if len(tfdf_version)<2 or (int(tfdf_version[0])<=1 and int(tfdf_version[1])<2):
             return self.model._task == Task.CLASSIFICATION
         return self.model.task == Task.CLASSIFICATION
 
