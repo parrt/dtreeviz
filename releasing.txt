@@ -1,6 +1,6 @@
 # Releasing dtreeviz
 
-1. Update version.py, setup.py, README.
+1. Update dtreeviz/version.py, setup.py, README, releasing.txt.
 2. Merge dev into master
 3. Create release notes
 4. Push to pypi
@@ -8,5 +8,5 @@
 
 ```
 python -m build
-twine upload dist/dtreeviz-2.2.0.tar.gz dist/dtreeviz-2.2.0-py3-none-any.whl 
+twine upload dist/dtreeviz-2.3.1.tar.gz dist/dtreeviz-2.3.1-py3-none-any.whl 
 ```

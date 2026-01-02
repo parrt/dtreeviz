@@ -1,7 +1,7 @@
 import os
 import tempfile
 import warnings
-from typing import Mapping, List, Callable
+from typing import Mapping, List, Callable, Optional
 
 
 import matplotlib
@@ -248,7 +248,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
                    max_size: int = None,
                    figsize: tuple = None,
                    ax=None,
-                   ai_chat: bool = True):
+                   ai_chat: Optional[bool] = None):
         """Visualize leaf sizes.
 
         Interpreting leaf sizes can help us to see how the data is spread over the tree:
@@ -295,7 +295,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
         :param figsize: optional (width, height) in inches for the entire plot
             :param ax: optional matplotlib "axes" to draw into
         """
-        request_ai_commentary = ai_chat
+        request_ai_commentary = self.ai_chat if ai_chat is None else ai_chat
         if request_ai_commentary and not self.ai_chat:
             warnings.warn(
                 "AI chat was requested, but dtreeviz was not initialized with ai_chat=True. \n"
@@ -330,9 +330,8 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
 
             _format_axes(ax, "Leaf IDs", "Samples Count", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
             plt.show()
-            if self.ai_chat:
-                if request_ai_commentary:
-                    self.chat("""What do you think about the current tree leaves sample counts and distribution? Focus only on the leaf nodes, exclude the internal nodes.""")
+            if request_ai_commentary:
+                self.chat("""What do you think about the current tree leaves sample counts and distribution? Focus only on the leaf nodes, exclude the internal nodes.""")
 
         elif display_type == "hist":
             n, bins, patches = ax.hist(leaf_sizes, bins=bins, color=colors["hist_bar"])
@@ -354,7 +353,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
                                  grid: bool = False,
                                  figsize: tuple = None,
                                  ax=None,
-                                 ai_chat: bool = True):
+                                 ai_chat: Optional[bool] = None):
         """Visualize the distribution of classes for each leaf.
 
         It's a good way to see how classes are distributed in leaves. For example, you can observe that in some
@@ -394,7 +393,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
         :param figsize: optional (width, height) in inches for the entire plot
             :param ax: optional matplotlib "axes" to draw into
         """
-        request_ai_commentary = ai_chat
+        request_ai_commentary = self.ai_chat if ai_chat is None else ai_chat
         if request_ai_commentary and not self.ai_chat:
             warnings.warn(
                 "AI chat was requested, but dtreeviz was not initialized with ai_chat=True. \n"
@@ -478,9 +477,8 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
             _format_axes(ax, "Leaf IDs", "Samples by Class", colors, fontsize, fontname, ticks_fontsize=None, grid=grid)
             plt.show()
 
-            if self.ai_chat:
-                if request_ai_commentary:
-                    self.chat("""What do you think about the current tree leaves sample distributions? Focus only on the leaf nodes, exclude the internal nodes.""")
+            if request_ai_commentary:
+                self.chat("""What do you think about the current tree leaves sample distributions? Focus only on the leaf nodes, exclude the internal nodes.""")
         elif display_type == "text":
             for i, leaf in enumerate(index):
                 print(f"leaf {leaf}, samples : {leaf_samples[i]}")
@@ -507,7 +505,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
              title_fontsize: int = 10,
              colors: dict = None,
              scale=1.0,
-             ai_chat=True
+             ai_chat: Optional[bool] = None
              ) \
             -> DTreeVizRender:
         """
@@ -823,7 +821,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
                 ranksep = ".05"
                 nodesep = "0.09"
 
-        request_ai_commentary = ai_chat
+        request_ai_commentary = self.ai_chat if ai_chat is None else ai_chat
         if request_ai_commentary and not self.ai_chat:
             warnings.warn(
                 "AI chat was requested, but dtreeviz was not initialized with ai_chat=True. \n"
@@ -1032,32 +1030,31 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
 
         render = DTreeVizRender(dot, scale)
         
-        if self.ai_chat:
-            if request_ai_commentary:
-                # Display the visualization first
-                try:
-                    from IPython.display import display
-                    display(render)
-                    # Already displayed, so return None to avoid duplicate display
-                    # Then print the AI message
-                    if path_summary_text:
-                        question = (
-                            "Explain why the decision tree produced this prediction for the provided instance. "
-                            "Use the decision path below and describe how each split led to the final leaf.\n"
-                            f"{path_summary_text}"
-                        )
-                    else:
-                        question = (
-                            "Describe the most important insights about this decision tree in natural language. "
-                            "Base your answer strictly on the detailed information already available to you, "
-                            "but speak as if you directly inspected the tree yourself—do not mention JSON, backend data, "
-                            "or how the information was provided."
-                        )
-                    self.chat(question)
-                    return None
-                except ImportError:
-                    # Not in IPython/Jupyter, just return the render
-                    pass
+        if request_ai_commentary:
+            # Display the visualization first
+            try:
+                from IPython.display import display
+                display(render)
+                # Already displayed, so return None to avoid duplicate display
+                # Then print the AI message
+                if path_summary_text:
+                    question = (
+                        "Explain why the decision tree produced this prediction for the provided instance. "
+                        "Use the decision path below and describe how each split led to the final leaf.\n"
+                        f"{path_summary_text}"
+                    )
+                else:
+                    question = (
+                        "Describe the most important insights about this decision tree in natural language. "
+                        "Base your answer strictly on the detailed information already available to you, "
+                        "but speak as if you directly inspected the tree yourself—do not mention JSON, backend data, "
+                        "or how the information was provided."
+                    )
+                self.chat(question)
+                return None
+            except ImportError:
+                # Not in IPython/Jupyter, just return the render
+                pass
         
         return render
 
@@ -1070,7 +1067,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
                     bins: int = 10,
                     figsize: tuple = None,
                     ax=None,
-                    ai_chat: bool = True):
+                    ai_chat: Optional[bool] = None):
         """Visualize leaves criterion/purities.
 
         The most common criterion/purity for tree regressors is “mse”, “friedman_mse”, “mae” and for tree classifers are
@@ -1109,7 +1106,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
         :param ai_chat: Whether to ask the AI to explain the leaf purities after the visualization.
         :return:
         """
-        request_ai_commentary = ai_chat
+        request_ai_commentary = self.ai_chat if ai_chat is None else ai_chat
         if request_ai_commentary and not self.ai_chat:
             warnings.warn(
                 "AI chat was requested, but dtreeviz was not initialized with ai_chat=True. \n"
@@ -1162,7 +1159,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
             plt.show()
 
         # Ask AI to comment on leaf purities, if enabled
-        if self.ai_chat and request_ai_commentary and display_type in ["plot", "hist"]:
+        if request_ai_commentary and display_type in ["plot", "hist"]:
             if self.shadow_tree.is_classifier():
                 question = (
                     "Explain what the leaf purities (criterion values) reveal about this classification tree. "
@@ -1176,7 +1173,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
             # Stream explanation after the plot
             self.chat(question, stream=True)
 
-    def node_stats(self, node_id: int, ai_chat: bool = True) -> pd.DataFrame:
+    def node_stats(self, node_id: int, ai_chat: Optional[bool] = None) -> pd.DataFrame:
         """Generate stats (count, mean, std, etc) based on data samples from a specified node.
 
         This method is especially useful to investigate leaf samples from a decision tree. This is a way to discover data
@@ -1194,14 +1191,15 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
         :return: None
             Node training samples' stats are displayed in the output
         """
-        if ai_chat and not self.ai_chat:
+        request_ai_commentary = self.ai_chat if ai_chat is None else ai_chat
+        if request_ai_commentary and not self.ai_chat:
             warnings.warn(
                 "AI chat was requested, but dtreeviz was not initialized with ai_chat=True. \n"
                 "AI commentary will be skipped. \n"
                 "Enable it when instantiating the dtreeviz model using the ai_chat=True parameter.",
                 UserWarning
             )
-            ai_chat = False
+            request_ai_commentary = False
 
         node_samples = self.shadow_tree.get_node_samples()
         df = pd.DataFrame(self.shadow_tree.X_train, columns=self.shadow_tree.feature_names).convert_dtypes()
@@ -1215,7 +1213,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
             print(stats)
 
         # Then show AI explanation about these stats via streaming chat
-        if self.ai_chat and ai_chat:
+        if request_ai_commentary:
             ai_explanation = self._require_ai_explanation()
             prompt = ai_explanation.build_node_stats_prompt(self.shadow_tree, node_id)
             # Stream the explanation token by token after the table
@@ -1229,7 +1227,7 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
                                     grid: bool = False,
                                     figsize: tuple = None,
                                     ax=None,
-                                    ai_chat: bool = True):
+                                    ai_chat: Optional[bool] = None):
         """Prediction feature importance for a data instance.
 
         There will be created a visualisation for feature importance, just like the popular one from sklearn library,
@@ -1253,15 +1251,15 @@ ex. viz_model = dtreeviz.model(tree_classifier,....,ai_chat=True)""")
             :param ax: optional matplotlib "axes" to draw into
         :param ai_chat: Whether to ask the AI to explain the feature importance output.
         """
-        if ai_chat and not self.ai_chat:
+        request_ai_commentary = self.ai_chat if ai_chat is None else ai_chat
+        if request_ai_commentary and not self.ai_chat:
             warnings.warn(
                 "AI chat was requested, but dtreeviz was not initialized with ai_chat=True. \n"
                 "AI commentary will be skipped. \n"
                 "Enable it when instantiating the dtreeviz model using the ai_chat=True parameter.",
                 UserWarning
             )
-            ai_chat = False
-        request_ai_commentary = self.ai_chat and ai_chat
+            request_ai_commentary = False
         summary = explain_prediction_sklearn_default(self.shadow_tree, x,
                                                      colors,
                                                      fontsize,

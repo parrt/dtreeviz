@@ -15,7 +15,7 @@ extra_ai = ['langchain-openai']
 
 setup(
     name='dtreeviz',
-    version='2.3',
+    version='2.3.1',
     url='https://github.com/parrt/dtreeviz',
     license='MIT',
     packages=find_packages(),
